@@ -9,7 +9,8 @@ import Moves from './components/movimientos'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {BrowserRouter as Router, Switch, Route }  from 'react-router-dom'
 import io from 'socket.io-client'
-const socket = io.connect("http://localhost:5000");
+import { url_api } from './lib/data/server'
+const socket = io.connect(`${url_api}`);
 function App() {
  let permissions = JSON.parse(localStorage.getItem('permissions'))
  let vm;
