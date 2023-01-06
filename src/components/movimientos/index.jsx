@@ -77,9 +77,9 @@ useEffect(() => {
   let diff =  meEncuentro - estaba
   setCurrentPage(currentPage + (vPage * diff))
 }, [estaba, meEncuentro])
-const URL = 'http://localhost:5000/moves'
+const URL = `${url_api}/moves`
 const gettingUsers = async() => {
-  await fetch(`http://localhost:5000/users`).then(res => res.json()).then((users) => {
+  await fetch(`${url_api}/users`).then(res => res.json()).then((users) => {
     setUsers(users.users)
 }) 
 }
@@ -206,7 +206,7 @@ const updateStatus = async (move) => {
     aFecha: hoy,
     vale: vale
   }
-await fetch(`http://localhost:5000/moves/updateStatus`, {
+await fetch(`${url_api}/moves/updateStatus`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})

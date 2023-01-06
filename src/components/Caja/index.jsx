@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom';
 import Swal from 'sweetalert2'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
-
+import { url_api } from '../../lib/data/server';
 function Caja({socket}) {
     const history = useHistory()
   const key = localStorage.getItem('key')
@@ -45,7 +45,7 @@ function Caja({socket}) {
       } else if (!concepto) {
         if (error.classList.contains('desaparecer')) {error.classList.remove('desaparecer')}
       } else { if (!error.classList.contains('desaparecer')) {error.classList.add('desaparecer')}
-      fetch('http://localhost:5000/moves/egreso', {
+      fetch(`${url_api}/moves/egreso`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -82,7 +82,7 @@ function Caja({socket}) {
       } else if (!concepto) {
         if (error.classList.contains('desaparecer')) {error.classList.remove('desaparecer')}
       } else { if (!error.classList.contains('desaparecer')) {error.classList.add('desaparecer')}
-      fetch('http://localhost:5000/moves/ingreso', {
+      fetch(`${url_api}/moves/ingreso`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
