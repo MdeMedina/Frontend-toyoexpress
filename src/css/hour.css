@@ -1,0 +1,15 @@
+.desaparezco {
+    display:none;
+}
+
+.hora {
+    padding: 12px 4px;
+    border: 2px solid green;
+  }
+  .prueba-notificaciones {
+    margin-top: 4px
+  }
+
+  .getMoves{
+    margin-left: 45%;
+  }

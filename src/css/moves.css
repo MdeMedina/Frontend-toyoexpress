@@ -1,0 +1,66 @@
+.filtros { 
+    margin-top: 12px !important;
+    margin-bottom: 24px;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.t-mod {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+.btn-imp {
+    text-align: center!important;
+    font-size: 13px !important;
+    background: #0D6EFD;
+    color: white;
+    padding: 3px 15px !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center;
+}
+
+.botonrealizado {
+    text-align: center;
+    font-size: 13px;
+    background: #64b612;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 5px;
+    width: 80%;
+    display: inline-block;
+}
+.botonpendiente {
+    text-align: center;
+    font-size: 13px;
+    background: #B21F00;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 5px;
+    width: 80%;
+    display: inline-block;
+}
+
+.titulo {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.subtitulo {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.texto {
+    font-size: 13px;
+    font-weight: 200;
+    margin-bottom: 8px;
+}
+
+.sub-texto {
+    font-size: 8px;
+    font-weight: 100;
+    margin-bottom: 8px;
+}
+

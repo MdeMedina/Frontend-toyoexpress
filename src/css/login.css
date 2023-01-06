@@ -1,9 +1,31 @@
+
+body {
+  background-color: #E4E9F7 !important;
+}
+.navDiv {
+  width: 15%;
+  height: 100%;
+  position: sticky;
+}
+.desaparezco {
+  display:none;
+}
+
+.pase {
+  padding: 12px 4px;
+  border: 2px solid green;
+}
+
+.error {
+  padding: 12px 4px;
+  border: 2px solid red;
+}
 .Form {
     text-align: center;
   }
   label {
     margin-right: 4px;
   }
-  div {
+  .login-div {
     margin: 12px;
   }
