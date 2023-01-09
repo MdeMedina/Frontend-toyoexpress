@@ -93,6 +93,39 @@
 .sidebar .menu-links {
 padding: 0;
 }
+.caja-link {
+    height: 50px;
+    margin-top: 10px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+}
+.cl {
+    z-index: 4;
+}
+.dropend .dropdown-toggle::after {
+    display: none !important;
+}
+.e-change {
+    margin-top: 12px !important;
+    margin-bottom: 12px;
+}
+
+.caja-link:hover {
+    background: var(--primary-color);
+}
+.caja-link .icon {
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.caja-link:hover .icon,
+.caja-link:hover .text{
+    color: var(--sidebar-color);
+}
 .sidebar li {
     height: 50px;
     margin-top: 10px;

@@ -45,14 +45,16 @@ const [estaba, setEstaba] = useState(1)
 const isAdmin = localStorage.getItem('role')
 
 const removeMove = async () => {
+  if(deletingMove){
   await fetch(`${url_api}/moves/deleteMoves`, {
     method: 'DELETE',
     body: JSON.stringify(deletingMove),
   headers: new Headers({ 'Content-type': 'application/json'})
-}).then(r => console.log(r)).then(r => gettingUsers()).then(Swal.fire({
+}).then(r => console.log(r)).then(r => gettingUsers()).then(r => Swal.fire({
   icon: 'success',
   title: 'Movimiento Eliminado con exito',
 })).then(getMoves())
+  }
 }
 const deleteMoves = (m) => {
   console.log(dm)
@@ -67,12 +69,14 @@ const deleteMoves = (m) => {
       denyButtonText: `Eliminar`,
     }).then((result) => { if (result.isDenied) {
       setDeletingMove({identificador: m.identificador ,_id: m._id})
-      removeMove()
       }
     })
       }}>Eliminar</button>)
   }
 }
+useEffect(() => {
+removeMove()
+}, [deletingMove])
 useEffect(() => {
   let diff =  meEncuentro - estaba
   setCurrentPage(currentPage + (vPage * diff))
@@ -395,7 +399,7 @@ return (
    
 <>
 <Navg socket={socket}/>
-  <Sidebar />
+  <Sidebar getMoves={getMoves}/>
   <div className="d-flex justify-content-center">
   <div className="container-fluid row  d-flex justify-content-center">
   <div className="row bg-light col-11 filtros">
