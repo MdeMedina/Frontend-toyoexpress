@@ -30,6 +30,7 @@ const [vPage, setVPage] = useState(2)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
   const [sHours, setSHours] = useState(false)
+  const [oHours, setOHours] = useState(false)
 
   let numeros = [
     {value: 2, label: 2},
@@ -142,6 +143,7 @@ const handleVPage = (e) => {
                 modificarUsuarios: modUsers,
                 eliminarUsuarios: delUsers,
                 horasIngreso: sHours,
+                obviarIngreso: oHours
             },
             password: password
         }
@@ -165,6 +167,7 @@ const handleVPage = (e) => {
     const modU = document.getElementById(`actModU-${i}`).checked
     const delU = document.getElementById(`actDeleteU-${i}`).checked
     const modTime = document.getElementById(`actModTime-${i}`).checked
+    const obTime = document.getElementById(`actObTime-${i}`).checked
     console.log(email, username, movesVista, aproveMoves,createU, modU, delU, modTime)
  const permissions = 
     {verMovimientos: movesVista,
@@ -173,7 +176,8 @@ const handleVPage = (e) => {
       crearUsuarios: createU,
       modificarUsuarios: modU,
       eliminarUsuarios: delU,
-      horasIngreso: modTime
+      horasIngreso: modTime,
+      obviarIngreso: obTime
     }
 
     const actData = {_id: _id,email: email, username: username, permissions: permissions }
@@ -184,7 +188,10 @@ const handleVPage = (e) => {
     headers: new Headers({ 'Content-type': 'application/json'})
   }).then(r => console.log(r)).then(r => {
     gettingUsers()
-  })
+  }).then(Swal.fire({
+    icon: 'success',
+    title: 'Usuario modificado con exito',
+  }))
   }
 
   let itemPagination = [];
@@ -342,6 +349,15 @@ return (
     Modificar los horarios de ingreso y/o salida
   </label>
 </div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="obTime" onChange={() => {
+            const value = document.getElementById('obTime').checked
+            setOHours(value)
+  }}/>
+  <label class="form-check-label" for="modTime">
+    Modificar los horarios de ingreso y/o salida
+  </label>
+</div>
 </form>
       </div>
       <div class="modal-footer">
@@ -468,6 +484,15 @@ Movimientos a visualizar
   }}/>
   <label class="form-check-label" for={`actModTime-${i}`}>
     Modificar los horarios de ingreso y/o salida
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id={`actObTime-${i}`} defaultChecked={u.permissions.obviarIngreso} onChange={() => {
+            const value = document.getElementById(`actObTime-${i}`).checked
+            setOHours(value)
+  }}/>
+  <label class="form-check-label" for={`actObTime-${i}`}>
+  Obviar horarios de ingreso y salida
   </label>
 </div>
 </form>
