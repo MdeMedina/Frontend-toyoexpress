@@ -7,9 +7,6 @@ import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import "react-datepicker/dist/react-datepicker.css";
 import { useHistory } from 'react-router-dom'
-import "primereact/resources/themes/lara-light-indigo/theme.css";  //theme
-import "primereact/resources/primereact.min.css";                  //core css
-import "primeicons/primeicons.css";                                //icons
 import 'boxicons';
 import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
@@ -71,7 +68,7 @@ const deleteMoves = (m) => {
       setDeletingMove({identificador: m.identificador ,_id: m._id})
       }
     })
-      }}>Eliminar</button>)
+      }}>Delete</button>)
   }
 }
 useEffect(() => {
