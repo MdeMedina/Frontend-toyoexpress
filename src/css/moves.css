@@ -31,6 +31,9 @@
     width: 80%;
     display: inline-block;
 }
+#table-pdf {
+    display: none;
+}
 .botonpendiente {
     text-align: center;
     font-size: 13px;

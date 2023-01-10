@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useHistory } from 'react-router-dom'
 import 'boxicons';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable'
 import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
 import Swal from 'sweetalert2';
@@ -92,7 +93,7 @@ const handleVPage = (e) => {
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
-  setVPage(e.value)
+  setVPage(e)
 }
 
 const handleCuentaValue = (e) => {
@@ -176,6 +177,14 @@ const statusSetter = (move) => {
   else if (move.vale) {
     return (<div class="botonrealizado">Aprobado</div>)
   }
+}
+const statusSetterPdf = (move) => {
+  if (!move.vale) {
+   return "Pendiente"
+ }
+ else if (move.vale) {
+   return "Aprobado"
+ }
 }
 
 
@@ -395,8 +404,23 @@ const makePages = () => {
   }
 }
 let total = 0;
+let pdfTotal = 0;
+let table = [];
+filteredResults().map((m, i) => {
+  pdfTotal += parseFloat(m.monto)
+  const bodys = {
+  identificador: m.identificador, 
+  username: m.name, 
+  cuenta: m.cuenta,
+  concepto: m.concepto,
+  status: statusSetterPdf(m),
+  fecha: m.fecha,
+  monto: `$${m.monto}`,
+  }
+  table.push (bodys)
+})
+table.push({fecha: "Total", monto: `$${pdfTotal}`})
 return (
-   
 <>
 <Navg socket={socket}/>
   <Sidebar getMoves={getMoves}/>
@@ -482,11 +506,37 @@ return (
 </div>
 </div>
 <div className="col-11 bg-light t-mod row">
-  <div className="col-3">
-Movimientos a visualizar
-<Select options={numeros} onChange={handleVPage}/>
+  <div className="col-4">
+Movimientos a visualizar {"  "}
+<select onChange={(e) => {
+  const {value} = e.target
+  handleVPage(value)
+  }}>
+  <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+</select>
 </div>
+<div className="col-8 d-flex align-items-center justify-content-end">
+  <button type="button" class="btn btn-primary" onClick={() => {
+    doc.text('Reporte: ingresos y egresos', 10, 10)
 
+    console.log(table)
+    autoTable(doc, {    columnStyles: { monto: { halign: 'right' } }, 
+    body: table,
+    columns: [
+      { header: 'Identificador', dataKey: 'identificador' },
+      { header: 'Nombre de Usuario', dataKey: 'username' },
+      { header: 'Cuenta', dataKey: 'cuenta' },
+      { header: 'Concepto', dataKey: 'concepto' },
+      { header: 'Status', dataKey: 'status' },
+      { header: 'Fecha', dataKey: 'fecha' },
+      { header: 'Monto', dataKey: 'monto' }
+    ], })
+    doc.save('reporte.pdf')
+  }}>Imprimir</button>
+  </div>
+  <hr className="e-change"/>
 <table className="table">
 <thead>
         <tr>
@@ -495,8 +545,8 @@ Movimientos a visualizar
             <th>Cuenta</th>
             <th>Concepto</th>
             <th>Status</th>
-            <th>Monto</th>
             <th>Fecha</th>
+            <th>Monto</th>
         </tr>
     </thead>
     <tbody>
@@ -571,20 +621,23 @@ Movimientos a visualizar
                 <td >{m.cuenta}</td>
                 <td >{m.concepto}</td>
                 <td >{statusSetter(m)}</td>
-                <td >{m.monto}$</td>
                 <td >{m.fecha}</td>
+                <td >${m.monto}</td>
         </tr>
     )})
   }
+  <tr>
+                 <td>{"   "}</td>
+                <td >{"   "}</td>
+                <td >{"   "}</td>
+                <td >{"   "}</td>
+                <td>{"  "}</td>
+                <td ><h4>Total:</h4></td>
+                <td ><h4>${total}</h4></td>
+  </tr>
   </tbody>
   </table>
-    <div className="col-6 row">
-        <div className="col-4 d-flex align-items-center">total: {total}$</div>
-        <div className="col-8 d-flex align-items-center">
-  <button type="button" class="btn btn-primary">Imprimir</button>
-  </div>
-  </div>
-  <div className="col-6 d-flex justify-content-end">
+  <div className="col-12 d-flex justify-content-end">
 <Pagination>
 {  
 currentPage > 0 ? <Pagination.Prev onClick={prevPage}/> : false
