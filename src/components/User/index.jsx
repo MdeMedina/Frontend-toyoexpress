@@ -369,12 +369,17 @@ return (
 </div>
 </div>
 <br /><br />
-<div className="col-11 bg-light t-mod row d-flex justify-content-center">
+<div className="col-11 bg-light t-mod row d-flex justify-content-start">
 <div className="col-3">
-Movimientos a visualizar
-<Select options={numeros} onChange={handleVPage}/>
-</div>
-<hr />
+Movimientos a visualizar {"  "}
+<select onChange={(e) => {
+  handleVPage(e)
+  }}>
+  <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+</select>
+</div><hr className="e-change"/>
 <table className="table ">
     <thead>
         <tr>
