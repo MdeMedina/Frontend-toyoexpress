@@ -6,7 +6,7 @@ import '../../css/hour.css';
 import { useHistory } from 'react-router-dom';
 import io from 'socket.io-client'
 import {useEffect} from "react"
-const socket = io.connect("http://localhost:5000");
+const socket = io.connect(`${url_api}`);
 
 function UpdateHour() {
  let hour

@@ -7,7 +7,7 @@ import {formatDateHoy} from '../../dates/dates'
 
 
 function IModal(props) {
-  const {settingMounts} = props
+  const {iSettingMounts} = props
   const [conversion, setConversion] = useState(false)
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
@@ -24,7 +24,7 @@ function IModal(props) {
 
   useEffect(() => {
     changingDollars(bolos, cambio)
-    settingMounts(bolos, cambio)
+    iSettingMounts(bolos, cambio)
   }, [bolos, cambio])
 useEffect(() => {
   if (!props.show) {

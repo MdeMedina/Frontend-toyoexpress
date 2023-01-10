@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import 'boxicons'
 import {Link} from 'react-router-dom'
 import EModal from '../modal/E-modal'
@@ -14,14 +14,23 @@ function Sidebar (props) {
     let sh = permissions.horasIngreso
     const [egresoShow, setEgresoShow] = React.useState(false);
     const [ingresoShow, setIngresoShow] = React.useState(false);
-    const [bolos, setBolos] = useState(0)
-    const [cambio, setCambio] = useState(0)
+    const [eBolos, setEBolos] = useState(0)
+    const [eCambio, setECambio] = useState(0)
+    const [iBolos, setIBolos] = useState(0)
+    const [iCambio, setICambio] = useState(0)
     
   const email = localStorage.getItem('email')
 
-    const settingMounts = (bs, change) => {
-      setBolos(bs)
-      setCambio(change)
+
+    const eSettingMounts = (bs, change) => {
+      setEBolos(bs)
+      setECambio(change)
+      
+    }
+    const iSettingMounts = (bs, change) => {
+      setIBolos(bs)
+      setICambio(change)
+      
     }
     const egreso = () => {
       let cuenta = document.getElementById('e-account')
@@ -33,7 +42,7 @@ function Sidebar (props) {
       let concepto = document.getElementById('e-concepto')
       concepto = concepto.value
       let name = localStorage.getItem('name')
-      let obj = {cuenta: cuenta, concepto: concepto, bs: bolos, change: cambio, monto: monto, name: name, pago: pago, email: email}
+      let obj = {cuenta: cuenta, concepto: concepto, bs: eBolos, change: eCambio, monto: monto, name: name, pago: pago, email: email}
       let error = document.getElementById('e-error')
       if (cuenta === 'n/d') {
         if (error.classList.contains('desaparecer')) {error.classList.remove('desaparecer')}
@@ -70,7 +79,7 @@ function Sidebar (props) {
       let concepto = document.getElementById('i-concepto')
       concepto = concepto.value
       let name = localStorage.getItem('name')
-      let obj = { cuenta: cuenta, concepto: concepto, bs: bolos, change: cambio, monto: monto, name: name, pago: pago, email: email}
+      let obj = { cuenta: cuenta, concepto: concepto, bs: iBolos, change: iCambio, monto: monto, name: name, pago: pago, email: email}
       let error = document.getElementById('i-error')
       if (cuenta === 'n/d') {
         if (error.classList.contains('desaparecer')) {error.classList.remove('desaparecer')}
@@ -150,7 +159,7 @@ function Sidebar (props) {
         </Button>
         <EModal show={egresoShow} onHide={() => setEgresoShow(false)} onSend={() => {
           egreso()
-          }} settingMounts={settingMounts}/>
+          }} eSettingMounts={eSettingMounts}/>
           </div>
           <hr className="e-change"/>
           <div className="col-12">
@@ -161,7 +170,7 @@ function Sidebar (props) {
 
         <IModal show={ingresoShow} onHide={() => setIngresoShow(false)} onSend={() => {
           ingreso()
-}} settingMounts={settingMounts}/>
+}} iSettingMounts={iSettingMounts}/>
 </div>
                          </ul>
                          </div>

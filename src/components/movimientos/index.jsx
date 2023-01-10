@@ -8,6 +8,7 @@ import Select from 'react-select'
 import "react-datepicker/dist/react-datepicker.css";
 import { useHistory } from 'react-router-dom'
 import 'boxicons';
+import jsPDF from 'jspdf';
 import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
 import Swal from 'sweetalert2';
@@ -40,6 +41,7 @@ const [vPage, setVPage] = useState(2)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
 const isAdmin = localStorage.getItem('role')
+var doc = new jsPDF()
 
 const removeMove = async () => {
   if(deletingMove){
@@ -392,6 +394,7 @@ const makePages = () => {
     }
   }
 }
+let total = 0;
 return (
    
 <>
@@ -502,6 +505,7 @@ Movimientos a visualizar
     filteredResults().map((m, i) => {
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
+       total += parseFloat(m.monto)
       return (
         <tr>
                 <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" >{m.identificador}</button>
@@ -574,6 +578,13 @@ Movimientos a visualizar
   }
   </tbody>
   </table>
+    <div className="col-6 row">
+        <div className="col-4 d-flex align-items-center">total: {total}$</div>
+        <div className="col-8 d-flex align-items-center">
+  <button type="button" class="btn btn-primary">Imprimir</button>
+  </div>
+  </div>
+  <div className="col-6 d-flex justify-content-end">
 <Pagination>
 {  
 currentPage > 0 ? <Pagination.Prev onClick={prevPage}/> : false
@@ -588,6 +599,9 @@ currentPage > 0 ? <Pagination.Prev onClick={prevPage}/> : false
     results.length > currentPage + vPage ?  <Pagination.Next onClick={nextPage}/> : false
   }
   </Pagination>
+  </div>
+
+
   </div>
   </div>
   </div>

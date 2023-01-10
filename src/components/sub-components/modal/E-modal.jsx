@@ -9,7 +9,7 @@ import {formatDateHoy} from '../../dates/dates'
 
 
 function EModal(props) {
-  const {settingMounts} = props
+  const {eSettingMounts} = props
   const [conversion, setConversion] = useState(false)
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
@@ -25,8 +25,8 @@ function EModal(props) {
 
   useEffect(() => {
     changingDollars(bolos, cambio)
-    settingMounts(bolos, cambio)
-  }, [bolos, cambio, settingMounts])
+    eSettingMounts(bolos, cambio)
+  }, [bolos, cambio, eSettingMounts])
 
   useEffect(() => {
     if (!props.show) {
