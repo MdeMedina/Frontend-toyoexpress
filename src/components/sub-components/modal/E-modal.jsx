@@ -33,7 +33,8 @@ function EModal(props) {
       setConversion(false)
     }
   }, [props])
-  const hoy = `${formatDateHoy(new Date())}`           
+  const hoy = `${formatDateHoy(new Date())}`        
+  console.log(hoy)   
   return (
     <Modal
       {...props}

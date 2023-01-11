@@ -206,7 +206,12 @@ function subDays(fecha, dias){
 }
 function filterRange(arr, a, b) {
   // agregamos paréntesis en torno a la expresión para mayor legibilidad
-  return arr.filter(item => (a <= new Date(item.fecha) && new Date(item.fecha) <= b));
+
+  return arr.filter(item => {
+   const arrfecha =  item.fecha.split('/')
+   const fechaReal = new Date(arrfecha[2], parseInt(arrfecha[1] - 1), arrfecha[0])
+   return (a <= fechaReal && fechaReal <= b)
+  });
 }
 
 const updateStatus = async (move) => {
@@ -283,13 +288,26 @@ let final = new Date(endDate)
 if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
   betaResults = moves
 
+
   betaResults= filterRange(betaResults, inicio, final)
   if (vm === false) {
     betaResults = betaResults.filter((dato) => {
       return dato.name.includes(localStorage.getItem('name'))
     })
   }
-   betaResults = betaResults.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+   betaResults = betaResults.sort((a, b) => {
+    const arrfecha1 =  a.fecha.split('/')
+    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+    const arrfecha2 =  b.fecha.split('/')
+    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+    return fechaReal2 -fechaReal1 
+  })
+   betaResults = betaResults.sort((a, b) => {
+    const arrId1 = a.identificador.split('-')
+    const arrId2 = b.identificador.split('-')
+    if(arrId2[0] === arrId1[0]){
+    return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
+   })
   results = betaResults
 
 } else {
@@ -457,7 +475,7 @@ return (
   <DatePicker
         selected={startDate}
         onChange={(date) => stDateSetter(date)}
-        dateFormat="yyyy-MM-dd"
+        dateFormat="dd/MM/yyyy"
         maxDate={addDays(new Date(), 0)}
         selectsStart
         startDate={startDate}
@@ -468,10 +486,10 @@ return (
       </div>
       <div className="col-6">
         fecha de cierre:
-              <DatePicker
+      <DatePicker
         selected={endDate}
         onChange={(date) => endDateSetter(date)}
-        dateFormat="yyyy-MM-dd"
+        dateFormat="dd/MM/yyyy"
         selectsEnd
         startDate={startDate}
         endDate={endDate}
