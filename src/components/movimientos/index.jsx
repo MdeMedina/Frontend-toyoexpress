@@ -575,7 +575,11 @@ let total = 0;
 let pdfTotal = 0;
 let table = [];
 filteredResultsPDF().map((m, i) => {
-  pdfTotal += parseFloat(m.monto)
+  if (m.identificador.charAt(0) === 'E') {
+    pdfTotal -= parseFloat(m.monto)
+    }else if (m.identificador.charAt(0) === 'I') {
+     pdfTotal += parseFloat(m.monto)
+    }
   const bodys = {
   identificador: m.identificador, 
   username: m.name, 
@@ -611,7 +615,7 @@ return (
   <div className="col-3 align-self-start d-flex justify-content-center">
 
   <label htmlFor="">Cuenta</label>
-  <Select options={cuentas} isMulti onChange={handleCuentaValue}/>
+  <Select options={cuentas} isMulti onChange={handleCuentaValue} className="select-max"/>
   </div>
     <div className="col-3 align-self-start d-flex justify-content-center">
   <label htmlFor="">Name</label>
@@ -619,11 +623,11 @@ return (
     users.map((u) => {
       nombres.push({value: u.username, label: u.username})
     })}
-  <Select options={nombres} isMulti onChange={handleNameValue}/>
+  <Select options={nombres} isMulti onChange={handleNameValue} className="select-max"/>
   </div>
   <div className="col-3 align-self-start d-flex justify-content-center">
   <label htmlFor="">Tipo de pago</label>
-  <Select options={tPagos} isMulti onChange={handlePayValue}/>
+  <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
   </div>
   <hr />
   <div className="container-fluid row d-flex justify-content-center">
@@ -731,7 +735,11 @@ Movimientos a visualizar {"  "}
       
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
-       total += parseFloat(m.monto)
+       if (m.identificador.charAt(0) === 'E') {
+       total -= parseFloat(m.monto)
+       }else if (m.identificador.charAt(0) === 'I') {
+        total += parseFloat(m.monto)
+       }
       return (
         <tr>
                 <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" >{m.identificador}</button>

@@ -90,6 +90,14 @@
 
 }
 
+.cd {
+    width: 18rem;
+}
+
+.c-container {
+    margin-top: 12.5% !important;
+}
+
 .sidebar .menu-links {
 padding: 0;
 }

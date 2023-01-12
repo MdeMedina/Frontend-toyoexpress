@@ -13,7 +13,7 @@ function Sidebar(props) {
         <li className="nav-link">
           <Link to="/user">
             <div className="icon">
-              <box-icon name="user" size="20px"></box-icon>
+              <box-icon type="solid" name="user-account" size="20px"></box-icon>
             </div>
             <span className="text nav-text">Usuarios</span>
           </Link>
@@ -27,7 +27,7 @@ function Sidebar(props) {
         <li className="nav-link">
           <Link to="/update">
             <div className="icon">
-              <box-icon name="time-five" size="20px"></box-icon>
+              <box-icon name="timer" size="20px"></box-icon>
             </div>
             <span className="text nav-text">Horarios</span>
           </Link>
@@ -44,7 +44,7 @@ function Sidebar(props) {
               <li className="caja-link ">
                 <Link to="/home">
                   <div className="icon">
-                    <box-icon name="home" size="20px"></box-icon>
+                    <box-icon name="home-smile" size="20px"></box-icon>
                   </div>
                   <span className="text nav-text">Home</span>
                 </Link>
@@ -52,7 +52,7 @@ function Sidebar(props) {
               <li className="nav-link">
                 <Link to="/moves">
                   <div className="icon">
-                    <box-icon name="heart" size="20px"></box-icon>
+                    <box-icon name="money-withdraw" size="20px"></box-icon>
                   </div>
                   <span className="text nav-text">Movimientos</span>
                 </Link>

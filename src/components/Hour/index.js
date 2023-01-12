@@ -56,31 +56,43 @@ function UpdateHour() {
     <>
       <Navg socket={socket} />
       <Sidebar />
-      <form className="Form">
-        <h1>Horarios Admin</h1>
-        <div className="abre">
-          <label>hora de apertura:</label>
-          <input type="text" id="apertura" />
+      <div className="row d-flex justify-content-center">
+        <div className="row bg-light d-flex justify-content-center filtros col-4">
+          <form className="Form">
+            <h1>Horarios Admin</h1>
+            <div className="abre col-12">
+              <label>hora de apertura:</label>
+              <input
+                type="time"
+                id="apertura"
+                onChange={(e) => console.log(e)}
+              />
+            </div>
+            <div className="cierra col-12">
+              <label>hora de cierre:</label>
+              <input type="time" id="cierre" />
+            </div>
+            <input
+              type="submit"
+              className="btn btn-primary"
+              onClick={handleSubmit}
+            />
+            <div className="desaparezco hora" id="hora">
+              <h3 id="h3"></h3>
+              <br />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  let aparecer = document.getElementById("hora");
+                  aparecer.classList.add("desaparezco");
+                }}
+              >
+                close
+              </button>
+            </div>
+          </form>
         </div>
-        <div className="cierra">
-          <label>hora de cierre:</label>
-          <input type="text" id="cierre" />
-        </div>
-        <input type="submit" className="submit" onClick={handleSubmit} />
-        <div className="desaparezco hora" id="hora">
-          <h3 id="h3"></h3>
-          <br />
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              let aparecer = document.getElementById("hora");
-              aparecer.classList.add("desaparezco");
-            }}
-          >
-            close
-          </button>
-        </div>
-      </form>
+      </div>
     </>
   );
 }

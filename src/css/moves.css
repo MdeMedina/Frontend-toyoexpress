@@ -5,6 +5,10 @@
     border-radius: 10px;
 }
 
+.select-max {
+    max-width: 150px;
+}
+
 .div-btn { 
     margin-top: 12px !important;
     padding: 12px;

@@ -1,6 +1,12 @@
 .desaparezco {
     display:none;
 }
+.abre {
+  margin-bottom: 12px;
+}
+.cierra {
+  margin-bottom: 12px;
+}
 
 .hora {
     padding: 12px 4px;

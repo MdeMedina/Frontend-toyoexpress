@@ -66,44 +66,59 @@ function Login() {
   };
 
   return (
-    <form className="Form" onSubmit={handleSubmit}>
-      <h1>Login</h1>
-      <div className="Username login-div">
-        <label>Email</label>
-        <input type="text" id="user" />
-      </div>
-      <div className="Password login-div">
-        <label>Password</label>
-        <input type="password" id="pass" />
-      </div>
-      <input type="submit" className="submit" />
-      <div className="desaparezco error login-div" id="userInvalid">
-        <h3 id="h3Error"></h3>
-        <br />
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            let aparecer = document.getElementById("userInvalid");
-            aparecer.classList.add("desaparezco");
-          }}
-        >
-          close
-        </button>
-      </div>
-      <div className="desaparezco pase login-div" id="userGood">
-        <h3 id="h3"></h3>
-        <br />
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            let aparecer = document.getElementById("userGood");
-            aparecer.classList.add("desaparezco");
-          }}
-        >
-          close
-        </button>
-      </div>
-    </form>
+    <>
+      <form className="Form mt-5" onSubmit={handleSubmit}>
+        <h2>Toyoxpress</h2>
+        <div className="row d-flex justify-content-center">
+          <div className="row col-5 bg-light filtros d-flex justify-content-center">
+            <div className="Username login-div col-10">
+              <label className="form-label d-flex justify-content-start">
+                Email
+              </label>
+              <input type="text" id="user" className="form-control" />
+            </div>
+            <br />
+            <br />
+            <div className="Password login-div col-10">
+              <label className="form-label d-flex justify-content-start">
+                Password
+              </label>
+              <input type="password" id="pass" className="form-control" />
+            </div>
+            <div className="col-10 d-flex justify-content-center mt-3">
+              <input type="submit" className="btn btn-primary" />
+            </div>
+            <div className="desaparezco error login-div" id="userInvalid">
+              <h3 id="h3Error"></h3>
+              <br />
+              <button
+                className="btn btn-primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  let aparecer = document.getElementById("userInvalid");
+                  aparecer.classList.add("desaparezco");
+                }}
+              >
+                close
+              </button>
+            </div>
+            <div className="desaparezco pase login-div" id="userGood">
+              <h3 id="h3"></h3>
+              <br />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  let aparecer = document.getElementById("userGood");
+                  aparecer.classList.add("desaparezco");
+                }}
+              >
+                close
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </>
   );
 }
 
