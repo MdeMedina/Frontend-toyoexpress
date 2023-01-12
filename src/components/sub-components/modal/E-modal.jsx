@@ -9,24 +9,30 @@ import {formatDateHoy} from '../../dates/dates'
 
 
 function EModal(props) {
-  const {eSettingMounts} = props
+  const {settingMounts} = props
   const [conversion, setConversion] = useState(false)
+  const [selectMove, setSelectMove] = useState('egreso')
+  const [newMonto, setNewMonto] = useState('')
+  const [newCuenta, setNewCuenta] = useState(null)
+  const [newPago, setNewPago] = useState(null)
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
+  const [newConcepto, setNewConcepto] = useState('')
   const [dollars, setDollars] = useState(0)
   const changingDollars = (bs, change) => {
     let dolares = bs / change
-    if (isNaN(dolares)  || dolares === Infinity) {
+    if (isNaN(dolares) || dolares === Infinity) {
       setDollars(0)
     }else {
       setDollars(dolares)
+      setNewMonto(dolares)
     }
   }
 
   useEffect(() => {
     changingDollars(bolos, cambio)
-    eSettingMounts(bolos, cambio)
-  }, [bolos, cambio, eSettingMounts])
+  }, [bolos, cambio])
+  
 
   useEffect(() => {
     if (!props.show) {
@@ -47,10 +53,20 @@ function EModal(props) {
           <Modal.Title>Nuevo Egreso</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div id="e-error" className='desaparecer'>*Por Favor, rellene todos los campos</div>
+          <div id="error" className='desaparecer'>*Por Favor, rellene todos los campos</div>
+          <label>Tipo de Movimiento:</label>
+          <Form.Select id='e-account' onChange={(e) => {
+            setSelectMove(e.target.value)
+          }}>
+        <option value='egreso'>Egreso</option>
+        <option value='ingreso'>Ingreso</option>
+      </Form.Select>
+      <br />
           <label>Cuenta Afectada:</label>
-          <Form.Select id='e-account'>
-        <option value='n/d'>Seleccione una Opcion</option>
+          <Form.Select id='e-account' onChange={(e) => {
+            setNewCuenta(e.target.value)
+          }}>
+        <option value=''>Seleccione una Opcion</option>
         <option value='Cuenta01HU'>Cuenta01HU</option>
         <option value='Cuenta02JM'>Cuenta02JM</option>
         <option value='Cuenta03JPA'>Cuenta03JPA</option>
@@ -71,7 +87,9 @@ function EModal(props) {
       {
         !conversion || conversion === 'Bs'? false : <div><label >Monto:</label>
         <InputGroup className="mb-3">
-          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" />
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" onChange={(e) => {
+            setNewMonto(e.target.value)
+          }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>
         </div>
@@ -94,14 +112,18 @@ function EModal(props) {
       </InputGroup>
         <InputGroup >
         <Form.Label>Valor en dolares:</Form.Label>
-        <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={dollars}/>
+        <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={dollars} onChange={(e) => {
+            setNewMonto(e.target.value)
+          }}/>
         <InputGroup.Text>$</InputGroup.Text>
       </InputGroup>
       </div> : false
     }
       <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
         <Form.Label>Concepto de Registro:</Form.Label>
-        <Form.Control id="e-concepto" as="textarea" rows={3} />
+        <Form.Control id="e-concepto" as="textarea" rows={3} onChange={(e) => {
+            setNewConcepto(e.target.value)
+          }}/>
       </Form.Group>
       <label >Fecha:</label>
       <Form.Control
@@ -114,10 +136,13 @@ function EModal(props) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={props.onHide}>
-            Close
+            Cerrar
           </Button>
-          <Button variant="primary" onClick={props.onSend}>
-            Save Changes
+          <Button variant="primary" onClick={() => {
+            console.log(newMonto)
+            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, conversion)
+          }}>
+            Crear
           </Button>
         </Modal.Footer>
     </Modal>

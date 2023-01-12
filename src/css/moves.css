@@ -5,6 +5,12 @@
     border-radius: 10px;
 }
 
+.div-btn { 
+    margin-top: 12px !important;
+    padding: 12px;
+    border-radius: 10px;
+}
+
 .t-mod {
     padding: 12px;
     border-radius: 10px;

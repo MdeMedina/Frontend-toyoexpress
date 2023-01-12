@@ -26,7 +26,7 @@ function User({socket, modUsuarios, delUsuarios}) {
   const [delUsers, setDelUsers] = useState(false)
   const [deletingUser, setDeletingUser] = useState()
   const [currentPage, setCurrentPage] = useState(0)
-const [vPage, setVPage] = useState(2)
+const [vPage, setVPage] = useState(10)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
   const [sHours, setSHours] = useState(false)
@@ -61,6 +61,7 @@ const handleVPage = (e) => {
   }, [])
 
   const editUsers = (u, i) => { 
+    console.log('modUsuarios:' ,modUsuarios)
     if (modUsuarios) {
         return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
     }
@@ -78,6 +79,7 @@ const handleVPage = (e) => {
   }
 
   const deleteUsers = (u) => {
+    console.log('delUsuarios:', delUsuarios)
     if (delUsuarios) {
         return(<button className='btn btn-danger' value={u._id} onClick={(e) => {
       Swal.fire({
@@ -361,8 +363,8 @@ return (
 </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onClick={() => createUser()}>Save changes</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" onClick={() => createUser()}>Crear</button>
       </div>
     </div>
   </div>
@@ -370,16 +372,6 @@ return (
 </div>
 <br /><br />
 <div className="col-11 bg-light t-mod row d-flex justify-content-start">
-<div className="col-3">
-Movimientos a visualizar {"  "}
-<select onChange={(e) => {
-  handleVPage(e)
-  }}>
-  <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-</select>
-</div><hr className="e-change"/>
 <table className="table ">
     <thead>
         <tr>
@@ -503,10 +495,10 @@ Movimientos a visualizar {"  "}
 </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         <button type="button" class="btn btn-primary" onClick={() => {
           actUser(u ,i)
-          }}>Save changes</button>
+          }}>Actualizar</button>
       </div>
     </div>
   </div>

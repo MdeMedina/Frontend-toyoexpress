@@ -14,6 +14,7 @@ import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
 import Swal from 'sweetalert2';
 import { url_api } from '../../lib/data/server';
+import EModal from '../sub-components/modal/E-modal'
 
 function Moves({socket, verMovimientos, aprobarMovimientos, eliminarMovimientos}) {
   const hoy = `${formatDateHoy(new Date())}`
@@ -30,6 +31,8 @@ const [users, setUsers] = useState([])
 const [monto, setMonto] = useState('')
 const [cuenta, setCuenta] = useState(null)
 const [pago, setPago] = useState(null)
+const [egresoShow, setEgresoShow] = React.useState(false);
+const [selectMove, setSelectMove] = useState('')
 const [startDate, setStartDate] = useState(subDays(new Date(), 30));
 const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
@@ -41,8 +44,156 @@ const [currentPage, setCurrentPage] = useState(0)
 const [vPage, setVPage] = useState(2)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
+const [newMonto, setNewMonto] = useState('')
+const [newCuenta, setNewCuenta] = useState(null)
+const [newPago, setNewPago] = useState(null)
+const [bolos, setBolos] = useState(0)
+const [cambio, setCambio] = useState(0)
+const [newConcepto, setNewConcepto] = useState('')
 const isAdmin = localStorage.getItem('role')
 var doc = new jsPDF()
+const getMoves = async () => {
+  const response = await fetch(URL)
+  let data = await response.json()
+ setMoves(data)
+
+}
+const ingreso = () => {
+  let name = localStorage.getItem("name");
+  let obj = {
+    cuenta: newCuenta,
+    concepto: newConcepto,
+    bs: bolos,
+    change: cambio,
+    fecha: hoy,
+    monto: newMonto,
+    name: name,
+    pago: newPago,
+    email: localStorage.getItem('email'),
+  };
+  let error = document.getElementById("error");
+  if (!newCuenta) {
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else if (!newPago) {
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else if (!newMonto) {
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else if (!newConcepto) {
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else {
+    if (!error.classList.contains("desaparecer")) {
+      error.classList.add("desaparecer");
+    }
+    fetch(`${url_api}/moves/ingreso`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(obj),
+    })
+      .then((response) => console.log(response))
+      .then(
+        Swal.fire({
+          icon: "success",
+          title: "Movimiento Creado con exito",
+        })
+      )
+      .then(getMoves());
+    setEgresoShow(false);
+  }
+};
+const egreso = () => {
+  let name = localStorage.getItem("name");
+  let obj = {
+    cuenta: newCuenta,
+    concepto: newConcepto,
+    bs: bolos,
+    change: cambio,
+    fecha: hoy,
+    monto: newMonto,
+    name: name,
+    pago: newPago,
+    email: localStorage.getItem('email'),
+  };
+  
+  let error = document.getElementById("error");
+  if (!newCuenta) {
+    console.log("Falta la cuenta", newCuenta)
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else if (!newPago) {
+        console.log('Falta el pago', newPago)
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else if (!newMonto) {
+        console.log("falta el monto", newMonto)
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else if (!newConcepto) {
+      console.log("falta el concepto", newConcepto)
+    if (error.classList.contains("desaparecer")) {
+      error.classList.remove("desaparecer");
+    }
+  } else {
+    if (!error.classList.contains("desaparecer")) {
+      error.classList.add("desaparecer");
+    }
+    fetch(`${url_api}/moves/egreso`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(obj),
+    })
+      .then((response) => console.log(response))
+      .then(
+        Swal.fire({
+          icon: "success",
+          title: "Movimiento Creado con exito",
+        })
+      )
+      .then(getMoves());
+    setEgresoShow(false);
+  }
+};
+
+
+const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago) => {
+ 
+  setSelectMove(sm)
+  setNewCuenta(cuenta)
+  setNewConcepto(concepto)
+  setBolos(bs)
+  setCambio(change)
+  setNewMonto(monto)
+  setNewPago(pago)
+
+}
+const movimiento = () => {
+   console.log(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, newPago)
+if (selectMove === 'egreso'){
+  egreso()
+} else if (selectMove === 'ingreso') {
+ingreso()
+}
+}
+useEffect(() => {
+movimiento()
+}, [selectMove])
+
 
 const removeMove = async () => {
   if(deletingMove){
@@ -71,7 +222,7 @@ const deleteMoves = (m) => {
       setDeletingMove({identificador: m.identificador ,_id: m._id})
       }
     })
-      }}>Delete</button>)
+      }}>Eliminar</button>)
   }
 }
 useEffect(() => {
@@ -158,18 +309,13 @@ setVale(value)
 </div>)}
 }
 
+
 const aproveSetter3 = (move) =>{
   if (am) {
-    return (<button type="button" className="btn btn-primary" onClick={() => updateStatus(move)}>Save changes</button>)
+    return (<button type="button" className="btn btn-success" onClick={() => updateStatus(move)}>Aprobar</button>)
   }
 }
 
-const getMoves = async () => {
-   const response = await fetch(URL)
-   let data = await response.json()
-  setMoves(data)
-
-}
 const statusSetter = (move) => {
    if (!move.vale) {
     return (<div class="botonpendiente">Pendiente</div>)
@@ -295,6 +441,12 @@ if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
       return dato.name.includes(localStorage.getItem('name'))
     })
   }
+  betaResults = betaResults.sort((a, b) => {
+   const arrId1 = a.identificador.split('-')
+   const arrId2 = b.identificador.split('-')
+   if(arrId2[0] === arrId1[0]){
+   return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
+  })
    betaResults = betaResults.sort((a, b) => {
     const arrfecha1 =  a.fecha.split('/')
     const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
@@ -302,12 +454,6 @@ if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
     return fechaReal2 -fechaReal1 
   })
-   betaResults = betaResults.sort((a, b) => {
-    const arrId1 = a.identificador.split('-')
-    const arrId2 = b.identificador.split('-')
-    if(arrId2[0] === arrId1[0]){
-    return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
-   })
   results = betaResults
 
 } else {
@@ -378,6 +524,10 @@ if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
   results = betaResults
 }
 const filteredResults = () => {
+  console.log(currentPage, currentPage + vPage)
+  return results.slice(currentPage, currentPage + vPage)
+}
+const filteredResultsPDF = () => {
   return results.slice(currentPage, currentPage + vPage)
 }
 
@@ -424,7 +574,7 @@ const makePages = () => {
 let total = 0;
 let pdfTotal = 0;
 let table = [];
-filteredResults().map((m, i) => {
+filteredResultsPDF().map((m, i) => {
   pdfTotal += parseFloat(m.monto)
   const bodys = {
   identificador: m.identificador, 
@@ -444,6 +594,14 @@ return (
   <Sidebar getMoves={getMoves}/>
   <div className="d-flex justify-content-center">
   <div className="container-fluid row  d-flex justify-content-center">
+  <div className="row bg-light col-11 div-btn">
+  <div className="btn btn-primary" onClick={() => setEgresoShow(true)}>Crear un movimiento</div>
+  <EModal
+                      show={egresoShow}
+                      onHide={() => setEgresoShow(false)}
+                      settingMounts={settingMounts}
+                    />
+  </div>
   <div className="row bg-light col-11 filtros">
   <h2 className='col-12'>Filtros de busqueda de movimientos</h2>
   <div className="col-3 align-self-start d-flex justify-content-center ">
@@ -528,7 +686,7 @@ return (
 Movimientos a visualizar {"  "}
 <select onChange={(e) => {
   const {value} = e.target
-  handleVPage(value)
+  handleVPage(parseInt(value))
   }}>
   <option value="2">2</option>
     <option value="3">3</option>
@@ -569,8 +727,8 @@ Movimientos a visualizar {"  "}
     </thead>
     <tbody>
   {
-
     filteredResults().map((m, i) => {
+      
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
        total += parseFloat(m.monto)
@@ -628,7 +786,7 @@ Movimientos a visualizar {"  "}
 
       <div className="modal-footer">
         {deleteMoves(m)}
-        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         {!m.vale && am ? <div>{aproveSetter3(m)}</div>: false}
       </div>
     </div>
