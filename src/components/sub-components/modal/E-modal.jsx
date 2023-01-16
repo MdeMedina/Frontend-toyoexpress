@@ -2,8 +2,11 @@ import React, {useState, useEffect} from 'react'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import Select from 'react-select'
+import chroma from 'chroma-js'
 import InputGroup from 'react-bootstrap/InputGroup';
 import {formatDateHoy} from '../../dates/dates'
+import {cuentas} from '../../../lib/data/SelectOptions'
 
 
 
@@ -28,6 +31,46 @@ function EModal(props) {
       setNewMonto(dolares)
     }
   }
+  const dot = (color = 'transparent') => ({
+    alignItems: 'center',
+    display: 'flex',
+  
+    ':before': {
+      backgroundColor: color,
+      borderRadius: 10,
+      content: '" "',
+      display: 'block',
+      marginRight: 8,
+      height: 10,
+      width: 10,
+    },
+  });
+  
+  const colourStyles = {
+    control: (styles) => ({ ...styles, backgroundColor: 'white' }),
+    option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+      const color = chroma(data.color);
+      return {
+        ...styles,
+        backgroundColor: color.alpha(1).css(),
+        color: "white",
+        cursor: isDisabled ? 'not-allowed' : 'default',
+  
+        ':active': {
+          ...styles[':active'],
+          backgroundColor: !isDisabled
+            ? isSelected
+              ? data.color
+              : color.alpha(0.3).css()
+            : undefined,
+        },
+      };
+    },
+    input: (styles) => ({ ...styles, ...dot() }),
+    placeholder: (styles) => ({ ...styles, ...dot('#ccc') }),
+    singleValue: (styles, { data }) => ({ ...styles, ...dot(data.color) }),
+  };
+  
 
   useEffect(() => {
     changingDollars(bolos, cambio)
@@ -63,14 +106,13 @@ function EModal(props) {
       </Form.Select>
       <br />
           <label>Cuenta Afectada:</label>
-          <Form.Select id='e-account' onChange={(e) => {
-            setNewCuenta(e.target.value)
-          }}>
-        <option value=''>Seleccione una Opcion</option>
-        <option value='Cuenta01HU'>Cuenta01HU</option>
-        <option value='Cuenta02JM'>Cuenta02JM</option>
-        <option value='Cuenta03JPA'>Cuenta03JPA</option>
-      </Form.Select>
+    <Select onChange={(e) => {
+      setNewCuenta(e.value)
+    }}
+    options={cuentas}
+    styles={colourStyles}
+    />
+
       <br />
 
       <label>Tipo de pago:</label>

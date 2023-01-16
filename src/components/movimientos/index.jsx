@@ -36,7 +36,7 @@ const [selectMove, setSelectMove] = useState('')
 const [startDate, setStartDate] = useState(subDays(new Date(), 30));
 const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
-const [concepto, setConcepto] = useState('')
+const [identificador, setIdentificador] = useState('')
 const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
 const [vale, setVale] = useState('')
@@ -57,6 +57,14 @@ const getMoves = async () => {
   let data = await response.json()
  setMoves(data)
 
+}
+function currencyFormatter({ currency, value}) {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    minimumFractionDigits: 2,
+    currency
+  }) 
+  return formatter.format(value)
 }
 const ingreso = () => {
   let name = localStorage.getItem("name");
@@ -257,6 +265,12 @@ if (!e.length) {
   setCuenta(e)
 }
 }
+const handleTMoveValue = (e) => {
+    setCurrentPage(0)
+    setEstaba(1)
+    setMeEncuentro(1)
+    setIdentificador(e.value)
+  }
 const handleNameValue = (e) => {
   if (!e.length) {
     setName(null)
@@ -278,6 +292,11 @@ const handleNameValue = (e) => {
     }
     }
 
+    let tMoves = [
+      {value: '', label: 'Todos'},
+      {value: 'I', label: 'Ingresos'},
+      {value: 'E', label: 'Egresos'}
+    ]
 let nombres = []
 let cuentas = [
   {value: 'Cuenta01HU', label: 'Cuenta01HU'},
@@ -383,6 +402,8 @@ Swal.fire({
 
 }
 
+
+
 useEffect(()=> {
   getMoves()
   gettingUsers() 
@@ -431,7 +452,7 @@ let betaResults = [];
 let alphaResults = [];
 let inicio = new Date(startDate)
 let final = new Date(endDate)
-if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
+if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus) {
   betaResults = moves
 
 
@@ -464,12 +485,13 @@ if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
     })
   }
   betaResults= filterRange(betaResults, inicio, final)
-  if (monto) {
-    betaResults = betaResults.filter( (dato) => {
-      return dato.monto.includes(monto.toLowerCase()) 
+
+  if (identificador) {
+    betaResults = betaResults.filter((dato) => {
+      return dato.identificador.includes(identificador)
     })
- 
   }
+
   if (pago) {
     alphaResults = []
     pago.map((c) => {
@@ -505,12 +527,7 @@ if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
       betaResults = alphaResults
   }
 
-  if (concepto) {
-    betaResults = betaResults.filter( (dato) => {
-      return dato.concepto.toLowerCase().includes(concepto.toLowerCase()) 
-    })
 
-  }
   if (searchStatus === 'Aprove') {
     betaResults = betaResults.filter( (dato) => {
       return dato.vale 
@@ -520,7 +537,19 @@ if (!monto && !cuenta && !pago && !name && !concepto && !searchStatus) {
       return !dato.vale
     })
    }
-  betaResults = betaResults.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+   betaResults = betaResults.sort((a, b) => {
+    const arrId1 = a.identificador.split('-')
+    const arrId2 = b.identificador.split('-')
+    if(arrId2[0] === arrId1[0]){
+    return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
+   })
+    betaResults = betaResults.sort((a, b) => {
+     const arrfecha1 =  a.fecha.split('/')
+     const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+     const arrfecha2 =  b.fecha.split('/')
+     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+     return fechaReal2 -fechaReal1 
+   })
   results = betaResults
 }
 const filteredResults = () => {
@@ -609,8 +638,10 @@ return (
   <div className="row bg-light col-11 filtros">
   <h2 className='col-12'>Filtros de busqueda de movimientos</h2>
   <div className="col-3 align-self-start d-flex justify-content-center ">
-  <label htmlFor="">Monto</label>
-  <input type="text" className="form-control searcher" placeholder='Search' value={monto} onChange={setterMonto}/>
+  <label htmlFor="">tipo de movimiento</label>
+  <Select options={tMoves} onChange={(e) => {
+   handleTMoveValue(e)
+  }} className="select-max"/>
   </div>
   <div className="col-3 align-self-start d-flex justify-content-center">
 
@@ -726,7 +757,7 @@ Movimientos a visualizar {"  "}
             <th>Concepto</th>
             <th>Status</th>
             <th>Fecha</th>
-            <th>Monto</th>
+            <th className='monto-table'>Monto</th>
         </tr>
     </thead>
     <tbody>
@@ -803,10 +834,10 @@ Movimientos a visualizar {"  "}
                 </td>
                 <td>{m.name}</td>
                 <td >{m.cuenta}</td>
-                <td >{m.concepto}</td>
+                <td className='concepto-table'>{m.concepto}</td>
                 <td >{statusSetter(m)}</td>
                 <td >{m.fecha}</td>
-                <td >${m.monto}</td>
+                <td className='monto-table'>${m.monto}</td>
         </tr>
     )})
   }
@@ -816,8 +847,8 @@ Movimientos a visualizar {"  "}
                 <td >{"   "}</td>
                 <td >{"   "}</td>
                 <td>{"  "}</td>
-                <td ><h4>Total:</h4></td>
-                <td ><h4>${total}</h4></td>
+                <td className='monto-table'><h4>Total:</h4></td>
+                <td className='monto-table'><h4>${total}</h4></td>
   </tr>
   </tbody>
   </table>

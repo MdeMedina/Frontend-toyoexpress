@@ -9,6 +9,17 @@
     max-width: 150px;
 }
 
+.concepto-table{
+    max-width: 192.6px;
+    max-height: 55px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.monto-table {
+    text-align: end;
+}
+
 .div-btn { 
     margin-top: 12px !important;
     padding: 12px;
