@@ -13,7 +13,7 @@ function Sidebar(props) {
         <li className="nav-link">
           <Link to="/user">
             <div className="icon">
-              <box-icon type="solid" name="user-account" size="20px"></box-icon>
+              <box-icon type="solid" name="user-account" size="27px"></box-icon>
             </div>
             <span className="text nav-text">Usuarios</span>
           </Link>
@@ -27,7 +27,7 @@ function Sidebar(props) {
         <li className="nav-link">
           <Link to="/update">
             <div className="icon">
-              <box-icon name="timer" size="20px"></box-icon>
+              <box-icon name="timer" size="27px"></box-icon>
             </div>
             <span className="text nav-text">Horarios</span>
           </Link>
@@ -44,7 +44,7 @@ function Sidebar(props) {
               <li className="caja-link ">
                 <Link to="/home">
                   <div className="icon">
-                    <box-icon name="home-smile" size="20px"></box-icon>
+                    <box-icon name="home-smile" size="27px"></box-icon>
                   </div>
                   <span className="text nav-text">Home</span>
                 </Link>
@@ -52,20 +52,30 @@ function Sidebar(props) {
               <li className="nav-link">
                 <Link to="/moves">
                   <div className="icon">
-                    <box-icon name="money-withdraw" size="20px"></box-icon>
+                    <box-icon name="money-withdraw" size="27px"></box-icon>
                   </div>
                   <span className="text nav-text">Movimientos</span>
                 </Link>
               </li>
               {createFunction()}
               {hourFunction()}
+              <li className="nav-link">
+                <Link to="/accountConfig">
+                  <div className="icon">
+                    <box-icon name="wallet" size="27px"></box-icon>
+                  </div>
+                  <span className="text nav-text">
+                    Configuracion de cuentas
+                  </span>
+                </Link>
+              </li>
             </ul>
           </div>
           <div className="bottom-content">
             <li className="nav-link">
               <Link to="/logout">
                 <div className="icon">
-                  <box-icon name="log-out" size="20px"></box-icon>
+                  <box-icon name="log-out" size="27px"></box-icon>
                 </div>
                 <span className="text nav-text">Logout</span>
               </Link>

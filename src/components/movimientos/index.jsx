@@ -15,6 +15,7 @@ import '../../css/moves.css';
 import Swal from 'sweetalert2';
 import { url_api } from '../../lib/data/server';
 import EModal from '../sub-components/modal/E-modal'
+import { cuentas } from '../../lib/data/SelectOptions'
 
 function Moves({socket, verMovimientos, aprobarMovimientos, eliminarMovimientos}) {
   const hoy = `${formatDateHoy(new Date())}`
@@ -37,6 +38,7 @@ const [startDate, setStartDate] = useState(subDays(new Date(), 30));
 const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
 const [identificador, setIdentificador] = useState('')
+const [nroAprobacion, setNroAprobacion] = useState('')
 const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
 const [vale, setVale] = useState('')
@@ -298,11 +300,6 @@ const handleNameValue = (e) => {
       {value: 'E', label: 'Egresos'}
     ]
 let nombres = []
-let cuentas = [
-  {value: 'Cuenta01HU', label: 'Cuenta01HU'},
-  {value: 'Cuenta02JM', label: 'Cuenta02JM'},
-  {value: 'Cuenta03JPA', label: 'Cuenta03JPA'}
-]
 let numeros = [
   {value: 2, label: 2},
   {value: 3, label: 3},
@@ -452,7 +449,7 @@ let betaResults = [];
 let alphaResults = [];
 let inicio = new Date(startDate)
 let final = new Date(endDate)
-if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus) {
+if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus && !nroAprobacion) {
   betaResults = moves
 
 
@@ -489,6 +486,12 @@ if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus) {
   if (identificador) {
     betaResults = betaResults.filter((dato) => {
       return dato.identificador.includes(identificador)
+    })
+  }
+
+    if (nroAprobacion) {
+    betaResults = betaResults.filter((dato) => {
+      return dato.vale.includes(nroAprobacion)
     })
   }
 
@@ -756,6 +759,7 @@ Movimientos a visualizar {"  "}
             <th>Cuenta</th>
             <th>Concepto</th>
             <th>Status</th>
+            <th>Numero de aprobacion</th>
             <th>Fecha</th>
             <th className='monto-table'>Monto</th>
         </tr>
@@ -836,6 +840,7 @@ Movimientos a visualizar {"  "}
                 <td >{m.cuenta}</td>
                 <td className='concepto-table'>{m.concepto}</td>
                 <td >{statusSetter(m)}</td>
+                <td >{!m.vale ? "Este movimiento no ha sido aprobado" : m.vale}</td>
                 <td >{m.fecha}</td>
                 <td className='monto-table'>${m.monto}</td>
         </tr>

@@ -1,7 +1,14 @@
-let cuentas = [
-  { value: "Cuenta01HU", label: "Cuenta01HU", color: "#00B8D9" },
-  { value: "Cuenta02JM", label: "Cuenta02JM", color: "#0052CC" },
-  { value: "Cuenta03JPA", label: "Cuenta03JPA", color: "#253858" },
-];
+import { url_api } from "../../lib/data/server";
 
-module.exports = { cuentas };
+let cuentas = [];
+const gettingAccounts = async () => {
+  await fetch(`${url_api}/cuentas`)
+    .then((res) => res.json())
+    .then((r) => {
+      cuentas = r;
+    });
+};
+
+gettingAccounts();
+
+export { cuentas };
