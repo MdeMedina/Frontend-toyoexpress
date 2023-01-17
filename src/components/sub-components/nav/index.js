@@ -42,7 +42,6 @@ function Navg({ socket }) {
     function () {
       setInterval(() => {
         changeTime(new Date().toLocaleTimeString());
-        console.log(time);
       }, 1000);
       setInterval(() => {
         let a = new Date(hoy_cierre);
