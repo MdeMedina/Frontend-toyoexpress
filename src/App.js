@@ -5,6 +5,7 @@ import User from "./components/User";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
 import UpdateHour from "./components/Hour";
+import { useHistory } from "react-router-dom";
 import Moves from "./components/movimientos";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
@@ -13,6 +14,7 @@ import { url_api } from "./lib/data/server";
 import { AccountConfig } from "./components/AccountConfig";
 const socket = io.connect(`${url_api}`);
 function App() {
+  const history = useHistory();
   let permissions = JSON.parse(localStorage.getItem("permissions"));
   let vm;
   let am;

@@ -293,6 +293,17 @@ const handleNameValue = (e) => {
       setPago(e)
     }
     }
+    const handleAproveValue = (e) => {
+      if (!e.length) {
+        setNroAprobacion(null)
+      }else {
+        setCurrentPage(0)
+        setEstaba(1)
+        setMeEncuentro(1)
+        setNroAprobacion(e)
+      }
+      }
+  
 
     let tMoves = [
       {value: '', label: 'Todos'},
@@ -663,6 +674,15 @@ return (
   <label htmlFor="">Tipo de pago</label>
   <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
   </div>
+  <br />
+  <div className="col-12 align-self-start d-flex justify-content-center mt-2 mb-2">
+  <label htmlFor="">Nro de aprobacion</label>
+    <input type="text" className="form-control onda" onChange={(e) => {
+      const {value} = e.target
+      handleAproveValue(value)
+    }}/>
+  </div>
+  <br />
   <hr />
   <div className="container-fluid row d-flex justify-content-center">
     <div className="col-6 row">
@@ -759,7 +779,7 @@ Movimientos a visualizar {"  "}
             <th>Cuenta</th>
             <th>Concepto</th>
             <th>Status</th>
-            <th>Numero de aprobacion</th>
+            <th>Nro de aprobacion</th>
             <th>Fecha</th>
             <th className='monto-table'>Monto</th>
         </tr>
@@ -840,7 +860,7 @@ Movimientos a visualizar {"  "}
                 <td >{m.cuenta}</td>
                 <td className='concepto-table'>{m.concepto}</td>
                 <td >{statusSetter(m)}</td>
-                <td >{!m.vale ? "Este movimiento no ha sido aprobado" : m.vale}</td>
+                <td >{!m.vale ? "No aprobado" : m.vale}</td>
                 <td >{m.fecha}</td>
                 <td className='monto-table'>${m.monto}</td>
         </tr>
@@ -851,6 +871,7 @@ Movimientos a visualizar {"  "}
                 <td >{"   "}</td>
                 <td >{"   "}</td>
                 <td >{"   "}</td>
+                <td>{"  "}</td>
                 <td>{"  "}</td>
                 <td className='monto-table'><h4>Total:</h4></td>
                 <td className='monto-table'><h4>${total}</h4></td>

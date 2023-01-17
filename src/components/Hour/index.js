@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Navg from "../sub-components/nav";
 import Sidebar from "../sub-components/sidebar";
 import { url_api } from "../../lib/data/server";
@@ -15,6 +15,16 @@ function UpdateHour() {
   if (!key) {
     history.push("/login");
   }
+
+  const [time, changeTime] = useState(new Date().toLocaleTimeString());
+  /*const ap = ( time < 12) ? "<span>AM</span>":"<span>PM</span>";*/
+
+  useEffect(function () {
+    setInterval(() => {
+      changeTime(new Date().toLocaleTimeString());
+    }, 1000);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     let apertura = document.getElementById("apertura");
@@ -91,6 +101,16 @@ function UpdateHour() {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+      <div className="row d-flex justify-content-center">
+        <div className="row bg-light d-flex justify-content-center filtros col-4">
+          <div className="fs-4 col-12 d-flex justify-content-center">
+            Hora Actual
+          </div>
+          <div className="fs-5 col-12 d-flex justify-content-center">
+            {time}
+          </div>
         </div>
       </div>
     </>

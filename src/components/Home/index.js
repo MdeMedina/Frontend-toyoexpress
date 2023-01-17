@@ -9,6 +9,13 @@ function Home({ socket }) {
   if (!key) {
     history.push("/login");
   }
+  var timeout;
+  document.onmousemove = function () {
+    clearTimeout(timeout);
+    timeout = setTimeout(function () {
+      history.push("/logout");
+    }, 120000);
+  };
   return (
     <>
       <Navg socket={socket} />

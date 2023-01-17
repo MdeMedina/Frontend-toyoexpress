@@ -49,11 +49,14 @@
     color: white;
     padding: 3px 10px;
     border-radius: 5px;
-    width: 80%;
+    width: 90%;
     display: inline-block;
 }
 #table-pdf {
     display: none;
+}
+.onda {
+    max-width: 25% !important;
 }
 .botonpendiente {
     text-align: center;
@@ -62,7 +65,7 @@
     color: white;
     padding: 3px 10px;
     border-radius: 5px;
-    width: 80%;
+    width: 90%;
     display: inline-block;
 }
 
