@@ -16,6 +16,7 @@ import { url_api } from "../../../lib/data/server";
 
 function Navg({ socket }) {
   let obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
+  let am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos;
   const history = useHistory();
   const [apertura, setApertura] = useState();
   const [cierre, setCierre] = useState();
@@ -45,7 +46,6 @@ function Navg({ socket }) {
     horaProgramada = new Date(hoy_cierre);
     horaProgramadaAlert = new Date(hoy_cierre);
     horaProgramadaAlert.setMinutes(horaProgramadaAlert.getMinutes() - 5);
-    console.log("hola");
     if (
       horaProgramadaAlert - horaActual <= 0 &&
       localStorage.getItem("HourAlert") === "false" &&
@@ -72,6 +72,18 @@ function Navg({ socket }) {
   };
 
   useEffect(() => {
+    if (am) {
+      const seteando_noti = (move) =>
+        setNotification((oldArray) => [...oldArray, move]);
+      socket.on("move", seteando_noti);
+
+      return () => {
+        socket.off("move", seteando_noti);
+      };
+    }
+  });
+
+  useEffect(() => {
     getTime();
   });
 
@@ -92,10 +104,10 @@ function Navg({ socket }) {
     });
   });
 
-  const displayNotification = (n) => {
+  const displayNotificationMove = (n) => {
     return (
       <Dropdown.Item href="#/action-1" key={1}>
-        {n.message}
+        {n}
       </Dropdown.Item>
     );
   };
@@ -125,7 +137,7 @@ function Navg({ socket }) {
                   )}
                   <box-icon name="menu" color="red" id="hola"></box-icon>
                   <NavDropdown title="Dropdown" id="basic-nav-dropdown polo">
-                    {notification.map((n) => displayNotification(n))}
+                    {notification.map((m) => displayNotificationMove(m))}
                     <Button
                       variant="primary"
                       onClick={() => {
@@ -162,11 +174,6 @@ function Navg({ socket }) {
                       <div className="fw-semibold d-flex justify-content-center">
                         {cierre}
                       </div>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        Action three
-                      </a>
                     </li>
                   </ul>
                 </div>

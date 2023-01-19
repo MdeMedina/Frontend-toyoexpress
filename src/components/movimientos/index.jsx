@@ -17,16 +17,16 @@ import { url_api } from '../../lib/data/server';
 import EModal from '../sub-components/modal/E-modal'
 import { cuentas } from '../../lib/data/SelectOptions'
 
-function Moves({socket, verMovimientos, aprobarMovimientos, eliminarMovimientos}) {
+function Moves({socket}) {
   const hoy = `${formatDateHoy(new Date())}`
   const history = useHistory()
   const key = localStorage.getItem('key')
   if (!key) {
     history.push('/login')
   }
-const vm = verMovimientos
-const am = aprobarMovimientos
-const dm = eliminarMovimientos
+const vm = JSON.parse(localStorage.getItem("permissions")).verMovimientos
+const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
+const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
 const [moves, setMoves] = useState([])
 const [users, setUsers] = useState([])
 const [monto, setMonto] = useState('')
@@ -43,7 +43,7 @@ const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
 const [vale, setVale] = useState('')
 const [currentPage, setCurrentPage] = useState(0)
-const [vPage, setVPage] = useState(2)
+const [vPage, setVPage] = useState(10)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
 const [newMonto, setNewMonto] = useState('')
@@ -117,8 +117,8 @@ const ingreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves());
-    setEgresoShow(false);
+      .then(getMoves()).then(socket.emit('move', `${name} ha creado un nuevo ingreso!`));
+    setEgresoShow(false)
   }
 };
 const egreso = () => {
@@ -137,22 +137,21 @@ const egreso = () => {
   
   let error = document.getElementById("error");
   if (!newCuenta) {
-    console.log("Falta la cuenta", newCuenta)
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
   } else if (!newPago) {
-        console.log('Falta el pago', newPago)
+
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
   } else if (!newMonto) {
-        console.log("falta el monto", newMonto)
+
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
   } else if (!newConcepto) {
-      console.log("falta el concepto", newConcepto)
+    
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
@@ -175,7 +174,7 @@ const egreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves());
+      .then(getMoves()).then(socket.emit('move', `${name} ha creado un nuevo Egreso!`));
     setEgresoShow(false);
   }
 };
@@ -193,7 +192,6 @@ const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago) => {
 
 }
 const movimiento = () => {
-   console.log(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, newPago)
 if (selectMove === 'egreso'){
   egreso()
 } else if (selectMove === 'ingreso') {
@@ -218,8 +216,7 @@ const removeMove = async () => {
   }
 }
 const deleteMoves = (m) => {
-  console.log(dm)
-  if (eliminarMovimientos) {
+  if (dm) {
       return(<button className='btn btn-danger' value={m._id} onClick={(e) => {
     Swal.fire({
       title: 'Estas seguro que deseas eliminar este Movimiento?',
@@ -250,7 +247,7 @@ const gettingUsers = async() => {
 }
 
 const handleVPage = (e) => {
-  console.log(e)
+
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
@@ -312,9 +309,9 @@ const handleNameValue = (e) => {
     ]
 let nombres = []
 let numeros = [
-  {value: 2, label: 2},
-  {value: 3, label: 3},
-  {value: 4, label: 4}
+  {value: 10, label: 10},
+  {value: 20, label: 20},
+  {value: 50, label: 50}
 ]
 let tPagos = [
   {value: 'Bs', label: 'Bs'},
@@ -567,7 +564,6 @@ if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus && !n
   results = betaResults
 }
 const filteredResults = () => {
-  console.log(currentPage, currentPage + vPage)
   return results.slice(currentPage, currentPage + vPage)
 }
 const filteredResultsPDF = () => {
@@ -755,7 +751,7 @@ Movimientos a visualizar {"  "}
   <button type="button" class="btn btn-primary" onClick={() => {
     doc.text('Reporte: ingresos y egresos', 10, 10)
 
-    console.log(table)
+
     autoTable(doc, {    columnStyles: { monto: { halign: 'right' } }, 
     body: table,
     columns: [
