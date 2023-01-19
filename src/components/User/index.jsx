@@ -7,7 +7,9 @@ import Select from 'react-select'
 import 'boxicons'
 import Swal from 'sweetalert2'
 import {useHistory} from 'react-router-dom'
-function User({socket, modUsuarios, delUsuarios}) {
+function User({socket}) {
+  const modUsuarios = JSON.parse(localStorage.getItem('permissions')).modificarUsuarios
+  const delUsuarios = JSON.parse(localStorage.getItem('permissions')).eliminarUsuarios
     const history = useHistory()
   const key = localStorage.getItem('key')
   if (!key) {
@@ -61,7 +63,7 @@ const handleVPage = (e) => {
   }, [])
 
   const editUsers = (u, i) => { 
-    console.log('modUsuarios:' ,modUsuarios)
+    console.log("modUsuarios", modUsuarios)
     if (modUsuarios) {
         return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
     }
@@ -79,7 +81,7 @@ const handleVPage = (e) => {
   }
 
   const deleteUsers = (u) => {
-    console.log('delUsuarios:', delUsuarios)
+    console.log("delUsuario", delUsuarios)
     if (delUsuarios) {
         return(<button className='btn btn-danger' value={u._id} onClick={(e) => {
       Swal.fire({

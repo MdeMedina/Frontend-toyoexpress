@@ -39,6 +39,7 @@ function Login() {
       permissions = loginJson.permissions;
 
       localStorage.setItem("key", loginJson.key);
+      localStorage.setItem("HourAlert", false);
       localStorage.setItem("name", loginJson.name);
       localStorage.setItem("email", loginJson.email);
       localStorage.setItem("permissions", JSON.stringify(permissions));

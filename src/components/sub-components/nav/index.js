@@ -5,6 +5,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import { useHistory } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import { formatDateHoyEn, formatDateMananaEn } from "../../dates/dates";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -14,10 +15,13 @@ import "../../../css/nav.css";
 import { url_api } from "../../../lib/data/server";
 
 function Navg({ socket }) {
+  let obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
+  const history = useHistory();
   const [apertura, setApertura] = useState();
   const [cierre, setCierre] = useState();
-  const [ahora_mismo, setAhora_mismo] = useState();
   const user = localStorage.getItem("name");
+  let hourD = localStorage.getItem("HourAlert");
+  const [alertDado, setAlertDado] = useState(hourD);
   const [notification, setNotification] = useState([]);
   const toggleFunc = () => {
     const sidebar = document.getElementById("sidebar");
@@ -25,38 +29,47 @@ function Navg({ socket }) {
     const navDiv = document.querySelector(".navDiv");
     navDiv.classList.toggle("close");
   };
-  const [time, changeTime] = useState(new Date().toLocaleTimeString());
   /*const ap = ( time < 12) ? "<span>AM</span>":"<span>PM</span>";*/
-  const hoy = `${formatDateHoyEn(new Date())} ${apertura}`; // 2022-10-25T10:00
   let hoy_cierre;
   if (cierre < apertura) {
     hoy_cierre = `${formatDateMananaEn(new Date())} ${cierre}`; // 2022-10-26T20:00
   } else {
     hoy_cierre = `${formatDateHoyEn(new Date())} ${cierre}`; // 2022-10-25T20:00
   }
-  useEffect(() => {
-    setAhora_mismo(`${formatDateHoyEn(new Date())} ${time}`);
-  }, [time]);
 
-  useEffect(
-    function () {
-      setInterval(() => {
-        changeTime(new Date().toLocaleTimeString());
-      }, 1000);
-      setInterval(() => {
-        let a = new Date(hoy_cierre);
-        let b = new Date(ahora_mismo);
-        let c = (a - b) / 60000;
-        if (c === 5) {
-          Swal.fire({
-            icon: "warning",
-            title: "El sitio cerrara en 5 minutos...",
-          });
-        }
-      }, 1000);
-    },
-    [hoy_cierre]
-  );
+  let horaActual;
+  let horaProgramadaAlert;
+  let horaProgramada;
+  function hourAlerta() {
+    horaActual = new Date();
+    horaProgramada = new Date(hoy_cierre);
+    horaProgramadaAlert = new Date(hoy_cierre);
+    horaProgramadaAlert.setMinutes(horaProgramadaAlert.getMinutes() - 5);
+    console.log("hola");
+    if (
+      horaProgramadaAlert - horaActual <= 0 &&
+      localStorage.getItem("HourAlert") === "false" &&
+      horaProgramada - horaActual > 0 &&
+      !obH
+    ) {
+      localStorage.setItem("HourAlert", true);
+      hourD = localStorage.getItem("HourAlert");
+      setAlertDado(hourD);
+      return alert("estamos a 5 minutos de cerrar");
+    } else if (horaProgramada - horaActual <= 0 && !obH) {
+      history.push("/logout");
+    }
+  }
+  var timeout;
+  window.onmousemove = function () {
+    clearTimeout(timeout);
+    timeout = setTimeout(function () {
+      history.push("/logout");
+    }, 3600000);
+  };
+  window.onmousemove = function () {
+    hourAlerta();
+  };
 
   useEffect(() => {
     getTime();
