@@ -15,6 +15,8 @@ function UpdateHour() {
   if (!key) {
     history.push("/login");
   }
+  const [apertura, setApertura] = useState("");
+  const [cierre, setCierre] = useState("");
 
   const [time, changeTime] = useState(new Date().toLocaleTimeString());
   /*const ap = ( time < 12) ? "<span>AM</span>":"<span>PM</span>";*/
@@ -61,6 +63,17 @@ function UpdateHour() {
       alert(data.message);
     });
   }, [socket]);
+  useEffect(() => {
+    getTime();
+  }, []);
+  const getTime = async () => {
+    await fetch(`${url_api}/dates/`)
+      .then((r) => r.json())
+      .then((r) => {
+        setApertura(r.apertura);
+        setCierre(r.cierre);
+      });
+  };
 
   return (
     <>
@@ -75,12 +88,13 @@ function UpdateHour() {
               <input
                 type="time"
                 id="apertura"
+                defaultValue={apertura}
                 onChange={(e) => console.log(e)}
               />
             </div>
             <div className="cierra col-12">
               <label>hora de cierre:</label>
-              <input type="time" id="cierre" />
+              <input type="time" id="cierre" defaultValue={cierre} />
             </div>
             <input
               type="submit"

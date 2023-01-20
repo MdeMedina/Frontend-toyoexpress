@@ -19,6 +19,8 @@ function Navg({ socket }) {
   let am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos;
   const history = useHistory();
   const [apertura, setApertura] = useState();
+  const [moves, setMoves] = useState([]);
+  const [filterMove, setfilterMove] = useState([]);
   const [cierre, setCierre] = useState();
   const user = localStorage.getItem("name");
   let hourD = localStorage.getItem("HourAlert");
@@ -73,19 +75,26 @@ function Navg({ socket }) {
 
   useEffect(() => {
     if (am) {
-      const seteando_noti = (move) =>
-        setNotification((oldArray) => [...oldArray, move]);
-      socket.on("move", seteando_noti);
-
-      return () => {
-        socket.off("move", seteando_noti);
-      };
+      socket.on("move", getMoves);
     }
   });
+  useEffect(() => {
+    setfilterMove(
+      moves.filter((m) => {
+        return !m.vale;
+      })
+    );
+  }, [moves]);
+  const getMoves = async () => {
+    const response = await fetch(`${url_api}/moves`);
+    let data = await response.json();
+    await setMoves(data);
+  };
 
   useEffect(() => {
     getTime();
-  });
+    getMoves();
+  }, []);
 
   const getTime = async () => {
     await fetch(`${url_api}/dates/`)
@@ -96,20 +105,26 @@ function Navg({ socket }) {
       });
   };
 
-  let room = 23;
-  useEffect(() => {
-    socket.emit("join_room", room);
-    socket.on("receive_message", (data) => {
-      setNotification(data);
-    });
-  });
-
   const displayNotificationMove = (n) => {
-    return (
-      <Dropdown.Item href="#/action-1" key={1}>
-        {n}
-      </Dropdown.Item>
-    );
+    if (am) {
+      if (filterMove.length > 0 && filterMove.length > 1) {
+        return (
+          <div onClick={() => history.push("/moves")} className="af" key={1}>
+            {`Hay ${filterMove.length} movimientos por aprobar`}
+          </div>
+        );
+      } else if (filterMove.length === 1) {
+        return (
+          <div onClick={() => history.push("/moves")} key={1}>
+            {`Hay 1 movimiento por aprobar`}
+          </div>
+        );
+      } else {
+        return <div>No hay movimientos por aprobar</div>;
+      }
+    } else {
+      return <div>No hay notificaciones nuevas</div>;
+    }
   };
 
   return (
@@ -130,24 +145,33 @@ function Navg({ socket }) {
             <Col xs={5}>
               <Nav className="me-auto row">
                 <div className="notificacion col-2">
-                  {notification.length > 0 && (
+                  {filterMove.length > 0 && am ? (
                     <div className="bola " id="bola">
-                      {notification.length}
+                      {filterMove.length}
                     </div>
+                  ) : (
+                    false
                   )}
-                  <box-icon name="menu" color="red" id="hola"></box-icon>
-                  <NavDropdown title="Dropdown" id="basic-nav-dropdown polo">
-                    {notification.map((m) => displayNotificationMove(m))}
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        socket.emit("clean_nots", { message: "cleaned" });
-                        setNotification([]);
-                      }}
+                  <div class="dropdown col-3 d-flex justify-content-end">
+                    <div
+                      className="nav-link dropdown-toggle"
+                      role="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
                     >
-                      Mark as Read!
-                    </Button>
-                  </NavDropdown>
+                      {" "}
+                      <box-icon name="bell" className="campana"></box-icon>
+                    </div>
+
+                    <ul
+                      class="dropdown-menu dropdown-menu-lg-start
+                    mdw"
+                    >
+                      <li className="row">
+                        {displayNotificationMove(notification)}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 <div class="dropdown col-3 d-flex justify-content-end">
                   <a

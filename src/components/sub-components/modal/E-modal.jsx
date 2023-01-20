@@ -18,6 +18,7 @@ function EModal(props) {
   const [newMonto, setNewMonto] = useState('')
   const [newCuenta, setNewCuenta] = useState(null)
   const [newPago, setNewPago] = useState(null)
+  const [hoy, sethoy] = useState('')
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
   const [newConcepto, setNewConcepto] = useState('')
@@ -82,8 +83,12 @@ function EModal(props) {
       setConversion(false)
     }
   }, [props])
-  const hoy = `${formatDateHoy(new Date())}`        
-  console.log(hoy)   
+  useEffect(() => {
+    sethoy(`${formatDateHoy(new Date())}`)
+  }, [])
+  
+    
+
   return (
     <Modal
       {...props}

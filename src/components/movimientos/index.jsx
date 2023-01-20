@@ -117,7 +117,7 @@ const ingreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `${name} ha creado un nuevo ingreso!`));
+      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`));
     setEgresoShow(false)
   }
 };
@@ -174,7 +174,7 @@ const egreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `${name} ha creado un nuevo Egreso!`));
+      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`));
     setEgresoShow(false);
   }
 };
@@ -212,7 +212,7 @@ const removeMove = async () => {
 }).then(r => console.log(r)).then(r => gettingUsers()).then(r => Swal.fire({
   icon: 'success',
   title: 'Movimiento Eliminado con exito',
-})).then(getMoves())
+})).then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`))
   }
 }
 const deleteMoves = (m) => {
@@ -308,11 +308,6 @@ const handleNameValue = (e) => {
       {value: 'E', label: 'Egresos'}
     ]
 let nombres = []
-let numeros = [
-  {value: 10, label: 10},
-  {value: 20, label: 20},
-  {value: 50, label: 50}
-]
 let tPagos = [
   {value: 'Bs', label: 'Bs'},
   {value: 'Zelle', label: 'Zelle'},
@@ -397,7 +392,7 @@ await fetch(`${url_api}/moves/updateStatus`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})
-  })
+  }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`))
 getMoves()
 Swal.fire({
   icon: 'success',
@@ -412,24 +407,21 @@ Swal.fire({
 useEffect(()=> {
   getMoves()
   gettingUsers() 
+  socket.on('move', getMoves)
 
-
-  if (isAdmin === 'user') {
-    const dated = document.getElementsByClassName('yesAdmin')
-
-    for (let n of dated) {n.classList.add('desaparecer')}
-
-  }else if (isAdmin === 'admin') {
-    const dated = document.getElementsByClassName('noAdmin')
-    for (let n of dated) {n.classList.add('desaparecer')}
+  return () => {
+    socket.off('move', getMoves)
   }
-}, [isAdmin])
+}, [])
 const setterMonto = (e) => {
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
   setMonto(e.target.value)
 }
+
+const options2 = { style: 'currency', currency: 'USD'};
+const numberFormat = new Intl.NumberFormat('es-ES', options2);
 
 
 const setterStatus = (e) => {
@@ -479,6 +471,17 @@ if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus && !n
     const arrfecha2 =  b.fecha.split('/')
     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
     return fechaReal2 -fechaReal1 
+  })
+  betaResults = betaResults.sort((a, b) => {
+    if (a.vale && !b.vale) {
+      return 1
+    } else if (a.vale && b.vale) {
+      return 0
+    } else if (!a.vale && b.vale) {
+      return -1
+    } else if (!a.vale && !b.vale){
+      return 0
+    }
   })
   results = betaResults
 
@@ -626,7 +629,7 @@ filteredResultsPDF().map((m, i) => {
   concepto: m.concepto,
   status: statusSetterPdf(m),
   fecha: m.fecha,
-  monto: `$${m.monto}`,
+  monto: `${m.monto}`,
   }
   table.push (bodys)
 })
@@ -647,37 +650,58 @@ return (
   </div>
   <div className="row bg-light col-11 filtros">
   <h2 className='col-12'>Filtros de busqueda de movimientos</h2>
-  <div className="col-3 align-self-start d-flex justify-content-center ">
-  <label htmlFor="">tipo de movimiento</label>
+  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row ">
+ <div className="col-6">
+  <label htmlFor="">Tipo de movimiento</label>
+  </div>
+  <div className="col-6">
   <Select options={tMoves} onChange={(e) => {
    handleTMoveValue(e)
   }} className="select-max"/>
   </div>
-  <div className="col-3 align-self-start d-flex justify-content-center">
-
-  <label htmlFor="">Cuenta</label>
-  <Select options={cuentas} isMulti onChange={handleCuentaValue} className="select-max"/>
   </div>
-    <div className="col-3 align-self-start d-flex justify-content-center">
+    <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-6">
   <label htmlFor="">Name</label>
+  </div>
+  <div className="col-6">
   {
     users.map((u) => {
       nombres.push({value: u.username, label: u.username})
     })}
   <Select options={nombres} isMulti onChange={handleNameValue} className="select-max"/>
   </div>
-  <div className="col-3 align-self-start d-flex justify-content-center">
-  <label htmlFor="">Tipo de pago</label>
-  <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
   </div>
-  <br />
-  <div className="col-12 align-self-start d-flex justify-content-center mt-2 mb-2">
+  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-6">
+  <label htmlFor="">Cuenta</label>
+  </div>
+  <div className="col-6">
+  <Select options={cuentas} isMulti onChange={handleCuentaValue} className="select-max"/>
+  </div>
+  </div>
+  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-6">
   <label htmlFor="">Nro de aprobacion</label>
-    <input type="text" className="form-control onda" onChange={(e) => {
+  </div>
+  <div className="col-6">
+  <input type="text" className="form-control onda" onChange={(e) => {
       const {value} = e.target
       handleAproveValue(value)
     }}/>
   </div>
+
+  </div>
+  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-6">
+  <label htmlFor="">Tipo de pago</label>
+  </div>
+  <div className="col-6">
+
+  <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
+  </div>
+  </div>
+  <br />
   <br />
   <hr />
   <div className="container-fluid row d-flex justify-content-center">
@@ -742,9 +766,9 @@ Movimientos a visualizar {"  "}
   const {value} = e.target
   handleVPage(parseInt(value))
   }}>
-  <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
+  <option value="10">10</option>
+    <option value="20">20</option>
+    <option value="50">50</option>
 </select>
 </div>
 <div className="col-8 d-flex align-items-center justify-content-end">
@@ -833,7 +857,7 @@ Movimientos a visualizar {"  "}
           <div className="col-12 subtitulo">Cuenta</div>
           <div className="col-12 texto">{m.cuenta}</div>
           {
-          m.pago === 'Bs'?  <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{m.monto}$<div className="sub-texto">*Este monto es resultado de {m.bs}Bs a un cambio de {m.change}Bs por dolar</div></div></div> : <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{m.monto}$</div></div>
+          m.pago === 'Bs'?  <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}<div className="sub-texto">*Este monto es resultado de {m.bs}Bs a un cambio de {m.change}Bs por dolar</div></div></div> : <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}</div></div>
         }
         </div>
         { 
@@ -858,7 +882,7 @@ Movimientos a visualizar {"  "}
                 <td >{statusSetter(m)}</td>
                 <td >{!m.vale ? "No aprobado" : m.vale}</td>
                 <td >{m.fecha}</td>
-                <td className='monto-table'>${m.monto}</td>
+                <td className='monto-table'>{numberFormat.format(m.monto)}</td>
         </tr>
     )})
   }
@@ -870,7 +894,7 @@ Movimientos a visualizar {"  "}
                 <td>{"  "}</td>
                 <td>{"  "}</td>
                 <td className='monto-table'><h4>Total:</h4></td>
-                <td className='monto-table'><h4>${total}</h4></td>
+                <td className='monto-table'><h4>{numberFormat.format(total)}</h4></td>
   </tr>
   </tbody>
   </table>

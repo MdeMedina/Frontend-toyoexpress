@@ -89,6 +89,23 @@
     opacity: 0;
 
 }
+.mdw {
+    width: 205px !important;
+    text-align: justify;
+      white-space: initial;
+  overflow: hidden;
+  padding-left: 4px !important;
+  padding-right: 4px!important;
+}
+.af {
+    width: 80%;
+    font-size: 12px !important;
+
+}
+.af:hover{
+    cursor: pointer;
+    background-color: rgb(231, 230, 230);
+}
 
 .cd {
     width: 18rem;
@@ -213,6 +230,10 @@ color: var(--text-color);
 .notificacion {
     position: relative;
     display: flex;
+    justify-content: end;
+}
+.campana {
+    position: relative;
 }
 
 .bola {
