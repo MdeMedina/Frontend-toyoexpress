@@ -1,5 +1,5 @@
-const data = { 
-    url_api: 'http://backend.toyoxpress.com'
-}
+const data = {
+  url_api: "http://backend.toyoexpress.com",
+};
 
-module.exports = data
+module.exports = data;
