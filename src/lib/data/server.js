@@ -1,5 +1,5 @@
 const data = {
-  url_api: "http://backend.toyoexpress.com",
+  url_api: "http://backend.toyoxpress.com",
 };
 
 module.exports = data;
