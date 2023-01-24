@@ -15,6 +15,7 @@ function User({socket}) {
   if (!key) {
     history.push('/login')
   }
+  
   const [users, setUsers] = useState([])
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')

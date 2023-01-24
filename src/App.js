@@ -1,6 +1,5 @@
 import React from "react";
 import Home from "./components/Home";
-import Caja from "./components/Caja";
 import User from "./components/User";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
@@ -49,9 +48,6 @@ function App() {
         </Route>
         <Route path="/accountConfig">
           <AccountConfig socket={socket} />
-        </Route>
-        <Route path="/caja">
-          <Caja socket={socket} />
         </Route>
         <Route path="/moves">
           <Moves

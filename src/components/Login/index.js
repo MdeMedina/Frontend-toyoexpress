@@ -24,6 +24,7 @@ function Login() {
       headers: new Headers({ "Content-type": "application/json" }),
     });
     const loginJson = await loginRes.json();
+    console.log(loginJson)
     const loginStatus = await loginRes.status;
     if (loginStatus === 403 || loginStatus === 401) {
       let userGood = document.getElementById("userGood");
@@ -42,6 +43,7 @@ function Login() {
       localStorage.setItem("HourAlert", false);
       localStorage.setItem("name", loginJson.name);
       localStorage.setItem("email", loginJson.email);
+      localStorage.setItem("cantidadM", loginJson.cantidadM);
       localStorage.setItem("permissions", JSON.stringify(permissions));
       let userInvalid = document.getElementById("userInvalid");
       let isDesaparezco = userInvalid.classList.contains("desaparezco");

@@ -2,6 +2,7 @@ import React, {useState, ChangeEvent} from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
 import { useEffect } from 'react'
+import {ActModal} from '../sub-components/modal/ActModal'
 import DatePicker from 'react-datepicker'
 import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
@@ -18,18 +19,26 @@ import EModal from '../sub-components/modal/E-modal'
 import { cuentas } from '../../lib/data/SelectOptions'
 
 function Moves({socket}) {
+  let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
   const history = useHistory()
   const key = localStorage.getItem('key')
   if (!key) {
     history.push('/login')
   }
+ let handleClose = () => {
+    document.body.classList.remove("modal-open");
+  }
 const vm = JSON.parse(localStorage.getItem("permissions")).verMovimientos
 const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
 const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
 const [moves, setMoves] = useState([])
+const [actMovimiento, setActMovimiento] = useState(false)
+const [ActCantidad, setActCantidad] = useState(cantidadM)
 const [users, setUsers] = useState([])
 const [monto, setMonto] = useState('')
+const [myMove, setMyMove] = useState()
+const [actShow, setActShow] = useState(false)
 const [cuenta, setCuenta] = useState(null)
 const [pago, setPago] = useState(null)
 const [egresoShow, setEgresoShow] = React.useState(false);
@@ -43,7 +52,7 @@ const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
 const [vale, setVale] = useState('')
 const [currentPage, setCurrentPage] = useState(0)
-const [vPage, setVPage] = useState(10)
+const [vPage, setVPage] = useState(cantidadM)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
 const [newMonto, setNewMonto] = useState('')
@@ -58,8 +67,23 @@ const getMoves = async () => {
   const response = await fetch(URL)
   let data = await response.json()
  setMoves(data)
-
 }
+
+useEffect(() => {
+  actmoveCantidad()
+  console.log(ActCantidad)
+}, [ActCantidad])
+const actmoveCantidad = async () => {
+  let actData = {
+    email: localStorage.getItem('email'),
+    cantidadM: parseInt(ActCantidad)
+  }
+  await fetch(`${url_api}/users/actualizarCantidad`, { method: 'PUT',
+  body: JSON.stringify(actData),
+headers: new Headers({ 'Content-type': 'application/json'})
+}).then(r => console.log(r)).then(localStorage.setItem('cantidadM', ActCantidad))
+}
+
 function currencyFormatter({ currency, value}) {
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -159,6 +183,7 @@ const egreso = () => {
     if (!error.classList.contains("desaparecer")) {
       error.classList.add("desaparecer");
     }
+
     fetch(`${url_api}/moves/egreso`, {
       method: "POST",
       headers: {
@@ -179,6 +204,16 @@ const egreso = () => {
   }
 };
 
+const editMoves = (m, i) => { 
+
+      return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
+        setMyMove(m)
+        setIdentificador(m.identificador)
+        setActShow(true)
+        console.log("movimientos.jsx", m)}}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
+  
+}
+
 
 const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago) => {
  
@@ -191,6 +226,55 @@ const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago) => {
   setNewPago(pago)
 
 }
+
+const settingactmounts = (cuenta, concepto, bs, change, monto, pago) => {
+  setActMovimiento(true)
+  setNewCuenta(cuenta)
+  setNewConcepto(concepto)
+  setBolos(bs)
+  setCambio(change)
+  setNewMonto(monto)
+  setNewPago(pago)
+}
+
+const updateMove = () => {
+  let obj = {
+    identificador: identificador,
+    cuenta: newCuenta,
+    concepto: newConcepto,
+    bs: bolos,
+    change: cambio,
+    fecha: hoy,
+    monto: newMonto,
+    name: name,
+    pago: newPago,
+  };
+
+  if (!actMovimiento) {
+    return false
+  } else {
+    fetch(`${url_api}/moves/updateMove`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(obj),
+    })
+      .then((response) => console.log(response))
+      .then(
+        Swal.fire({
+          icon: "success",
+          title: "Movimiento Actualizado con exito",
+        })
+      )
+      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false));
+  }
+  }
+  useEffect(() => {
+    updateMove()
+    }, [actMovimiento])
+
 const movimiento = () => {
 if (selectMove === 'egreso'){
   egreso()
@@ -229,7 +313,7 @@ const deleteMoves = (m) => {
       setDeletingMove({identificador: m.identificador ,_id: m._id})
       }
     })
-      }}>Eliminar</button>)
+      }}><box-icon name='trash' type='solid' color='#ffffff' ></box-icon></button>)
   }
 }
 useEffect(() => {
@@ -494,11 +578,6 @@ if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus && !n
   }
   betaResults= filterRange(betaResults, inicio, final)
 
-  if (identificador) {
-    betaResults = betaResults.filter((dato) => {
-      return dato.identificador.includes(identificador)
-    })
-  }
 
     if (nroAprobacion) {
     betaResults = betaResults.filter((dato) => {
@@ -634,6 +713,7 @@ filteredResultsPDF().map((m, i) => {
   table.push (bodys)
 })
 table.push({fecha: "Total", monto: `$${pdfTotal}`})
+let bsIdLabel
 return (
 <>
 <Navg socket={socket}/>
@@ -765,10 +845,23 @@ Movimientos a visualizar {"  "}
 <select onChange={(e) => {
   const {value} = e.target
   handleVPage(parseInt(value))
+  setActCantidad(value)
   }}>
-  <option value="10">10</option>
-    <option value="20">20</option>
-    <option value="50">50</option>
+  {
+    ActCantidad == 10 ? <>  
+    <option value={10} selected>10</option>
+    <option value={20}>20</option>
+      <option value={50}>50</option>
+  </> : ActCantidad == 20 ? <>
+    <option value={10}>10</option>
+    <option value={20} selected>20</option>
+      <option value={50}>50</option></> : ActCantidad == 50 ? <>
+    <option value={10}>10</option>
+    <option value={20}>20</option>
+      <option value={50} selected>50</option></> : false
+  }
+
+
 </select>
 </div>
 <div className="col-8 d-flex align-items-center justify-content-end">
@@ -801,15 +894,16 @@ Movimientos a visualizar {"  "}
             <th>Status</th>
             <th>Nro de aprobacion</th>
             <th>Fecha</th>
+            <th>Acciones</th>
             <th className='monto-table'>Monto</th>
         </tr>
     </thead>
     <tbody>
   {
     filteredResults().map((m, i) => {
-      
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
+       bsIdLabel = `exampleModalLabel-${i}`
        if (m.identificador.charAt(0) === 'E') {
        total -= parseFloat(m.monto)
        }else if (m.identificador.charAt(0) === 'I') {
@@ -817,16 +911,19 @@ Movimientos a visualizar {"  "}
        }
       return (
         <tr>
-                <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" >{m.identificador}</button>
-<div className="modal fade" id={bsId} tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" key={m.identificador}>
+      <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" >{m.identificador}</button>
+<div className="modal fade" id={bsId} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true" key={m.identificador}>
   <div className="modal-dialog">
     <div className="modal-content">
       <div className="modal-header row">
-        <h1 className="modal-title fs-5 col-6" id="exampleModalLabel">Movimiento: {m.identificador}</h1>
+        <h1 className="modal-title fs-5 col-6" id={bsIdLabel}>Movimiento: {m.identificador}</h1>
         <div className="col-6 row">
-          <div className="col-4"></div>
-          <div className="col-8 d-flex justify-content-end">
+          <div className="col-3"></div>
+          <div className="col-6 d-flex justify-content-end">
           {statusSetter(m)}
+          </div>
+          <div className="col-3">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
         </div>
       </div>
@@ -868,8 +965,6 @@ Movimientos a visualizar {"  "}
  
 
       <div className="modal-footer">
-        {deleteMoves(m)}
-        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
         {!m.vale && am ? <div>{aproveSetter3(m)}</div>: false}
       </div>
     </div>
@@ -882,6 +977,23 @@ Movimientos a visualizar {"  "}
                 <td >{statusSetter(m)}</td>
                 <td >{!m.vale ? "No aprobado" : m.vale}</td>
                 <td >{m.fecha}</td>
+                <td>
+                {editMoves(m, i)}
+                {
+                  actShow ?
+                <ActModal
+                  key={i}
+                      show={actShow}
+                      move={myMove}
+                      onHide={() => {
+                        handleClose()
+                        setActShow(false)
+                      }}
+                      settingActMounts={(cuenta, concepto, bs, change, monto, pago) => settingactmounts(cuenta, concepto, bs, change, monto, pago)}
+                      i={i} /> : false}
+                      {deleteMoves(m)}
+                
+                      </td>
                 <td className='monto-table'>{numberFormat.format(m.monto)}</td>
         </tr>
     )})
@@ -891,6 +1003,7 @@ Movimientos a visualizar {"  "}
                 <td >{"   "}</td>
                 <td >{"   "}</td>
                 <td >{"   "}</td>
+                <td>{"  "}</td>
                 <td>{"  "}</td>
                 <td>{"  "}</td>
                 <td className='monto-table'><h4>Total:</h4></td>
