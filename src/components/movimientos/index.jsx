@@ -206,11 +206,11 @@ const egreso = () => {
 
 const editMoves = (m, i) => { 
 
-      return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
+      return(<button className='btn btn-primary closer' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
         setMyMove(m)
         setIdentificador(m.identificador)
         setActShow(true)
-        console.log("movimientos.jsx", m)}}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
+        console.log("movimientos.jsx", m)}}><box-icon name='edit-alt' color='#ffffff' size='20px'></box-icon></button>)
   
 }
 
@@ -301,7 +301,7 @@ const removeMove = async () => {
 }
 const deleteMoves = (m) => {
   if (dm) {
-      return(<button className='btn btn-danger' value={m._id} onClick={(e) => {
+      return(<button className='btn btn-danger closer' value={m._id} onClick={(e) => {
     Swal.fire({
       title: 'Estas seguro que deseas eliminar este Movimiento?',
       showOkButton: false,
@@ -313,7 +313,7 @@ const deleteMoves = (m) => {
       setDeletingMove({identificador: m.identificador ,_id: m._id})
       }
     })
-      }}><box-icon name='trash' type='solid' color='#ffffff' ></box-icon></button>)
+      }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button>)
   }
 }
 useEffect(() => {
@@ -415,7 +415,7 @@ setVale(value)
 
 const aproveSetter3 = (move) =>{
   if (am) {
-    return (<button type="button" className="btn btn-success" onClick={() => updateStatus(move)}>Aprobar</button>)
+    return (<button type="button" className="btn btn-success" data-bs-dismiss="modal" aria-label="Close" onClick={() => updateStatus(move)}>Aprobar</button>)
   }
 }
 
@@ -910,7 +910,7 @@ Movimientos a visualizar {"  "}
         total += parseFloat(m.monto)
        }
       return (
-        <tr>
+        <tr className='tra'>
       <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" >{m.identificador}</button>
 <div className="modal fade" id={bsId} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true" key={m.identificador}>
   <div className="modal-dialog">
@@ -977,7 +977,8 @@ Movimientos a visualizar {"  "}
                 <td >{statusSetter(m)}</td>
                 <td >{!m.vale ? "No aprobado" : m.vale}</td>
                 <td >{m.fecha}</td>
-                <td>
+                <td className='row'>
+                <div className="col-4">
                 {editMoves(m, i)}
                 {
                   actShow ?
@@ -991,7 +992,10 @@ Movimientos a visualizar {"  "}
                       }}
                       settingActMounts={(cuenta, concepto, bs, change, monto, pago) => settingactmounts(cuenta, concepto, bs, change, monto, pago)}
                       i={i} /> : false}
+                      </div>
+                      <div className="col-4">
                       {deleteMoves(m)}
+                      </div>
                 
                       </td>
                 <td className='monto-table'>{numberFormat.format(m.monto)}</td>

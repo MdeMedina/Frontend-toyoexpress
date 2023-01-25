@@ -9,9 +9,18 @@
     max-width: 150px;
 }
 
+.closer { 
+    width: 35px !important;
+    height: 35px !important;
+    display: flex !important;
+    font-size: 15px !important;
+    justify-content: center;
+}
+
 .concepto-table{
     max-width: 192.6px;
     max-height: 55px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -41,6 +50,7 @@
     display: flex !important;
     justify-content: center;
 }
+
 
 .botonrealizado {
     text-align: center;
