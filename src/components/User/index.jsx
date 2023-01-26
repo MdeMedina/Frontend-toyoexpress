@@ -34,6 +34,8 @@ const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
   const [sHours, setSHours] = useState(false)
   const [oHours, setOHours] = useState(false)
+  const [eMoves, setEMoves] = useState(false)
+  const [cAccounts, setCAccounts] = useState(false)
 
   let numeros = [
     {value: 2, label: 2},
@@ -89,6 +91,7 @@ const handleVPage = (e) => {
         title: 'Estas seguro que deseas eliminar a este usuario?',
         showDenyButton: true,
         showCancelButton: true,
+        showConfirmButton: false,
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
@@ -143,12 +146,14 @@ const handleVPage = (e) => {
             permissions: {
                 verMovimientos: verMoves,
                 aprobarMovimientos: aproveMoves,
+                editarMovimientos: eMoves,
                 eliminarMovimientos: delMoves,
                 crearUsuarios: cUsers,
                 modificarUsuarios: modUsers,
                 eliminarUsuarios: delUsers,
                 horasIngreso: sHours,
-                obviarIngreso: oHours
+                obviarIngreso: oHours, 
+                configurarCuentas: cAccounts
             },
             password: password
         }
@@ -169,10 +174,12 @@ const handleVPage = (e) => {
     const movesVista = document.getElementById(`actMovesVista-${i}`).checked
     const aproveMoves = document.getElementById(`actAproveMoves-${i}`).checked
     const createU = document.getElementById(`actCreateU-${i}`).checked
+    const eMoves = document.getElementById(`actEMoves-${i}`).checked
     const modU = document.getElementById(`actModU-${i}`).checked
     const delU = document.getElementById(`actDeleteU-${i}`).checked
     const modTime = document.getElementById(`actModTime-${i}`).checked
     const obTime = document.getElementById(`actObTime-${i}`).checked
+    const cAccounts = document.getElementById(`actCAccounts-${i}`).checked
     console.log(email, username, movesVista, aproveMoves,createU, modU, delU, modTime)
  const permissions = 
     {verMovimientos: movesVista,
@@ -182,7 +189,9 @@ const handleVPage = (e) => {
       modificarUsuarios: modU,
       eliminarUsuarios: delU,
       horasIngreso: modTime,
-      obviarIngreso: obTime
+      obviarIngreso: obTime,     
+      editarMovimientos: eMoves,
+      configurarCuentas: cAccounts
     }
 
     const actData = {_id: _id,email: email, username: username, permissions: permissions }
@@ -306,6 +315,17 @@ return (
   </label>
   </div>
   <div class="form-check ">
+  <input class="form-check-input disabled" type="checkbox" value="" id="eMoves" disabled onChange={(e) => {
+            const value = e.target.checked
+            setEMoves(value)
+  }}/>
+  
+  <label class="form-check-label" for="eMoves">
+  Modificar Movimientos
+  </label>
+</div>
+<br />
+  <div class="form-check ">
   <input class="form-check-input disabled" type="checkbox" value="" id="delMoves" disabled onChange={(e) => {
             const value = e.target.checked
             setDelMoves(value)
@@ -361,6 +381,15 @@ return (
   }}/>
   <label class="form-check-label" for="modTime">
     Modificar los horarios de ingreso y/o salida
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="cAccounts"onChange={(e) => {
+            const value = e.target.checked
+            setCAccounts(value)
+  }}/>
+  <label class="form-check-label" for="cAccounts">
+    Configurar y Modificar cuentas
   </label>
 </div>
 </form>
@@ -439,7 +468,16 @@ return (
   </label>
 </div>
 <div class="form-check ">
-  <input class="form-check-input disabled" type="checkbox" value="" id={`actDelMoves-${i}`}  defaultChecked={u.permissions.eliminarMovimientos} onChange={(e) => {
+  <input class="form-check-input disabled" type="checkbox" value="" id={`actEMoves-${i}`}  defaultChecked={u.permissions.eliminarMovimientos} onChange={(e) => {
+            const value = e.target.checked
+            setEMoves(value)
+  }}/>
+  <label class="form-check-label" for={`actEMoves-${i}`}>
+Editar Movimientos
+  </label>
+</div>
+<div class="form-check ">
+  <input class="form-check-input disabled" type="checkbox" value="" id={`actDelMoves-${i}`}  defaultChecked={u.permissions.editarMovimientos} onChange={(e) => {
             const value = e.target.checked
             setDelMoves(value)
   }}/>
@@ -493,6 +531,15 @@ return (
   }}/>
   <label class="form-check-label" for={`actObTime-${i}`}>
   Obviar horarios de ingreso y salida
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id={`actCAccounts-${i}`} defaultChecked={u.permissions.configurarCuentas} onChange={() => {
+            const value = document.getElementById(`actCAccounts-${i}`).checked
+            setCAccounts(value)
+  }}/>
+  <label class="form-check-label" for={`actCAccounts-${i}`}>
+  Configurar y Modificar cuentas
   </label>
 </div>
 </form>

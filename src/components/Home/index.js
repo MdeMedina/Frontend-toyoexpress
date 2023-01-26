@@ -10,6 +10,10 @@ function Home({ socket }) {
     history.push("/login");
   }
 
+  const permissions = JSON.parse(localStorage.getItem('permissions'))
+  const hi = permissions.horasIngreso
+  const cu = permissions.crearUsuarios
+
   return (
     <>
       <Navg socket={socket} />
@@ -18,7 +22,7 @@ function Home({ socket }) {
         <div className="col-11">
           <h2>Bienvenido</h2>
         </div>
-        <div className="col-4 row d-flex justify-content-center">
+        <div className="col row d-flex justify-content-center">
           <div class="card cd col-11">
             <img src="..." class="card-img-top" alt="..." />
             <div class="card-body ">
@@ -34,21 +38,22 @@ function Home({ socket }) {
             </div>
           </div>
         </div>
-        <div className="col-4 row d-flex justify-content-center">
-          <div class="card cd col-11">
-            <img src="..." class="card-img-top" alt="..." />
-            <div class="card-body ">
-              <h5 class="card-title d-flex justify-content-center">Usuarios</h5>
-              <p class="card-text d-flex justify-content-center">
-                Crea, visualiza, elimina y edita usuarios
-              </p>
-              <Link to="/user" className="d-flex justify-content-center">
-                <btn class="btn btn-primary">Entrar</btn>
-              </Link>
-            </div>
+      
+{    !cu ? false : <div className="col row d-flex justify-content-center">
+        <div class="card cd col-11">
+          <img src="..." class="card-img-top" alt="..." />
+          <div class="card-body ">
+            <h5 class="card-title d-flex justify-content-center">Usuarios</h5>
+            <p class="card-text d-flex justify-content-center">
+              Crea, visualiza, elimina y edita usuarios
+            </p>
+            <Link to="/user" className="d-flex justify-content-center">
+              <btn class="btn btn-primary">Entrar</btn>
+            </Link>
           </div>
         </div>
-        <div className="col-4 row d-flex justify-content-center">
+      </div>}
+{      !hi ? false :  <div className="col row d-flex justify-content-center">
           <div class="card cd col-11">
             <img src="..." class="card-img-top" alt="..." />
             <div class="card-body ">
@@ -61,9 +66,9 @@ function Home({ socket }) {
               <Link to="/update" className="d-flex justify-content-center">
                 <btn class="btn btn-primary">Entrar</btn>
               </Link>
-            </div>
+            </div> 
           </div>
-        </div>
+        </div> }
       </div>
     </>
   );

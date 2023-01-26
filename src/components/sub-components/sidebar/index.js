@@ -6,6 +6,7 @@ function Sidebar(props) {
   let permissions = JSON.parse(localStorage.getItem("permissions"));
   let cu = permissions.crearUsuarios;
   let sh = permissions.horasIngreso;
+  let ca = permissions.configurarCuentas;
 
   const createFunction = () => {
     if (cu) {
@@ -35,6 +36,22 @@ function Sidebar(props) {
       );
     }
   };
+
+  const accountFunction = () => {
+    if (ca) {
+     return ( <li className="nav-link">
+                <Link to="/accountConfig">
+                  <div className="icon">
+                    <box-icon name="wallet" size="27px"></box-icon>
+                  </div>
+                  <span className="text nav-text">
+                    Configuracion de cuentas
+                  </span>
+                </Link>
+              </li>
+     )
+    }
+  }
   return (
     <div className="navDiv">
       <nav className="sidebar" id="sidebar">
@@ -59,16 +76,7 @@ function Sidebar(props) {
               </li>
               {createFunction()}
               {hourFunction()}
-              <li className="nav-link">
-                <Link to="/accountConfig">
-                  <div className="icon">
-                    <box-icon name="wallet" size="27px"></box-icon>
-                  </div>
-                  <span className="text nav-text">
-                    Configuracion de cuentas
-                  </span>
-                </Link>
-              </li>
+              {accountFunction()}              
             </ul>
           </div>
           <div className="bottom-content">

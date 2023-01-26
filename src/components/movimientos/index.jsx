@@ -32,6 +32,7 @@ function Moves({socket}) {
 const vm = JSON.parse(localStorage.getItem("permissions")).verMovimientos
 const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
 const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
+const em = JSON.parse(localStorage.getItem("permissions")).editarMovimientos
 const [moves, setMoves] = useState([])
 const [actMovimiento, setActMovimiento] = useState(false)
 const [ActCantidad, setActCantidad] = useState(cantidadM)
@@ -205,12 +206,13 @@ const egreso = () => {
 };
 
 const editMoves = (m, i) => { 
-
+  if (em) {
       return(<button className='btn btn-primary closer' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
         setMyMove(m)
         setIdentificador(m.identificador)
         setActShow(true)
         console.log("movimientos.jsx", m)}}><box-icon name='edit-alt' color='#ffffff' size='20px'></box-icon></button>)
+      }
   
 }
 
@@ -304,7 +306,7 @@ const deleteMoves = (m) => {
       return(<button className='btn btn-danger closer' value={m._id} onClick={(e) => {
     Swal.fire({
       title: 'Estas seguro que deseas eliminar este Movimiento?',
-      showOkButton: false,
+      showConfirmButton: false,
       showDenyButton: true,
       showCancelButton: true,
       cancelButtonText: `Cancelar`,

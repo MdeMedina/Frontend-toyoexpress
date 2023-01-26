@@ -10,6 +10,9 @@ import Swal from 'sweetalert2'
 import {useHistory} from 'react-router-dom'
 
 export const AccountConfig = ({socket}) => {
+const ca = JSON.parse(localStorage.getItem('permissions')).configurarCuentas
+const key = localStorage.getItem('key')
+const history = useHistory()
  const [accountName, setAccountName] = useState('')
  const [accountColor, setAccountColor] = useState('')
  const [cuentas, setCuentas] = useState([])
@@ -19,6 +22,18 @@ const [currentPage, setCurrentPage] = useState(0)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [deletingAccount, setDeletingAccount] = useState()
 const [vPage, setVPage] = useState(10)
+useEffect(() => {
+  if (!ca) {
+    history.push('/')
+  }
+
+  if (!key) {
+    history.push("/login")
+  }
+
+}, [ca, key, history])
+
+
 
 useEffect(() => {
     let diff =  meEncuentro - estaba
