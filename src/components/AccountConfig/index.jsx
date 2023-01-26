@@ -65,7 +65,7 @@ const actCuenta = async (u) => {
     if(r.status === 200) {
     Swal.fire({
   icon: 'success',
-  title: 'Cuenta creada con exito!',
+  title: 'Cuenta Actualizada con exito!',
 })
 } else {
     Swal.fire({
@@ -83,27 +83,27 @@ const deleteCuenta = (u) => {
         title: 'Estas seguro que deseas eliminar a este usuario?',
         showDenyButton: true,
         showCancelButton: true,
+        showConfirmButton: false,
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
         console.log(u._id)
-        setDeletingAccount({ _id: u._id})
-        removeAccount()
+        removeAccount(u._id)
         }
       })
         }}><box-icon name='trash' type='solid' color='#ffffff' ></box-icon></button>)
     }
 
-    const removeAccount = async () => {
+    const removeAccount = async (id) => {
         await fetch(`${url_api}/cuentas/eliminarCuenta`, {
           method: 'DELETE',
-          body: JSON.stringify(deletingAccount),
+          body: JSON.stringify({_id: id}),
         headers: new Headers({ 'Content-type': 'application/json'})
       }).then(r => {
         if (r.status === 200) {
         Swal.fire({
         icon: 'success',
-        title: 'Usuario Eliminado con exito',
+        title: 'Cuenta Eliminada con exito',
       })} else {
         Swal.fire({
             icon: 'error',
