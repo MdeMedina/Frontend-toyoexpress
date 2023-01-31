@@ -271,7 +271,7 @@ const updateMove = () => {
           title: "Movimiento Actualizado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false));
+      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
   }
   }
   useEffect(() => {
@@ -313,7 +313,17 @@ const deleteMoves = (m) => {
       cancelButtonText: `Cancelar`,
       denyButtonText: `Eliminar`,
     }).then((result) => { if (result.isDenied) {
-      setDeletingMove({identificador: m.identificador ,_id: m._id})
+      Swal.fire({
+        title: 'Estas COMPLETAMENTE seguro que deseas eliminar este Movimiento?',
+        showConfirmButton: false,
+        showDenyButton: true,
+        showCancelButton: true,
+        cancelButtonText: `Cancelar`,
+        denyButtonText: `Eliminar`,
+      }).then((result) => { if (result.isDenied) {
+        setDeletingMove({identificador: m.identificador ,_id: m._id})
+        }
+      })
       }
     })
       }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button>)
@@ -656,8 +666,31 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
 const filteredResults = () => {
   return results.slice(currentPage, currentPage + vPage)
 }
-const filteredResultsPDF = () => {
-  return results.slice(currentPage, currentPage + vPage)
+const filteredResultsPDF = (init, fin) => {
+  let results;
+  let betaResults = moves
+  if (vm === false) {
+    betaResults = betaResults.filter((dato) => {
+      return dato.name.includes(localStorage.getItem('name'))
+    })
+    betaResults= filterRange(betaResults, init, fin)
+  }
+  betaResults = betaResults.sort((a, b) => {
+    const arrId1 = a.identificador.split('-')
+    const arrId2 = b.identificador.split('-')
+    if(arrId2[0] === arrId1[0]){
+    return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
+   })
+    betaResults = betaResults.sort((a, b) => {
+     const arrfecha1 =  a.fecha.split('/')
+     const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+     const arrfecha2 =  b.fecha.split('/')
+     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+     return fechaReal2 -fechaReal1 
+   })
+   results = betaResults
+
+   return results
 }
 
 const nextPage = () => {
@@ -703,7 +736,8 @@ const makePages = () => {
 let total = 0;
 let pdfTotal = 0;
 let table = [];
-filteredResultsPDF().map((m, i) => {
+function filtPDF (init, fin) {
+filteredResultsPDF(init, fin).map((m, i) => {
   if (m.identificador.charAt(0) === 'E') {
     pdfTotal -= parseFloat(m.monto)
     }else if (m.identificador.charAt(0) === 'I') {
@@ -720,7 +754,7 @@ filteredResultsPDF().map((m, i) => {
   }
   table.push (bodys)
 })
-table.push({fecha: "Total", monto: `$${pdfTotal}`})
+table.push({fecha: "Total", monto: `$${pdfTotal}`})}
 let bsIdLabel
 return (
 <>
@@ -748,7 +782,7 @@ return (
   }} className="select-max"/>
   </div>
   </div>
-    <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+    { !vm ? false: <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Name</label>
   </div>
@@ -760,6 +794,7 @@ return (
   <Select options={nombres} isMulti onChange={handleNameValue} className="select-max"/>
   </div>
   </div>
+  }
   <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Cuenta</label>
@@ -874,9 +909,16 @@ Movimientos a visualizar {"  "}
 </div>
 <div className="col-8 d-flex align-items-center justify-content-end">
   <button type="button" class="btn btn-primary" onClick={() => {
-    doc.text('Reporte: ingresos y egresos', 10, 10)
-
-
+    Swal.fire({
+      title: 'Multiple inputs',
+      html:
+        '<div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1"></div> <br />' +
+        '<div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2"></div>',
+    }).then(() => {
+      let input1 = document.getElementById('swal-input1').value
+      let input2 = document.getElementById('swal-input2').value
+      filtPDF(input1, input2)
+      doc.text('Reporte: ingresos y egresos', 10, 10)
     autoTable(doc, {    columnStyles: { monto: { halign: 'right' } }, 
     body: table,
     columns: [
@@ -889,6 +931,7 @@ Movimientos a visualizar {"  "}
       { header: 'Monto', dataKey: 'monto' }
     ], })
     doc.save('reporte.pdf')
+    })
   }}>Imprimir</button>
   </div>
   <hr className="e-change"/>
@@ -896,7 +939,7 @@ Movimientos a visualizar {"  "}
 <thead>
         <tr>
             <th>Identificador</th>
-            <th>Nombre de usuario</th>
+            <th>Usuario</th>
             <th>Cuenta</th>
             <th>Concepto</th>
             <th>Status</th>
@@ -1018,8 +1061,8 @@ Movimientos a visualizar {"  "}
                 <td>{"  "}</td>
                 <td>{"  "}</td>
                 <td>{"  "}</td>
-                <td className='monto-table'><h4>Total:</h4></td>
-                <td className='monto-table'><h4>{numberFormat.format(total)}</h4></td>
+                <td className='monto-table'><h6>Total:</h6></td>
+                <td className='monto-table'><h6>{numberFormat.format(total)}</h6></td>
   </tr>
   </tbody>
   </table>

@@ -81,6 +81,12 @@ console.log(move)
   }, [props])
   useEffect(() => {
     sethoy(`${formatDateHoy(new Date())}`)
+    setNewCuenta(move.cuenta)
+    setConversion(move.pago)
+    setNewMonto(move.monto)
+    setBolos(move.bs)
+    setCambio(move.change)
+    setNewConcepto(move.concepto)
   }, [])
   
     
@@ -95,7 +101,7 @@ console.log(move)
       id={`actModal-${i}`}
     >
       <Modal.Header closeButton>
-          <Modal.Title>Nuevo Egreso</Modal.Title>
+          <Modal.Title>Nuevo Movimiento</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div id="error" className='desaparecer'>*Por Favor, rellene todos los campos</div>
@@ -170,9 +176,10 @@ console.log(move)
             Cerrar
           </Button>
           <Button variant="primary" onClick={() => {
+            console.log('action', props.settingActMounts)
             props.settingActMounts(newCuenta, newConcepto, bolos, cambio, newMonto, conversion)
           }}>
-            Crear
+            Guardar
           </Button>
         </Modal.Footer>
     </Modal>
