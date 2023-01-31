@@ -48,6 +48,7 @@ const [startDate, setStartDate] = useState(subDays(new Date(), 30));
 const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
 const [identificador, setIdentificador] = useState('')
+const [Id, setId] = useState('')
 const [nroAprobacion, setNroAprobacion] = useState('')
 const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
@@ -354,7 +355,7 @@ const handleTMoveValue = (e) => {
     setCurrentPage(0)
     setEstaba(1)
     setMeEncuentro(1)
-    setIdentificador(e.value)
+    setId(e.value)
   }
 const handleNameValue = (e) => {
   if (!e.length) {
@@ -535,7 +536,7 @@ let betaResults = [];
 let alphaResults = [];
 let inicio = new Date(startDate)
 let final = new Date(endDate)
-if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus && !nroAprobacion) {
+if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion) {
   betaResults = moves
 
 
@@ -580,6 +581,11 @@ if (!monto && !cuenta && !pago && !name && !identificador && !searchStatus && !n
   }
   betaResults= filterRange(betaResults, inicio, final)
 
+  if (Id) {
+    betaResults = betaResults.filter((dato) => {
+      return dato.identificador.includes(Id)
+    })
+  }
 
     if (nroAprobacion) {
     betaResults = betaResults.filter((dato) => {
