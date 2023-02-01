@@ -7,7 +7,8 @@ export default function Logout () {
     localStorage.removeItem('permissions')
     localStorage.removeItem('email')
     localStorage.removeItem("HourAlert")   
-    localStorage.removeItem("cantidadM")     
+    localStorage.removeItem("cantidadM")
+    localStorage.removeItem("messageID")          
     const history = useHistory()
     history.push('/login')
 

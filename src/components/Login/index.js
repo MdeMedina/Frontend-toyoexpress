@@ -40,11 +40,12 @@ function Login() {
       permissions = loginJson.permissions;
 
       localStorage.setItem("key", loginJson.key);
-      localStorage.setItem("HourAlert", false);
+      localStorage.setItem("HourAlert", !permissions.obviarIngreso);
       localStorage.setItem("name", loginJson.name);
       localStorage.setItem("email", loginJson.email);
       localStorage.setItem("cantidadM", loginJson.cantidadM);
       localStorage.setItem("permissions", JSON.stringify(permissions));
+      localStorage.setItem("messageID", loginJson.messageId)
       let userInvalid = document.getElementById("userInvalid");
       let isDesaparezco = userInvalid.classList.contains("desaparezco");
       history.push("/");

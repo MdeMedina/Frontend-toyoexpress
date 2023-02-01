@@ -34,6 +34,7 @@ const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
 const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
 const em = JSON.parse(localStorage.getItem("permissions")).editarMovimientos
 const [moves, setMoves] = useState([])
+const [room, setRoom] = useState()
 const [actMovimiento, setActMovimiento] = useState(false)
 const [ActCantidad, setActCantidad] = useState(cantidadM)
 const [users, setUsers] = useState([])
@@ -42,6 +43,7 @@ const [myMove, setMyMove] = useState()
 const [actShow, setActShow] = useState(false)
 const [cuenta, setCuenta] = useState(null)
 const [pago, setPago] = useState(null)
+const [aproveN, setAproveN] = useState([])
 const [egresoShow, setEgresoShow] = React.useState(false);
 const [selectMove, setSelectMove] = useState('')
 const [startDate, setStartDate] = useState(subDays(new Date(), 30));
@@ -70,6 +72,22 @@ const getMoves = async () => {
   let data = await response.json()
  setMoves(data)
 }
+
+
+
+const actDNote = async () => {
+  let updateData = {email: localStorage.getItem('email'), notificaciones: []}
+  await fetch(`${url_api}/users/actNotificaciones`, {
+    method: 'PUT',
+    body: JSON.stringify(updateData),
+  headers: new Headers({ 'Content-type': 'application/json'})
+  }).then(res => console.log(res))
+} 
+
+useEffect(() => {
+  actDNote()
+})
+
 
 useEffect(() => {
   actmoveCantidad()
@@ -106,6 +124,7 @@ const ingreso = () => {
     name: name,
     pago: newPago,
     email: localStorage.getItem('email'),
+    messageId: localStorage.getItem("messageID")
   };
   let error = document.getElementById("error");
   if (!newCuenta) {
@@ -143,7 +162,7 @@ const ingreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`));
+      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false));
     setEgresoShow(false)
   }
 };
@@ -159,6 +178,7 @@ const egreso = () => {
     name: name,
     pago: newPago,
     email: localStorage.getItem('email'),
+    messageId: localStorage.getItem("messageID")
   };
   
   let error = document.getElementById("error");
@@ -201,7 +221,7 @@ const egreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`));
+      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false));
     setEgresoShow(false);
   }
 };
@@ -293,7 +313,7 @@ movimiento()
 const removeMove = async () => {
   if(deletingMove){
   await fetch(`${url_api}/moves/deleteMoves`, {
-    method: 'DELETE',
+    method: 'PUT',
     body: JSON.stringify(deletingMove),
   headers: new Headers({ 'Content-type': 'application/json'})
 }).then(r => console.log(r)).then(r => gettingUsers()).then(r => Swal.fire({
@@ -321,7 +341,7 @@ const deleteMoves = (m) => {
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
-        setDeletingMove({identificador: m.identificador ,_id: m._id})
+        setDeletingMove({identificador: m.identificador})
         }
       })
       }
@@ -428,7 +448,10 @@ setVale(value)
 
 const aproveSetter3 = (move) =>{
   if (am) {
-    return (<button type="button" className="btn btn-success" data-bs-dismiss="modal" aria-label="Close" onClick={() => updateStatus(move)}>Aprobar</button>)
+    return (<button type="button" className="btn btn-success" data-bs-dismiss="modal" aria-label="Close" onClick={() => {
+      updateStatus(move)
+    }
+    }>Aprobar</button>)
   }
 }
 
@@ -480,6 +503,9 @@ const updateStatus = async (move) => {
   if (vale === '') {
     Swal.fire( "Oops" ,  "Por favor escriba el valor del vale!" ,  "error" )
   } else {
+  let message = `Tu movimiento ${move.identificador} ha sido aprobado`
+  let email = move.email
+  let messageId = move.messageId
   let updateData = {
     identificador: move.identificador,
     aFecha: hoy,
@@ -489,7 +515,7 @@ await fetch(`${url_api}/moves/updateStatus`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`))
+  }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(socket.emit("join_room", move.messageId)).then(socket.emit("send_aprove", { email, message, messageId }))
 getMoves()
 Swal.fire({
   icon: 'success',
@@ -549,6 +575,9 @@ let final = new Date(endDate)
 if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion) {
   betaResults = moves
 
+  betaResults = betaResults.filter( (dato) => {
+    return !dato.disabled
+  })
 
   betaResults= filterRange(betaResults, inicio, final)
   if (vm === false) {
@@ -625,6 +654,9 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
       })
       betaResults = alphaResults
   }
+  betaResults = betaResults.filter( (dato) => {
+    return !dato.disabled
+  })
 
   if (cuenta) {
     alphaResults = []
@@ -661,6 +693,7 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
      const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
      return fechaReal2 -fechaReal1 
    })
+
   results = betaResults
 }
 const filteredResults = () => {

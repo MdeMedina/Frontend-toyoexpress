@@ -21,10 +21,12 @@ function Navg({ socket }) {
   const [apertura, setApertura] = useState();
   const [moves, setMoves] = useState([]);
   const [filterMove, setfilterMove] = useState([]);
+  const [note, setNote] = useState([])
   const [cierre, setCierre] = useState();
   const user = localStorage.getItem("name");
   let hourD = localStorage.getItem("HourAlert");
   const [alertDado, setAlertDado] = useState(hourD);
+  const [aproveN, setAproveN] = useState([])
   const [notification, setNotification] = useState([]);
   const toggleFunc = () => {
     const sidebar = document.getElementById("sidebar");
@@ -73,15 +75,42 @@ function Navg({ socket }) {
     hourAlerta();
   };
 
+  const getNote = async () => {
+
+    await fetch(`${url_api}/users/`).then(res => res.json()).then(res => res.users).then(res => res.filter((dato) => {
+        return dato.email.includes(localStorage.getItem("email"))
+      })
+    ).then(res => res[0].notificaciones).then(res => setNote(res))
+  } 
+
+  const actNote = async (n) => {
+    let updateData = {email: n.email, notificaciones: [n.message]}
+    await fetch(`${url_api}/users/actNotificaciones`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    headers: new Headers({ 'Content-type': 'application/json'})
+    }).then(res => console.log(res)).then(getNote())
+  } 
+
   useEffect(() => {
     if (am) {
       socket.on("move", getMoves);
     }
+    socket.emit("join_room", parseInt(localStorage.getItem("messageID")))
+    socket.on("receive_aprove", (data) => {
+      setAproveN(prevArray => [...prevArray, data.message])
+      getNote()
+      actNote(data)
+    })
   });
+  useEffect(() => {
+    console.log(aproveN)
+  }, [aproveN])
+  
   useEffect(() => {
     setfilterMove(
       moves.filter((m) => {
-        return !m.vale;
+        return !m.vale && !m.disabled;
       })
     );
   }, [moves]);
@@ -94,6 +123,7 @@ function Navg({ socket }) {
   useEffect(() => {
     getTime();
     getMoves();
+    getNote()
   }, []);
 
   const getTime = async () => {
@@ -122,10 +152,26 @@ function Navg({ socket }) {
       } else {
         return <div>No hay movimientos por aprobar</div>;
       }
-    } else {
-      return <div>No hay notificaciones nuevas</div>;
     }
   };
+
+  const displayNotes = () => {
+    if (!note[0]) {
+      console.log('perdi')
+      if(am) {
+        return false
+      } else {
+        return <div>No hay notificaciones nuevas</div> 
+      }
+
+    } else {
+      return (
+        <div onClick={() => history.push("/moves")} className="af" key={1}>
+          {`Tienes movimientos ya aprobados`}
+        </div>
+      );
+    }
+  }
 
   return (
     <div className="ndG">
@@ -151,7 +197,8 @@ function Navg({ socket }) {
                     </div>
                   ) : (
                     false
-                  )}
+                  )}{!note[0] ? false : <div className="bola " id="bola">
+                </div>}
                   <div class="dropdown col-3 d-flex justify-content-end">
                     <div
                       className="nav-link dropdown-toggle"
@@ -168,7 +215,9 @@ function Navg({ socket }) {
                     mdw"
                     >
                       <li className="row">
-                        {displayNotificationMove(notification)}
+                        {displayNotificationMove(notification)
+                        }
+                        {displayNotes()}
                       </li>
                     </ul>
                   </div>
