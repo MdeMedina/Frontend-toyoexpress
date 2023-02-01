@@ -81,7 +81,7 @@ const actDNote = async () => {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(res => console.log(res))
+  })
 } 
 
 useEffect(() => {
@@ -91,7 +91,7 @@ useEffect(() => {
 
 useEffect(() => {
   actmoveCantidad()
-  console.log(ActCantidad)
+
 }, [ActCantidad])
 const actmoveCantidad = async () => {
   let actData = {
@@ -101,7 +101,7 @@ const actmoveCantidad = async () => {
   await fetch(`${url_api}/users/actualizarCantidad`, { method: 'PUT',
   body: JSON.stringify(actData),
 headers: new Headers({ 'Content-type': 'application/json'})
-}).then(r => console.log(r)).then(localStorage.setItem('cantidadM', ActCantidad))
+}).then(localStorage.setItem('cantidadM', ActCantidad))
 }
 
 function currencyFormatter({ currency, value}) {
@@ -154,9 +154,7 @@ const ingreso = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(obj),
-    })
-      .then((response) => console.log(response))
-      .then(
+    }).then(
         Swal.fire({
           icon: "success",
           title: "Movimiento Creado con exito",
@@ -214,7 +212,6 @@ const egreso = () => {
       },
       body: JSON.stringify(obj),
     })
-      .then((response) => console.log(response))
       .then(
         Swal.fire({
           icon: "success",
@@ -231,8 +228,7 @@ const editMoves = (m, i) => {
       return(<button className='btn btn-primary closer' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
         setMyMove(m)
         setIdentificador(m.identificador)
-        setActShow(true)
-        console.log("movimientos.jsx", m)}}><box-icon name='edit-alt' color='#ffffff' size='20px'></box-icon></button>)
+        setActShow(true)}}><box-icon name='edit-alt' color='#ffffff' size='20px'></box-icon></button>)
       }
   
 }
@@ -284,7 +280,6 @@ const updateMove = () => {
       },
       body: JSON.stringify(obj),
     })
-      .then((response) => console.log(response))
       .then(
         Swal.fire({
           icon: "success",
@@ -316,7 +311,7 @@ const removeMove = async () => {
     method: 'PUT',
     body: JSON.stringify(deletingMove),
   headers: new Headers({ 'Content-type': 'application/json'})
-}).then(r => console.log(r)).then(r => gettingUsers()).then(r => Swal.fire({
+}).then(r => gettingUsers()).then(r => Swal.fire({
   icon: 'success',
   title: 'Movimiento Eliminado con exito',
 })).then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`))

@@ -186,7 +186,7 @@ function EModal(props) {
             Cerrar
           </Button>
           <Button variant="primary" onClick={() => {
-            console.log(newMonto)
+
             props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, conversion)
           }}>
             Crear

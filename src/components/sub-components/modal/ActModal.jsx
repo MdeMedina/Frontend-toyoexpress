@@ -68,7 +68,6 @@ function ActModal(props) {
     singleValue: (styles, { data }) => ({ ...styles, ...dot(data.color) }),
   };
   
-console.log(move)
   useEffect(() => {
     changingDollars(bolos, cambio)
   }, [bolos, cambio])
@@ -176,7 +175,6 @@ console.log(move)
             Cerrar
           </Button>
           <Button variant="primary" onClick={() => {
-            console.log('action', props.settingActMounts)
             props.settingActMounts(newCuenta, newConcepto, bolos, cambio, newMonto, conversion)
           }}>
             Guardar

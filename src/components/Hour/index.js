@@ -89,7 +89,6 @@ function UpdateHour() {
                 type="time"
                 id="apertura"
                 defaultValue={apertura}
-                onChange={(e) => console.log(e)}
               />
             </div>
             <div className="cierra col-12">

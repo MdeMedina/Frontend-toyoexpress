@@ -24,7 +24,6 @@ function Login() {
       headers: new Headers({ "Content-type": "application/json" }),
     });
     const loginJson = await loginRes.json();
-    console.log(loginJson)
     const loginStatus = await loginRes.status;
     if (loginStatus === 403 || loginStatus === 401) {
       let userGood = document.getElementById("userGood");

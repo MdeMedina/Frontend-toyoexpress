@@ -89,7 +89,7 @@ function Navg({ socket }) {
       method: 'PUT',
       body: JSON.stringify(updateData),
     headers: new Headers({ 'Content-type': 'application/json'})
-    }).then(res => console.log(res)).then(getNote())
+    }).then(getNote())
   } 
 
   useEffect(() => {
@@ -103,9 +103,6 @@ function Navg({ socket }) {
       actNote(data)
     })
   });
-  useEffect(() => {
-    console.log(aproveN)
-  }, [aproveN])
   
   useEffect(() => {
     setfilterMove(
@@ -157,7 +154,6 @@ function Navg({ socket }) {
 
   const displayNotes = () => {
     if (!note[0]) {
-      console.log('perdi')
       if(am) {
         return false
       } else {

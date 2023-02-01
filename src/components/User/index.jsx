@@ -49,7 +49,6 @@ useEffect(() => {
 }, [estaba, meEncuentro])
 
 const handleVPage = (e) => {
-  console.log(e)
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
@@ -66,7 +65,6 @@ const handleVPage = (e) => {
   }, [])
 
   const editUsers = (u, i) => { 
-    console.log("modUsuarios", modUsuarios)
     if (modUsuarios) {
         return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
     }
@@ -77,14 +75,13 @@ const handleVPage = (e) => {
       method: 'DELETE',
       body: JSON.stringify(deletingUser),
     headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(r => console.log(r)).then(r => gettingUsers()).then(Swal.fire({
+  }).then(r => gettingUsers()).then(Swal.fire({
     icon: 'success',
     title: 'Usuario Eliminado con exito',
   }))
   }
 
   const deleteUsers = (u) => {
-    console.log("delUsuario", delUsuarios)
     if (delUsuarios) {
         return(<button className='btn btn-danger' value={u._id} onClick={(e) => {
       Swal.fire({
@@ -95,7 +92,6 @@ const handleVPage = (e) => {
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
-        console.log(u._id)
         setDeletingUser({ _id: u._id})
         removeUser()
         }
@@ -161,7 +157,7 @@ const handleVPage = (e) => {
         method: 'POST',
         body: JSON.stringify(registerData),
       headers: new Headers({ 'Content-type': 'application/json'})
-    }).then(res => res.json()).then(r => console.log(r)).then(r => gettingUsers()).then(Swal.fire({
+    }).then(res => res.json()).then(r => gettingUsers()).then(Swal.fire({
       icon: 'success',
       title: 'Usuario registrado con exito',
     }))
@@ -180,7 +176,6 @@ const handleVPage = (e) => {
     const modTime = document.getElementById(`actModTime-${i}`).checked
     const obTime = document.getElementById(`actObTime-${i}`).checked
     const cAccounts = document.getElementById(`actCAccounts-${i}`).checked
-    console.log(email, username, movesVista, aproveMoves,createU, modU, delU, modTime)
  const permissions = 
     {verMovimientos: movesVista,
       aprobarMovimientos: aproveMoves,
@@ -200,7 +195,7 @@ const handleVPage = (e) => {
       method: 'PUT',
       body: JSON.stringify(actData),
     headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(r => console.log(r)).then(r => {
+  }).then(r => {
     gettingUsers()
   }).then(Swal.fire({
     icon: 'success',
@@ -293,7 +288,7 @@ return (
   </div>
   <hr />
     <h3>Permisos</h3>
-    <h5 onClick={() => console.log(verMoves)}>- Movimientos</h5>
+    <h5>- Movimientos</h5>
     <div class="form-check">
   <input class="form-check-input" type="checkbox" value="" id="movesVista" onChange={() => {
             const value = document.getElementById('movesVista').checked
@@ -415,8 +410,6 @@ return (
     <tbody>
         {
             filteredResults().map((u, i) => {
-                let id = `actModal-${i}`
-                console.log(id)
                 return (
                 <tr>
                 <td>{u.username}</td>
@@ -447,7 +440,7 @@ return (
   </div>
   <hr />
     <h3>Permisos</h3>
-    <h5 onClick={() => console.log(verMoves)}>- Movimientos</h5>
+    <h5>- Movimientos</h5>
     <div class="form-check">
   <input class="form-check-input" type="checkbox" value="" id={`actMovesVista-${i}`} defaultChecked={u.permissions.verMovimientos}  onChange={() => {
             const value = document.getElementById(`actMovesVista-${i}`).checked
