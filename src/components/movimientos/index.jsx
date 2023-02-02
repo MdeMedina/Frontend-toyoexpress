@@ -7,7 +7,7 @@ import DatePicker from 'react-datepicker'
 import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import "react-datepicker/dist/react-datepicker.css";
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import 'boxicons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'
@@ -21,10 +21,10 @@ import { cuentas } from '../../lib/data/SelectOptions'
 function Moves({socket}) {
   let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
-  const history = useHistory()
+  const navigate = useNavigate()
   const key = localStorage.getItem('key')
   if (!key) {
-    history.push('/login')
+    navigate('/login')
   }
  let handleClose = () => {
     document.body.classList.remove("modal-open");
@@ -490,7 +490,8 @@ function filterRange(arr, a, b) {
   return arr.filter(item => {
    const arrfecha =  item.fecha.split('/')
    const fechaReal = new Date(arrfecha[2], parseInt(arrfecha[1] - 1), arrfecha[0])
-   return (a <= fechaReal && fechaReal <= b)
+
+   return (new Date(a) <= new Date(fechaReal) && new Date(fechaReal) <= new Date(b))
   });
 }
 
@@ -701,8 +702,8 @@ const filteredResultsPDF = (init, fin) => {
     betaResults = betaResults.filter((dato) => {
       return dato.name.includes(localStorage.getItem('name'))
     })
-    betaResults= filterRange(betaResults, init, fin)
   }
+  betaResults= filterRange(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
     const arrId2 = b.identificador.split('-')
@@ -717,7 +718,7 @@ const filteredResultsPDF = (init, fin) => {
      return fechaReal2 -fechaReal1 
    })
    results = betaResults
-
+   console.log(results)
    return results
 }
 
@@ -786,8 +787,6 @@ table.push({fecha: "Total", monto: `$${pdfTotal}`})}
 let bsIdLabel
 return (
 <>
-<Navg socket={socket}/>
-  <Sidebar getMoves={getMoves}/>
   <div className="d-flex justify-content-center">
   <div className="container-fluid row  d-flex justify-content-center">
   <div className="row bg-light col-11 div-btn">
@@ -938,13 +937,14 @@ Movimientos a visualizar {"  "}
 <div className="col-8 d-flex align-items-center justify-content-end">
   <button type="button" class="btn btn-primary" onClick={() => {
     Swal.fire({
-      title: 'Multiple inputs',
+      title: 'Escoja la fecha para la impresion',
       html:
         '<div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1"></div> <br />' +
         '<div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2"></div>',
     }).then(() => {
       let input1 = document.getElementById('swal-input1').value
       let input2 = document.getElementById('swal-input2').value
+      console.log(input1, input2)
       filtPDF(input1, input2)
       doc.text('Reporte: ingresos y egresos', 10, 10)
     autoTable(doc, {    columnStyles: { monto: { halign: 'right' } }, 

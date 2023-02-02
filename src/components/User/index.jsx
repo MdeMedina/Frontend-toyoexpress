@@ -6,14 +6,14 @@ import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import 'boxicons'
 import Swal from 'sweetalert2'
-import {useHistory} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 function User({socket}) {
   const modUsuarios = JSON.parse(localStorage.getItem('permissions')).modificarUsuarios
   const delUsuarios = JSON.parse(localStorage.getItem('permissions')).eliminarUsuarios
-    const history = useHistory()
+    const navigate = useNavigate()
   const key = localStorage.getItem('key')
   if (!key) {
-    history.push('/login')
+    navigate('/login')
   }
   
   const [users, setUsers] = useState([])
@@ -92,10 +92,20 @@ const handleVPage = (e) => {
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
-        setDeletingUser({ _id: u._id})
-        removeUser()
+        Swal.fire({
+          title: 'Estas seguro COMPLETAMENTE de que deseas eliminar a este usuario?',
+          showDenyButton: true,
+          showCancelButton: true,
+          showConfirmButton: false,
+          cancelButtonText: `Cancelar`,
+          denyButtonText: `Eliminar`,
+        }).then(result => {if (result.isDenied){
+          setDeletingUser({ _id: u._id})
+          removeUser()
+        }})
         }
       })
+
         }}><box-icon name='trash' type='solid' color='#ffffff' ></box-icon></button>)
     }
   }
@@ -246,8 +256,6 @@ const handleVPage = (e) => {
 }
 return (
 <>
-    <Navg socket={socket}/>
-    <Sidebar />
     <div className="d-flex justify-content-center ">
     <div className="container-fluid row  d-flex justify-content-center">
     <div className="row bg-light col-11 filtros">

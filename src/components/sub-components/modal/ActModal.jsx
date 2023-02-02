@@ -100,7 +100,7 @@ function ActModal(props) {
       id={`actModal-${i}`}
     >
       <Modal.Header closeButton>
-          <Modal.Title>Nuevo Movimiento</Modal.Title>
+          <Modal.Title>Editar Movimiento</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div id="error" className='desaparecer'>*Por Favor, rellene todos los campos</div>

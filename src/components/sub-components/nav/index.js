@@ -5,7 +5,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import { formatDateHoyEn, formatDateMananaEn } from "../../dates/dates";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -17,7 +17,7 @@ import { url_api } from "../../../lib/data/server";
 function Navg({ socket }) {
   let obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
   let am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos;
-  const history = useHistory();
+  const navigate = useNavigate();
   const [apertura, setApertura] = useState();
   const [moves, setMoves] = useState([]);
   const [filterMove, setfilterMove] = useState([]);
@@ -61,16 +61,18 @@ function Navg({ socket }) {
       setAlertDado(hourD);
       return alert("estamos a 5 minutos de cerrar");
     } else if (horaProgramada - horaActual <= 0 && !obH) {
-      history.push("/logout");
+      navigate("/logout");
     }
   }
   useEffect (() => {
-    let n = 3600;
+    let n = 60;
+    let l=document.getElementById("number")
     const id = window.setInterval(function(){
       document.onmousemove = function (){
-        n=3600
+        n=60
       }
       n--;
+      l.innerText = n
       let nav = localStorage.getItem('nav')
       if (n <= -1 && nav === "true") {
         Swal.fire({
@@ -78,7 +80,7 @@ function Navg({ socket }) {
           icon: 'warning',
           confirmButtonText: 'ok!'
         }).then((result) => {
-          history.push('/logout')
+          navigate('/logout')
         })
       }
     }, 1200)
@@ -149,13 +151,13 @@ function Navg({ socket }) {
     if (am) {
       if (filterMove.length > 0 && filterMove.length > 1) {
         return (
-          <div onClick={() => history.push("/moves")} className="af" key={1}>
+          <div onClick={() => navigate("/moves")} className="af" key={1}>
             {`Hay ${filterMove.length} movimientos por aprobar`}
           </div>
         );
       } else if (filterMove.length === 1) {
         return (
-          <div onClick={() => history.push("/moves")} className="af" key={1}>
+          <div onClick={() => navigate("/moves")} className="af" key={1}>
             {`Hay 1 movimiento por aprobar`}
           </div>
         );
@@ -175,7 +177,7 @@ function Navg({ socket }) {
 
     } else {
       return (
-        <div onClick={() => history.push("/moves")} className="af" key={1}>
+        <div onClick={() => navigate("/moves")} className="af" key={1}>
           {`Tienes movimientos ya aprobados`}
         </div>
       );
@@ -189,6 +191,7 @@ function Navg({ socket }) {
           <Row className="row-edit">
             <Col xs={2}>
               <Navbar.Brand href="#home">Toyoxpress</Navbar.Brand>
+              <div id="number"></div>
             </Col>
             <Col xs={5}>
               <div onClick={toggleFunc}>

@@ -3,17 +3,17 @@ import Navg from "../sub-components/nav";
 import Sidebar from "../sub-components/sidebar";
 import { url_api } from "../../lib/data/server";
 import "../../css/hour.css";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import { useEffect } from "react";
 const socket = io.connect(`${url_api}`);
 
 function UpdateHour() {
   let hour;
-  const history = useHistory();
+  const navigate = useNavigate();
   const key = localStorage.getItem("key");
   if (!key) {
-    history.push("/login");
+    navigate("/login");
   }
   const [apertura, setApertura] = useState("");
   const [cierre, setCierre] = useState("");
@@ -77,8 +77,6 @@ function UpdateHour() {
 
   return (
     <>
-      <Navg socket={socket} />
-      <Sidebar />
       <div className="row d-flex justify-content-center">
         <div className="row bg-light d-flex justify-content-center filtros col-4">
           <form className="Form">

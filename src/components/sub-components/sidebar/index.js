@@ -53,13 +53,13 @@ function Sidebar(props) {
     }
   }
   return (
-    <div className="navDiv">
+    <>
       <nav className="sidebar" id="sidebar">
         <div className="menu-bar">
           <div className="menu">
             <ul className="menu-links">
               <li className="caja-link ">
-                <Link to="/home">
+                <Link to="/">
                   <div className="icon">
                     <box-icon name="home-smile" size="27px"></box-icon>
                   </div>
@@ -91,7 +91,7 @@ function Sidebar(props) {
           </div>
         </div>
       </nav>
-    </div>
+    </>
   );
 }
 

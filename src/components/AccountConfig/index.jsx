@@ -7,12 +7,12 @@ import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import 'boxicons'
 import Swal from 'sweetalert2'
-import {useHistory} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 
 export const AccountConfig = ({socket}) => {
 const ca = JSON.parse(localStorage.getItem('permissions')).configurarCuentas
 const key = localStorage.getItem('key')
-const history = useHistory()
+const navigate = useNavigate()
  const [accountName, setAccountName] = useState('')
  const [accountColor, setAccountColor] = useState('')
  const [cuentas, setCuentas] = useState([])
@@ -24,14 +24,14 @@ const [deletingAccount, setDeletingAccount] = useState()
 const [vPage, setVPage] = useState(10)
 useEffect(() => {
   if (!ca) {
-    history.push('/')
+    navigate('/')
   }
 
   if (!key) {
-    history.push("/login")
+    navigate("/login")
   }
 
-}, [ca, key, history])
+}, [ca, key, navigate])
 
 
 
@@ -95,17 +95,27 @@ const actCuenta = async (u) => {
 const deleteCuenta = (u) => {
         return(<button className='btn btn-danger' value={u._id} onClick={(e) => {
       Swal.fire({
-        title: 'Estas seguro que deseas eliminar a este usuario?',
+        title: 'Estas seguro que deseas eliminar esta cuenta?',
         showDenyButton: true,
         showCancelButton: true,
         showConfirmButton: false,
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
-        console.log(u._id)
-        removeAccount(u._id)
+        Swal.fire({
+          title: 'Estas seguro COMPLETAMENTE que deseas eliminar esta cuenta?',
+          showDenyButton: true,
+          showCancelButton: true,
+          showConfirmButton: false,
+          cancelButtonText: `Cancelar`,
+          denyButtonText: `Eliminar`,
+        }).then((result) => { if (result.isDenied) {
+          removeAccount(u._id)
+          }
+        })
         }
       })
+
         }}><box-icon name='trash' type='solid' color='#ffffff' ></box-icon></button>)
     }
 
@@ -198,8 +208,6 @@ const deleteCuenta = (u) => {
 
   return (
     <>
-    <Navg socket={socket}/>
-    <Sidebar />
     <div className="d-flex justify-content-center ">
     <div className="container-fluid row  d-flex justify-content-center">
     <div className="row bg-light col-11 filtros">

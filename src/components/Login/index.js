@@ -1,10 +1,10 @@
 import React from "react";
 import { url_api } from "../../lib/data/server";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../../css/login.css";
 
 function Login() {
-  const history = useHistory();
+  const navigate = useNavigate();
   let loginData = {};
   let user;
   let pass;
@@ -48,7 +48,7 @@ function Login() {
       localStorage.setItem("nav", true)
       let userInvalid = document.getElementById("userInvalid");
       let isDesaparezco = userInvalid.classList.contains("desaparezco");
-      history.push("/");
+      navigate("/");
       if (!isDesaparezco) {
         userInvalid.classList.add("desaparezco");
       }

@@ -2,12 +2,12 @@ import React from "react";
 import Navg from "../sub-components/nav";
 import { Link } from "react-router-dom";
 import Sidebar from "../sub-components/sidebar";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 function Home({ socket }) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const key = localStorage.getItem("key");
   if (!key) {
-    history.push("/login");
+    navigate("/login");
   }
 
   const permissions = JSON.parse(localStorage.getItem('permissions'))
@@ -16,8 +16,6 @@ function Home({ socket }) {
 
   return (
     <>
-      <Navg socket={socket} />
-      <Sidebar />
       <div class="row d-flex justify-content-center c-container">
         <div className="col-11">
           <h2>Bienvenido</h2>
