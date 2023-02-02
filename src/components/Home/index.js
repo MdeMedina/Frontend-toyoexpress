@@ -23,8 +23,8 @@ function Home({ socket }) {
           <h2>Bienvenido</h2>
         </div>
         <div className="col row d-flex justify-content-center">
-          <div class="card cd col-11">
-            <img src="..." class="card-img-top" alt="..." />
+          <div class="card cd col-10 cl">
+            <img src={require('../img/moves.jpg')} class="card-img-top " alt="..."/>
             <div class="card-body ">
               <h5 class="card-title d-flex justify-content-center">
                 Movimientos
@@ -40,8 +40,8 @@ function Home({ socket }) {
         </div>
       
 {    !cu ? false : <div className="col row d-flex justify-content-center">
-        <div class="card cd col-11">
-          <img src="..." class="card-img-top" alt="..." />
+        <div class="card cd col-10 cl">
+          <img src={require('../img/users.jpg')} class="card-img-top cl" alt="..." />
           <div class="card-body ">
             <h5 class="card-title d-flex justify-content-center">Usuarios</h5>
             <p class="card-text d-flex justify-content-center">
@@ -54,8 +54,8 @@ function Home({ socket }) {
         </div>
       </div>}
 {      !hi ? false :  <div className="col row d-flex justify-content-center">
-          <div class="card cd col-11">
-            <img src="..." class="card-img-top" alt="..." />
+          <div class="card cd col-10 cl">
+            <img src={require('../img/hours.jpg')}class="card-img-top cl" alt="..." />
             <div class="card-body ">
               <h5 class="card-title d-flex justify-content-center">
                 Actualizar horas de ingreso

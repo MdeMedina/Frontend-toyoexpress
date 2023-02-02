@@ -24,6 +24,9 @@
 
 #root{ height:95vh; }
 
+.cl {
+    padding: 0 !important;
+}
 
 .moves{
     width: 65% !important;
@@ -112,7 +115,7 @@
 }
 
 .c-container {
-    margin-top: 12.5% !important;
+    margin-top: 9.5% !important;
 }
 
 .sidebar .menu-links {
