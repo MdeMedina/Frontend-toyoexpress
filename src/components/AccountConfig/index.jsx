@@ -6,12 +6,16 @@ import { HexColorPicker } from "react-colorful";
 import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import 'boxicons'
+import { url_local } from "../../lib/data/server";
 import Swal from 'sweetalert2'
 import {useNavigate} from 'react-router-dom'
 
 export const AccountConfig = ({socket}) => {
 const ca = JSON.parse(localStorage.getItem('permissions')).configurarCuentas
 const key = localStorage.getItem('key')
+if (!key) {
+  window.location.href=`${url_local}/login`;
+}
 const navigate = useNavigate()
  const [accountName, setAccountName] = useState('')
  const [accountColor, setAccountColor] = useState('')

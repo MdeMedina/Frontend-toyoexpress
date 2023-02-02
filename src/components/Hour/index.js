@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Navg from "../sub-components/nav";
 import Sidebar from "../sub-components/sidebar";
-import { url_api } from "../../lib/data/server";
+import { url_api, url_local } from "../../lib/data/server";
 import "../../css/hour.css";
 import { useNavigate } from "react-router-dom";
 import io from "socket.io-client";
@@ -10,14 +10,12 @@ const socket = io.connect(`${url_api}`);
 
 function UpdateHour() {
   let hour;
-  const navigate = useNavigate();
-  useEffect(() => {
-    const key = localStorage.getItem("key");
-    if (!key) {
-      navigate("/login");
-    }
-    }, [navigate])
-    
+  
+  const key = localStorage.getItem("key");
+  if (!key) {
+    window.location.href=`${url_local}/login`;
+  }
+  
   const [apertura, setApertura] = useState("");
   const [cierre, setCierre] = useState("");
 

@@ -14,7 +14,7 @@ import autoTable from 'jspdf-autotable'
 import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
 import Swal from 'sweetalert2';
-import { url_api } from '../../lib/data/server';
+import { url_api, url_local } from '../../lib/data/server';
 import EModal from '../sub-components/modal/E-modal'
 import { cuentas } from '../../lib/data/SelectOptions'
 
@@ -22,12 +22,11 @@ function Moves({socket}) {
   let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
   const navigate = useNavigate()
-  useEffect(() => {
-    const key = localStorage.getItem("key");
-    if (!key) {
-      navigate("/login");
-    }
-    }, [navigate])
+  const key = localStorage.getItem("key");
+  if (!key) {
+    window.location.href=`${url_local}/login`;
+  }
+  
     
  let handleClose = () => {
     document.body.classList.remove("modal-open");

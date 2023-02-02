@@ -1,23 +1,19 @@
 import { useEffect, useState }from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
-import { url_api } from '../../lib/data/server'
+import { url_api, url_local } from '../../lib/data/server'
 import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import 'boxicons'
 import Swal from 'sweetalert2'
-import {useNavigate} from 'react-router-dom'
 function User({socket}) {
   const modUsuarios = JSON.parse(localStorage.getItem('permissions')).modificarUsuarios
   const delUsuarios = JSON.parse(localStorage.getItem('permissions')).eliminarUsuarios
-    const navigate = useNavigate()
-    useEffect(() => {
-      const key = localStorage.getItem("key");
-      if (!key) {
-        navigate("/login");
-      }
-      }, [navigate])
-      
+    const key = localStorage.getItem("key");
+    if (!key) {
+      window.location.href=`${url_local}/login`;
+    }
+    
   
   const [users, setUsers] = useState([])
   const [email, setEmail] = useState('')
