@@ -155,7 +155,7 @@ function Navg({ socket }) {
         );
       } else if (filterMove.length === 1) {
         return (
-          <div onClick={() => history.push("/moves")} key={1}>
+          <div onClick={() => history.push("/moves")} className="af" key={1}>
             {`Hay 1 movimiento por aprobar`}
           </div>
         );
