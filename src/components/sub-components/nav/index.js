@@ -64,13 +64,26 @@ function Navg({ socket }) {
       history.push("/logout");
     }
   }
-  var timeout;
-  window.onmousemove = function () {
-    clearTimeout(timeout);
-    timeout = setTimeout(function () {
-      history.push("/logout");
-    }, 3600000);
-  };
+  useEffect (() => {
+    let n = 3600;
+    const id = window.setInterval(function(){
+      document.onmousemove = function (){
+        n=3600
+      }
+      n--;
+      let nav = localStorage.getItem('nav')
+      if (n <= -1 && nav === "true") {
+        Swal.fire({
+          title: 'La sesion ha expirado',
+          icon: 'warning',
+          confirmButtonText: 'ok!'
+        }).then((result) => {
+          history.push('/logout')
+        })
+      }
+    }, 1200)
+  }, [])
+
   window.onmousemove = function () {
     hourAlerta();
   };

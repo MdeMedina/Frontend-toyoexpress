@@ -45,6 +45,7 @@ function Login() {
       localStorage.setItem("cantidadM", loginJson.cantidadM);
       localStorage.setItem("permissions", JSON.stringify(permissions));
       localStorage.setItem("messageID", loginJson.messageId)
+      localStorage.setItem("nav", true)
       let userInvalid = document.getElementById("userInvalid");
       let isDesaparezco = userInvalid.classList.contains("desaparezco");
       history.push("/");
