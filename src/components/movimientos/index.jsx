@@ -22,10 +22,13 @@ function Moves({socket}) {
   let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
   const navigate = useNavigate()
-  const key = localStorage.getItem('key')
-  if (!key) {
-    navigate('/login')
-  }
+  useEffect(() => {
+    const key = localStorage.getItem("key");
+    if (!key) {
+      navigate("/login");
+    }
+    }, [navigate])
+    
  let handleClose = () => {
     document.body.classList.remove("modal-open");
   }

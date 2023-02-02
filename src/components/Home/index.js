@@ -2,13 +2,18 @@ import React from "react";
 import Navg from "../sub-components/nav";
 import { Link } from "react-router-dom";
 import Sidebar from "../sub-components/sidebar";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 function Home({ socket }) {
   const navigate = useNavigate();
+  useEffect(() => {
   const key = localStorage.getItem("key");
   if (!key) {
     navigate("/login");
   }
+  }, [navigate])
+  
+
 
   const permissions = JSON.parse(localStorage.getItem('permissions'))
   const hi = permissions.horasIngreso

@@ -11,10 +11,13 @@ const socket = io.connect(`${url_api}`);
 function UpdateHour() {
   let hour;
   const navigate = useNavigate();
-  const key = localStorage.getItem("key");
-  if (!key) {
-    navigate("/login");
-  }
+  useEffect(() => {
+    const key = localStorage.getItem("key");
+    if (!key) {
+      navigate("/login");
+    }
+    }, [navigate])
+    
   const [apertura, setApertura] = useState("");
   const [cierre, setCierre] = useState("");
 

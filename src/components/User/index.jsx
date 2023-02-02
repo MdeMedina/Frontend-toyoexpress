@@ -11,10 +11,13 @@ function User({socket}) {
   const modUsuarios = JSON.parse(localStorage.getItem('permissions')).modificarUsuarios
   const delUsuarios = JSON.parse(localStorage.getItem('permissions')).eliminarUsuarios
     const navigate = useNavigate()
-  const key = localStorage.getItem('key')
-  if (!key) {
-    navigate('/login')
-  }
+    useEffect(() => {
+      const key = localStorage.getItem("key");
+      if (!key) {
+        navigate("/login");
+      }
+      }, [navigate])
+      
   
   const [users, setUsers] = useState([])
   const [email, setEmail] = useState('')
