@@ -217,18 +217,18 @@ function Navg({ socket }) {
       <Navbar bg="light" expand="lg" className="topbar">
         <Container className="d-flex justify-content-center">
           <Row className="row-edit">
-            <Col xs={2} className="logo-div">
+            <Col xs={2} className="d-flex align-items-center">
               <Navbar.Brand href="#home"><img src={require('../../img/logo.png')} className="logo" alt="..." /></Navbar.Brand>
               <div id="number"></div>
             </Col>
-            <Col xs={5}>
+            <Col xs={5} className="d-flex align-items-center">
               <div onClick={toggleFunc}>
                 <Button variant="dark">
                   <box-icon name="menu" color="white" id="hola"></box-icon>
                 </Button>{" "}
               </div>
             </Col>
-            <Col xs={5}>
+            <Col xs={5} >
               <Nav className="me-auto row">
                 <div className="notificacion col-2">
                   {filterMove.length > 0 && am ? (
