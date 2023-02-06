@@ -178,6 +178,7 @@ const handleVPage = (e) => {
     const username = document.getElementById(`actUsernameInput-${i}`).value
     const movesVista = document.getElementById(`actMovesVista-${i}`).checked
     const aproveMoves = document.getElementById(`actAproveMoves-${i}`).checked
+    const delMoves = document.getElementById(`actDelMoves-${i}`).checked
     const createU = document.getElementById(`actCreateU-${i}`).checked
     const eMoves = document.getElementById(`actEMoves-${i}`).checked
     const modU = document.getElementById(`actModU-${i}`).checked
@@ -185,6 +186,7 @@ const handleVPage = (e) => {
     const modTime = document.getElementById(`actModTime-${i}`).checked
     const obTime = document.getElementById(`actObTime-${i}`).checked
     const cAccounts = document.getElementById(`actCAccounts-${i}`).checked
+    console.log(delMoves)
  const permissions = 
     {verMovimientos: movesVista,
       aprobarMovimientos: aproveMoves,
@@ -468,7 +470,7 @@ return (
   </label>
 </div>
 <div class="form-check ">
-  <input class="form-check-input disabled" type="checkbox" value="" id={`actEMoves-${i}`}  defaultChecked={u.permissions.eliminarMovimientos} onChange={(e) => {
+  <input class="form-check-input disabled" type="checkbox" value="" id={`actEMoves-${i}`}  defaultChecked={u.permissions.editarMovimientos} onChange={(e) => {
             const value = e.target.checked
             setEMoves(value)
   }}/>
@@ -477,7 +479,7 @@ Editar Movimientos
   </label>
 </div>
 <div class="form-check ">
-  <input class="form-check-input disabled" type="checkbox" value="" id={`actDelMoves-${i}`}  defaultChecked={u.permissions.editarMovimientos} onChange={(e) => {
+  <input class="form-check-input disabled" type="checkbox" value="" id={`actDelMoves-${i}`}  defaultChecked={u.permissions.eliminarMovimientos} onChange={(e) => {
             const value = e.target.checked
             setDelMoves(value)
   }}/>
