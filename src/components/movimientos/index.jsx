@@ -884,7 +884,7 @@ return (
       />     
       </div>
       </div>
-      <div className="col-6 row ">
+      <div className="col-5 row ">
         <h4 className='d-flex justify-content-center'>Status de movimiento</h4> 
       <div class="form-check col-4 d-flex justify-content-center">
   <input class="form-check-input" type="radio" name="flexRadioDefault" value={''} id="flexRadioDefault1" defaultChecked onChange={(e) => setterStatus(e)}/>
@@ -903,7 +903,14 @@ return (
   <label className="form-check-label" htmlFor="flexRadioDefault3">
     Verificados
   </label>
+  
 </div>
+
+</div>
+<div className='col-1 d-flex align-items-center justify-content-end'>
+<button className='btn btn-primary closer' onClick={() => {   
+                window.location.reload(false);
+}}><box-icon name='repost' color="#fff" size='20px'></box-icon></button> 
 </div>
 </div>
 </div>
