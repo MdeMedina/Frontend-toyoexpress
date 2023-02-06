@@ -217,8 +217,8 @@ function Navg({ socket }) {
       <Navbar bg="light" expand="lg" className="topbar">
         <Container className="d-flex justify-content-center">
           <Row className="row-edit">
-            <Col xs={2}>
-              <Navbar.Brand href="#home">Toyoxpress</Navbar.Brand>
+            <Col xs={2} className="logo-div">
+              <Navbar.Brand href="#home"><img src={require('../../img/logo.png')} className="logo" alt="..." /></Navbar.Brand>
               <div id="number"></div>
             </Col>
             <Col xs={5}>

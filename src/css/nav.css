@@ -56,8 +56,19 @@
     justify-content: end;
 }
 
+.logo {
+    float: left;
+    width: 230px;
+    height: 42.32445520581114px;
+}
+.logo-div {
+    padding: 0 2px !important;
+    display: flex;
+    align-content: center;
+}
 
 .deluxe {
+    z-index: 999;
     position: sticky;
     top: 0;
 }
