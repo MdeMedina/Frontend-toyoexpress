@@ -42,7 +42,7 @@ function Sidebar(props) {
      return ( <li className="nav-link">
                 <Link to="/accountConfig">
                   <div className="icon">
-                    <box-icon name="wallet" size="27px"></box-icon>
+                  <box-icon name='money'></box-icon>
                   </div>
                   <span className="text nav-text">
                     Configuracion de cuentas

@@ -29,6 +29,11 @@
     text-align: end;
 }
 
+.lt {
+    font-size: 25px !important;
+}
+
+
 .div-btn { 
     margin-top: 12px !important;
     padding: 12px;

@@ -106,7 +106,7 @@ function Navg({ socket }) {
 
   useEffect (() => {
     getInactive()
-    document.onmousemove = function (){
+    document.onclick = function (){
       actInactive()
     }
   window.setInterval(function(){

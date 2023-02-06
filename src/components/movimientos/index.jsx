@@ -2,6 +2,8 @@ import React, {useState, ChangeEvent} from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
 import { useEffect } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowsRotate, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import {ActModal} from '../sub-components/modal/ActModal'
 import DatePicker from 'react-datepicker'
 import Pagination from 'react-bootstrap/Pagination'
@@ -908,9 +910,9 @@ return (
 
 </div>
 <div className='col-1 d-flex align-items-center justify-content-end'>
-<button className='btn btn-primary closer' onClick={() => {   
+<button className='btn btn-primary lt' onClick={() => {   
                 window.location.reload(false);
-}}><box-icon name='repost' color="#fff" size='20px'></box-icon></button> 
+}}><FontAwesomeIcon icon={faArrowsRotate} /></button> 
 </div>
 </div>
 </div>
