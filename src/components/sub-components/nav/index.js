@@ -28,6 +28,18 @@ function Navg({ socket }) {
   const [alertDado, setAlertDado] = useState(hourD);
   const [aproveN, setAproveN] = useState([])
   const [notification, setNotification] = useState([]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (!document.hidden) {
+        window.location.reload();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
   const toggleFunc = () => {
     const sidebar = document.getElementById("sidebar");
     sidebar.classList.toggle("close");
@@ -64,26 +76,42 @@ function Navg({ socket }) {
       navigate("/logout");
     }
   }
+
+  const getInactive = async () => {
+    let updateData = {email: localStorage.getItem('email') }
+   await fetch(`${url_api}/users/inactive`, {
+      method: 'POST',
+      body: JSON.stringify(updateData),
+    headers: new Headers({ 'Content-type': 'application/json'})
+    }).then(res => res.json()).then(res => {
+      let hora = res.hour
+      let actual = new Date()
+      let tiempo = new Date(actual) - new Date(hora)
+      if (tiempo >= 3600000) {
+        navigate("/logout");
+      }
+    })
+  }
+
+  const actInactive = async () => {
+    let updateData = {email: localStorage.getItem('email') }
+    await fetch(`${url_api}/users/actInactive`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    headers: new Headers({ 'Content-type': 'application/json'})
+    })
+  }
+
+
+
   useEffect (() => {
-    let n = 60;
-    let l=document.getElementById("number")
-    const id = window.setInterval(function(){
-      document.onmousemove = function (){
-        n=60
-      }
-      n--;
-      l.innerText = n
-      let nav = localStorage.getItem('nav')
-      if (n <= -1 && nav === "true") {
-        Swal.fire({
-          title: 'La sesion ha expirado',
-          icon: 'warning',
-          confirmButtonText: 'ok!'
-        }).then((result) => {
-          navigate('/logout')
-        })
-      }
-    }, 1200)
+    getInactive()
+    document.onmousemove = function (){
+      actInactive()
+    }
+  window.setInterval(function(){
+    getInactive()
+    }, 3600000)
   }, [])
 
   window.onmousemove = function () {

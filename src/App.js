@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import Home from "./components/Home";
 import Appx from "./components/template/app";
 import User from "./components/User";
@@ -13,6 +13,9 @@ import { url_api } from "./lib/data/server";
 import { AccountConfig } from "./components/AccountConfig";
 const socket = io.connect(`${url_api}`);
 function App() {
+
+  
+
   let permissions = JSON.parse(localStorage.getItem("permissions"));
   let vm;
   let am;

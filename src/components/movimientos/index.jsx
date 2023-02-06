@@ -22,11 +22,7 @@ function Moves({socket}) {
   let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
   const navigate = useNavigate()
-  const key = localStorage.getItem("key");
-  if (!key) {
-    window.location.href=`${url_local}/login`;
-  }
-  
+
     
  let handleClose = () => {
     document.body.classList.remove("modal-open");
