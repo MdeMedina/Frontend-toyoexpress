@@ -5,7 +5,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import { formatDateHoyEn, formatDateMananaEn } from "../../dates/dates";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -13,6 +13,7 @@ import Swal from "sweetalert2";
 import "boxicons";
 import "../../../css/nav.css";
 import { url_api } from "../../../lib/data/server";
+import { PassModal } from "../modal/passModal";
 
 function Navg({ socket }) {
   let obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
@@ -23,6 +24,9 @@ function Navg({ socket }) {
   const [filterMove, setfilterMove] = useState([]);
   const [note, setNote] = useState([])
   const [cierre, setCierre] = useState();
+  const [passShow, setPassShow] = useState()
+  const [password, setPassword] = useState()
+  const [newPassword, setNewPassword] = useState()
   const user = localStorage.getItem("name");
   let hourD = localStorage.getItem("HourAlert");
   const [alertDado, setAlertDado] = useState(hourD);
@@ -40,6 +44,27 @@ function Navg({ socket }) {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
+
+  const settingPassword = (password, newPassword) => {
+    setPassword(password)
+    setNewPassword(newPassword)
+  }
+
+  const nuevaPass = async () => {
+    let updateData = {email: localStorage.getItem('email'), ActualPassword: password, password: newPassword }
+    await fetch(`${url_api}/users/actpass`, {
+      method: 'POST',
+      body: JSON.stringify(updateData),
+    headers: new Headers({ 'Content-type': 'application/json'})
+  }).then(res => console.log(res)).then(Swal.fire({
+    icon: 'success',
+    title: 'Contraseña modificada con exito',
+  }))}
+
+  useEffect(() => {
+    nuevaPass()
+  }, [newPassword])
+
   const toggleFunc = () => {
     const sidebar = document.getElementById("sidebar");
     sidebar.classList.toggle("close");
@@ -287,6 +312,17 @@ function Navg({ socket }) {
                       <div className="fw-semibold d-flex justify-content-center">
                         {cierre}
                       </div>
+                    </li>
+                    <hr /> 
+                    <li className="row">
+                      <a onClick={() => setPassShow(true)} className="d-flex justify-content-center cc">
+                        Cambiar contraseña
+                      </a>
+                      <PassModal
+                      show={passShow}
+                      onHide={() => setPassShow(false)}
+                      settingMounts={settingPassword}
+                    />
                     </li>
                   </ul>
                 </div>

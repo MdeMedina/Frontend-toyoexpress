@@ -65,6 +65,14 @@
     padding: 0 2px !important;
 }
 
+.cc {
+    text-align: center;
+}
+
+.cc:hover {
+    cursor: pointer;
+}
+
 .deluxe {
     z-index: 999;
     position: sticky;
