@@ -1,8 +1,9 @@
-import React, {useState, ChangeEvent} from 'react'
+import React, {useState, ChangeEvent, useRef} from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
 import { useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {useReactToPrint} from 'react-to-print'
 import { faArrowsRotate, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import {ActModal} from '../sub-components/modal/ActModal'
 import DatePicker from 'react-datepicker'
@@ -40,7 +41,9 @@ const [ActCantidad, setActCantidad] = useState(cantidadM)
 const [users, setUsers] = useState([])
 const [monto, setMonto] = useState('')
 const [myMove, setMyMove] = useState()
+const [move, setMove] = useState()
 const [actShow, setActShow] = useState(false)
+const [mostrar, setMostrar] = useState(false)
 const [cuenta, setCuenta] = useState(null)
 const [pago, setPago] = useState(null)
 const [aproveN, setAproveN] = useState([])
@@ -73,6 +76,65 @@ const getMoves = async () => {
  setMoves(data)
 }
 
+const componentRef = useRef()
+const handlePrint = useReactToPrint({
+  content: () => componentRef.current,
+  documentTitle: 'Movimiento',
+  onAfterPrint: () => {
+    setMostrar(false)
+  }
+})
+
+useEffect(() => {
+  console.log(move)
+}, [move])
+
+const ComPrint = React.forwardRef((props, ref) => {
+  return (
+ <div ref={ref}>
+<div className="modal-header row">
+        <h1 className="modal-title fs-5 col-6">Movimiento: {move.identificador}</h1>
+        <div className="col-6 row">
+          <div className="col-3"></div>
+          <div className="col-6 d-flex justify-content-end">
+          {statusSetter(move)}
+          </div>
+        </div>
+      </div>
+      <div className="modal-body row d-flex justify-content-center">
+        <div className="col-6 row">
+          <h6 className="col-12 titulo">Datos Generales</h6>
+          <div className="col-12 subtitulo">Fecha de Creacion</div>
+        <div className="col-12 texto">{move.fecha}</div>
+        {
+          !move.vale ? false : <div><div className="col-12 subtitulo">Vale de Aprobacion</div><div className="col-12 texto">{move.vale}</div></div>
+        }
+        {
+          !move.vale ? false : <div><div className="col-12 subtitulo">Fecha de Aprobado</div><div className="col-12 texto">{move.aFecha}</div></div>
+        }
+        <div className="col-12 subtitulo">Concepto de movimiento</div>
+        <div className="col-12 texto">{move.concepto}</div>
+       
+
+
+        </div>
+        <div className="col-6 row">
+        <h6 className="col-12 titulo">Datos de facturacion</h6>
+        <div className="col-12 texto">{move.name}</div>
+        <div className="col-12 subtitulo">Correo Electronico</div>
+        <div className="col-12 texto">{move.email}</div>
+        <div className="col-12 subtitulo">Tipo de Pago</div>
+        <div className="col-12 texto">{move.pago}</div>
+          <div className="col-12 subtitulo">Cuenta</div>
+          <div className="col-12 texto">{move.cuenta}</div>
+          {
+          move.pago === 'Bs'?  <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(move.monto)}<div className="sub-texto">*Este monto es resultado de {move.bs}Bs a un cambio de {move.change}Bs por dolar</div></div></div> : <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(move.monto)}</div></div>
+        }
+        </div>
+
+      </div>
+      </div>)})
+
 
 
 const actDNote = async () => {
@@ -103,6 +165,13 @@ const actmoveCantidad = async () => {
 headers: new Headers({ 'Content-type': 'application/json'})
 }).then(localStorage.setItem('cantidadM', ActCantidad))
 }
+
+
+useEffect(() => {
+  if (mostrar) {
+    handlePrint()
+  }
+}, [mostrar])
 
 function currencyFormatter({ currency, value}) {
   const formatter = new Intl.NumberFormat('en-US', {
@@ -428,9 +497,9 @@ let tPagos = [
 ]
 
 const aproveSetter2 = (move) => {
-  if (am) { return(<div className="row">
-    <div className="col-1 d-flex align-items-center">
-<label htmlFor="vale" className="form-label col-2">nro de aprobacion</label>
+  if (am) { return(<div className="row px-3 py-2">
+    <div className="col-4 d-flex align-items-center">
+<label htmlFor="vale" className="form-label col-12">Nro de aprobacion</label>
 </div>
 <div className="col-6">
 <input type="text" className="form-control" id="vale" aria-describedby="emailHelp" defaultValue={move.vale} onChange={(e) =>{
@@ -1019,10 +1088,13 @@ Movimientos a visualizar {"  "}
        }
       return (
         <tr className='tra'>
-      <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" >{m.identificador}</button>
+      <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
+        setMove(m)
+      }}>{m.identificador}</button>
 <div className="modal fade" id={bsId} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true" key={m.identificador}>
   <div className="modal-dialog">
     <div className="modal-content">
+      <div className='print'>
       <div className="modal-header row">
         <h1 className="modal-title fs-5 col-6" id={bsIdLabel}>Movimiento: {m.identificador}</h1>
         <div className="col-6 row">
@@ -1065,15 +1137,21 @@ Movimientos a visualizar {"  "}
           m.pago === 'Bs'?  <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}<div className="sub-texto">*Este monto es resultado de {m.bs}Bs a un cambio de {m.change}Bs por dolar</div></div></div> : <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}</div></div>
         }
         </div>
+
+      </div>
+      </div>
+      <div className='row'></div>
         { 
         !m.vale && am ? <div className="col-12"><hr />{aproveSetter2(m)}</div> : false
         }
-
-      </div>
- 
-
       <div className="modal-footer">
+        <button className='btn btn-primary' onClick={() => {
+          setMostrar(true)
+          }}>Imprimir</button>
         {!m.vale && am ? <div>{aproveSetter3(m)}</div>: false}
+        {
+            mostrar ? <ComPrint move={m} ref={componentRef} /> :false
+          }
       </div>
     </div>
   </div>
@@ -1107,7 +1185,9 @@ Movimientos a visualizar {"  "}
                 
                       </td>
                 <td className='monto-table'>{numberFormat.format(m.monto)}</td>
+
         </tr>
+
     )})
   }
   <tr>

@@ -21,6 +21,7 @@ function Navg({ socket }) {
   const navigate = useNavigate();
   const [apertura, setApertura] = useState();
   const [moves, setMoves] = useState([]);
+  const [actPassword, setActPassword] = useState(false)
   const [filterMove, setfilterMove] = useState([]);
   const [note, setNote] = useState([])
   const [cierre, setCierre] = useState();
@@ -48,9 +49,11 @@ function Navg({ socket }) {
   const settingPassword = (password, newPassword) => {
     setPassword(password)
     setNewPassword(newPassword)
+    setActPassword(true)
   }
 
   const nuevaPass = async () => {
+    if (actPassword === true) {
     let updateData = {email: localStorage.getItem('email'), ActualPassword: password, password: newPassword }
     await fetch(`${url_api}/users/actpass`, {
       method: 'POST',
@@ -59,11 +62,11 @@ function Navg({ socket }) {
   }).then(res => console.log(res)).then(Swal.fire({
     icon: 'success',
     title: 'Contraseña modificada con exito',
-  }))}
+  }))}}
 
   useEffect(() => {
     nuevaPass()
-  }, [newPassword])
+  }, [actPassword])
 
   const toggleFunc = () => {
     const sidebar = document.getElementById("sidebar");
