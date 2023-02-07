@@ -25,6 +25,7 @@ function User({socket}) {
   const [delMoves, setDelMoves] = useState(false)
   const [cUsers, setCUsers] = useState(false)
   const [modUsers, setModUsers] = useState(false)
+  const [modFechas, setModFechas] = useState(false)
   const [delUsers, setDelUsers] = useState(false)
   const [deletingUser, setDeletingUser] = useState()
   const [currentPage, setCurrentPage] = useState(0)
@@ -156,6 +157,7 @@ const handleVPage = (e) => {
                 crearUsuarios: cUsers,
                 modificarUsuarios: modUsers,
                 eliminarUsuarios: delUsers,
+                modificarFechas: modFechas,
                 horasIngreso: sHours,
                 obviarIngreso: oHours, 
                 configurarCuentas: cAccounts
@@ -178,6 +180,7 @@ const handleVPage = (e) => {
     const username = document.getElementById(`actUsernameInput-${i}`).value
     const movesVista = document.getElementById(`actMovesVista-${i}`).checked
     const aproveMoves = document.getElementById(`actAproveMoves-${i}`).checked
+    const modFechas = document.getElementById(`actModFechas-${i}`).checked
     const delMoves = document.getElementById(`actDelMoves-${i}`).checked
     const createU = document.getElementById(`actCreateU-${i}`).checked
     const eMoves = document.getElementById(`actEMoves-${i}`).checked
@@ -192,6 +195,7 @@ const handleVPage = (e) => {
       aprobarMovimientos: aproveMoves,
       eliminarMovimientos: delMoves,
       crearUsuarios: createU,
+      modificarFechas: modFechas,
       modificarUsuarios: modU,
       eliminarUsuarios: delU,
       horasIngreso: modTime,
@@ -326,6 +330,16 @@ return (
   
   <label class="form-check-label" for="eMoves">
   Modificar Movimientos
+  </label>
+</div>
+<div class="form-check ">
+  <input class="form-check-input disabled" type="checkbox" value="" id="modFechas" disabled onChange={(e) => {
+            const value = e.target.checked
+            setModFechas(value)
+  }}/>
+  
+  <label class="form-check-label" for="modFechas">
+  Modificar fechas de Movimientos
   </label>
 </div>
 <br />
@@ -476,6 +490,15 @@ return (
   }}/>
   <label class="form-check-label" for={`actEMoves-${i}`}>
 Editar Movimientos
+  </label>
+</div>
+<div class="form-check ">
+  <input class="form-check-input disabled" type="checkbox" value="" id={`actModFechas-${i}`}  defaultChecked={u.permissions.modificarFechas} onChange={(e) => {
+            const value = e.target.checked
+            setModFechas(value)
+  }}/>
+  <label class="form-check-label" for={`actModFechas-${i}`}>
+Modificar fecha de Movimientos
   </label>
 </div>
 <div class="form-check ">

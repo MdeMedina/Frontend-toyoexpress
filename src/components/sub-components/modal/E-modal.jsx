@@ -12,6 +12,7 @@ import {cuentas} from '../../../lib/data/SelectOptions'
 
 
 function EModal(props) {
+  const mf = JSON.parse(localStorage.getItem("permissions")).modificarFechas
   const {settingMounts} = props
   const [conversion, setConversion] = useState(false)
   const [selectMove, setSelectMove] = useState('egreso')
@@ -173,12 +174,27 @@ function EModal(props) {
           }}/>
       </Form.Group>
       <label >Fecha:</label>
-      <Form.Control
+      { !mf ? <Form.Control
         type="text"
         placeholder={hoy}
         aria-label="Disabled input example"
         readOnly
-      />
+      />:  <Form.Control
+      type="date"
+      placeholder={hoy}
+      onChange={(e) => {
+        let {value} = e.target
+       value = value.split('-')
+        console.log(value)
+        let f = new Date(parseInt(value[0]), parseInt(value[1] - 1), value[2])
+        console.log(f)
+        f = formatDateHoy(f)
+        console.log(f)
+        sethoy(f)
+      }}
+      aria-label="Disabled input example"
+    /> }
+
 
         </Modal.Body>
         <Modal.Footer>
@@ -187,7 +203,7 @@ function EModal(props) {
           </Button>
           <Button variant="primary" onClick={() => {
 
-            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, conversion)
+            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, conversion, hoy)
           }}>
             Crear
           </Button>

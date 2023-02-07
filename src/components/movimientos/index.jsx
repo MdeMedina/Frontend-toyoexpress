@@ -62,6 +62,7 @@ const [estaba, setEstaba] = useState(1)
 const [newMonto, setNewMonto] = useState('')
 const [newCuenta, setNewCuenta] = useState(null)
 const [newPago, setNewPago] = useState(null)
+const [Fecha, setFecha] = useState()
 const [bolos, setBolos] = useState(0)
 const [cambio, setCambio] = useState(0)
 const [newConcepto, setNewConcepto] = useState('')
@@ -118,7 +119,7 @@ const ingreso = () => {
     concepto: newConcepto,
     bs: bolos,
     change: cambio,
-    fecha: hoy,
+    fecha: Fecha,
     monto: newMonto,
     name: name,
     pago: newPago,
@@ -170,7 +171,7 @@ const egreso = () => {
     concepto: newConcepto,
     bs: bolos,
     change: cambio,
-    fecha: hoy,
+    fecha: Fecha,
     monto: newMonto,
     name: name,
     pago: newPago,
@@ -233,7 +234,7 @@ const editMoves = (m, i) => {
 }
 
 
-const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago) => {
+const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago, fecha) => {
  
   setSelectMove(sm)
   setNewCuenta(cuenta)
@@ -241,6 +242,7 @@ const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago) => {
   setBolos(bs)
   setCambio(change)
   setNewMonto(monto)
+  setFecha(fecha)
   setNewPago(pago)
 
 }
@@ -969,7 +971,7 @@ Movimientos a visualizar {"  "}
       let input2 = document.getElementById('swal-input2').value
       filtPDF(input1, input2)
       doc.setFontSize(18)
-      doc.text('Reporte: Ingresos y Egresos', 14, 6)
+      doc.text('Reporte: Ingresos y Egresos', 64, 6)
       doc.setFontSize(12)
       doc.text(`Desde: ${input1}`, 14, 12)
       doc.text(`Hasta: ${input2}`, 54, 12)
