@@ -9,6 +9,15 @@ function Login() {
   let user;
   let pass;
 
+  const actInactive = async () => {
+    let updateData = {email: localStorage.getItem('email') }
+    await fetch(`${url_api}/users/actInactive`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    headers: new Headers({ 'Content-type': 'application/json'})
+    })
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     let permissions = {};
@@ -46,6 +55,7 @@ function Login() {
       localStorage.setItem("permissions", JSON.stringify(permissions));
       localStorage.setItem("messageID", loginJson.messageId)
       localStorage.setItem("nav", true)
+      actInactive()
       let userInvalid = document.getElementById("userInvalid");
       let isDesaparezco = userInvalid.classList.contains("desaparezco");
       navigate("/");

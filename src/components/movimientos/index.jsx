@@ -66,7 +66,6 @@ const [bolos, setBolos] = useState(0)
 const [cambio, setCambio] = useState(0)
 const [newConcepto, setNewConcepto] = useState('')
 const isAdmin = localStorage.getItem('role')
-var doc = new jsPDF()
 const getMoves = async () => {
   const response = await fetch(URL)
   let data = await response.json()
@@ -429,7 +428,7 @@ let tPagos = [
 const aproveSetter2 = (move) => {
   if (am) { return(<div className="row">
     <div className="col-1 d-flex align-items-center">
-<label htmlFor="vale" className="form-label col-2">Vale</label>
+<label htmlFor="vale" className="form-label col-2">nro de aprobacion</label>
 </div>
 <div className="col-6">
 <input type="text" className="form-control" id="vale" aria-describedby="emailHelp" defaultValue={move.vale} onChange={(e) =>{
@@ -490,8 +489,20 @@ function filterRange(arr, a, b) {
   return arr.filter(item => {
    const arrfecha =  item.fecha.split('/')
    const fechaReal = new Date(arrfecha[2], parseInt(arrfecha[1] - 1), arrfecha[0])
+   return (new Date(fechaReal) >= new Date(new Date(a).toDateString()) && new Date(fechaReal) <= new Date(new Date(b).toDateString()))
+  });
+}
+function filterRangePDF(arr, a, b) {
+  // agregamos paréntesis en torno a la expresión para mayor legibilidad
 
-   return (new Date(a) <= new Date(fechaReal) && new Date(fechaReal) <= new Date(b))
+  return arr.filter(item => {
+   const arrfecha =  item.fecha.split('/')
+   const arrInit =  a.split('-')
+   const arrEnd =  b.split('-')
+   const fechaReal = new Date(arrfecha[2], parseInt(arrfecha[1] - 1), arrfecha[0])
+  const init = new Date (arrInit[0], parseInt(arrInit[1] - 1), arrInit[2])
+  const end = new Date (arrEnd[0], parseInt(arrEnd[1] - 1), arrEnd[2])
+   return (new Date(fechaReal) >= init && new Date(fechaReal) <= end)
   });
 }
 
@@ -698,12 +709,16 @@ const filteredResults = () => {
 const filteredResultsPDF = (init, fin) => {
   let results;
   let betaResults = moves
+  betaResults = betaResults.filter( (dato) => {
+    return !dato.disabled
+  })
+
   if (vm === false) {
     betaResults = betaResults.filter((dato) => {
       return dato.name.includes(localStorage.getItem('name'))
     })
   }
-  betaResults= filterRange(betaResults, init, fin)
+  betaResults= filterRangePDF(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
     const arrId2 = b.identificador.split('-')
@@ -949,12 +964,17 @@ Movimientos a visualizar {"  "}
         '<div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1"></div> <br />' +
         '<div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2"></div>',
     }).then(() => {
+      var doc = new jsPDF()
       let input1 = document.getElementById('swal-input1').value
       let input2 = document.getElementById('swal-input2').value
-      console.log(input1, input2)
       filtPDF(input1, input2)
-      doc.text('Reporte: ingresos y egresos', 10, 10)
-    autoTable(doc, {    columnStyles: { monto: { halign: 'right' } }, 
+      doc.setFontSize(18)
+      doc.text('Reporte: Ingresos y Egresos', 14, 6)
+      doc.setFontSize(12)
+      doc.text(`Desde: ${input1}`, 14, 12)
+      doc.text(`Hasta: ${input2}`, 54, 12)
+    autoTable(doc, {    theme: 'grid',
+      columnStyles: { monto: { halign: 'right' } }, 
     body: table,
     columns: [
       { header: 'Identificador', dataKey: 'identificador' },
@@ -965,7 +985,7 @@ Movimientos a visualizar {"  "}
       { header: 'Fecha', dataKey: 'fecha' },
       { header: 'Monto', dataKey: 'monto' }
     ], })
-    doc.save('reporte.pdf')
+    doc.save(`reporte de ${input1} hasta ${input2}.pdf`)
     })
   }}>Imprimir</button>
   </div>

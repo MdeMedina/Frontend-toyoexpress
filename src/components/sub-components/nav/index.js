@@ -32,7 +32,7 @@ function Navg({ socket }) {
   useEffect(() => {
     function handleVisibilityChange() {
       if (!document.hidden) {
-        window.location.reload();
+        getInactive();
       }
     }
     document.addEventListener("visibilitychange", handleVisibilityChange);
