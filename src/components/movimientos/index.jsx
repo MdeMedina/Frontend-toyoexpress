@@ -91,18 +91,16 @@ useEffect(() => {
 
 const ComPrint = React.forwardRef((props, ref) => {
   return (
- <div ref={ref}>
-<div className="modal-header row">
-        <h1 className="modal-title fs-5 col-6">Movimiento: {move.identificador}</h1>
-        <div className="col-6 row">
-          <div className="col-3"></div>
-          <div className="col-6 d-flex justify-content-end">
+ <div ref={ref} className="mx-3
+ my-3">
+<div className="modal-header row ">
+        <h1 className="modal-title fs-5 col-12">Movimiento: {move.identificador}</h1>
+          <div className="col-4 d-flex justify-content-end">
           {statusSetter(move)}
-          </div>
         </div>
       </div>
       <div className="modal-body row d-flex justify-content-center">
-        <div className="col-6 row">
+        <div className=" row">
           <h6 className="col-12 titulo">Datos Generales</h6>
           <div className="col-12 subtitulo">Fecha de Creacion</div>
         <div className="col-12 texto">{move.fecha}</div>
@@ -114,11 +112,7 @@ const ComPrint = React.forwardRef((props, ref) => {
         }
         <div className="col-12 subtitulo">Concepto de movimiento</div>
         <div className="col-12 texto">{move.concepto}</div>
-       
-
-
-        </div>
-        <div className="col-6 row">
+      
         <h6 className="col-12 titulo">Datos de facturacion</h6>
         <div className="col-12 texto">{move.name}</div>
         <div className="col-12 subtitulo">Correo Electronico</div>
