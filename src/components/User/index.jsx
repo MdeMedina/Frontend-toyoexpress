@@ -114,15 +114,21 @@ const handleVPage = (e) => {
     const vm = document.getElementById('movesVista').checked
     const cu = document.getElementById('createU').checked
     const am = document.getElementById('aproveMoves')
+    const mf = document.getElementById('modFechas')
+    const em = document.getElementById('eMoves')
     const dm = document.getElementById('delMoves')
     const mu = document.getElementById('modU')
     const du = document.getElementById('deleteU')
     if (!vm) {
         am.setAttribute("disabled", "")
         dm.setAttribute("disabled", "")
+        mf.setAttribute("disabled", "")
+        em.setAttribute("disabled", "")
     }else if (vm) {
         am.removeAttribute("disabled")
         dm.removeAttribute("disabled")
+        mf.removeAttribute("disabled")
+        em.removeAttribute("disabled")
     }
 
     if (!cu) {

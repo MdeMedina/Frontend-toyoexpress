@@ -223,7 +223,7 @@ const ingreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false));
+.then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(getMoves());
     setEgresoShow(false)
   }
 };
@@ -281,7 +281,7 @@ const egreso = () => {
           title: "Movimiento Creado con exito",
         })
       )
-      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false));
+.then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(getMoves());
     setEgresoShow(false);
   }
 };
@@ -571,6 +571,12 @@ function filterRangePDF(arr, a, b) {
   });
 }
 
+const formatDate = (date) => {
+  const arrInit =  date.split('-')
+  const init = new Date (arrInit[0], parseInt(arrInit[1] - 1), arrInit[2])
+  return formatDateHoy(init)
+}
+
 const updateStatus = async (move) => {
   if (vale === '') {
     Swal.fire( "Oops" ,  "Por favor escriba el valor del vale!" ,  "error" )
@@ -648,6 +654,7 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
   betaResults = moves
 
   betaResults = betaResults.filter( (dato) => {
+    console.log(dato.disabled)
     return !dato.disabled
   })
 
@@ -727,6 +734,7 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
       betaResults = alphaResults
   }
   betaResults = betaResults.filter( (dato) => {
+    console.log(dato.disabled)
     return !dato.disabled
   })
 
@@ -795,7 +803,7 @@ const filteredResultsPDF = (init, fin) => {
      const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
      const arrfecha2 =  b.fecha.split('/')
      const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-     return fechaReal2 -fechaReal1 
+     return fechaReal1 - fechaReal2 
    })
    results = betaResults
    console.log(results)
@@ -1033,9 +1041,12 @@ Movimientos a visualizar {"  "}
       let input1 = document.getElementById('swal-input1').value
       let input2 = document.getElementById('swal-input2').value
       filtPDF(input1, input2)
+
       doc.setFontSize(18)
       doc.text('Reporte: Ingresos y Egresos', 64, 6)
       doc.setFontSize(12)
+      input1 = formatDate(input1)
+      input2 = formatDate(input2)
       doc.text(`Desde: ${input1}`, 14, 12)
       doc.text(`Hasta: ${input2}`, 54, 12)
     autoTable(doc, {    theme: 'grid',
@@ -1047,10 +1058,11 @@ Movimientos a visualizar {"  "}
       { header: 'Cuenta', dataKey: 'cuenta' },
       { header: 'Concepto', dataKey: 'concepto' },
       { header: 'Status', dataKey: 'status' },
+      { header: 'Nro de Aprobación', dataKey: 'aprobacion' },
       { header: 'Fecha', dataKey: 'fecha' },
       { header: 'Monto', dataKey: 'monto' }
     ], })
-    doc.save(`reporte de ${input1} hasta ${input2}.pdf`)
+    doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`)
     })
   }}>Imprimir</button>
   </div>

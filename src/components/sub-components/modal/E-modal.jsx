@@ -6,6 +6,7 @@ import Select from 'react-select'
 import chroma from 'chroma-js'
 import InputGroup from 'react-bootstrap/InputGroup';
 import {formatDateHoy} from '../../dates/dates'
+import {formatDateHoyEn} from '../../dates/dates'
 import {cuentas} from '../../../lib/data/SelectOptions'
 
 
@@ -181,6 +182,7 @@ function EModal(props) {
         readOnly
       />:  <Form.Control
       type="date"
+      max={formatDateHoyEn(new Date())}
       placeholder={hoy}
       onChange={(e) => {
         let {value} = e.target
