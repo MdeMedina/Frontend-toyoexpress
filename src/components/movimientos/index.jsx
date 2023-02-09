@@ -1041,7 +1041,9 @@ Movimientos a visualizar {"  "}
       input2 = formatDate(input2)
       doc.text(`Desde: ${input1}`, 14, 12)
       doc.text(`Hasta: ${input2}`, 54, 12)
-    autoTable(doc, {    theme: 'grid',
+    autoTable(doc, {    
+      styles: {fontSize: 8},
+      theme: 'grid',
       columnStyles: { monto: { halign: 'right' } }, 
     body: table,
     columns: [
