@@ -8,7 +8,7 @@ import chroma from 'chroma-js'
 import InputGroup from 'react-bootstrap/InputGroup';
 import {formatDateHoy} from '../../dates/dates'
 import {formatDateHoyEn} from '../../dates/dates'
-import {cuentas} from '../../../lib/data/SelectOptions'
+import {cuentas, moveI} from '../../../lib/data/SelectOptions'
 
 
 
@@ -19,23 +19,32 @@ function EModal(props) {
   const [startDate, setStartDate] = useState(new Date());
 const [endDate, setEndDate] = useState(new Date());
   const [conversion, setConversion] = useState(false)
-  const [selectMove, setSelectMove] = useState('egreso')
+  const [selectMove, setSelectMove] = useState()
   const [newMonto, setNewMonto] = useState('')
+  const [total, setTotal] = useState(0)
+  const [efectivo, setEfectivo] = useState(0)
+  const [dollars, setDollars] = useState(0)
+  const [bolivares, setBolivares] = useState(0)
+  const [zelle, setZelle] = useState(0)
   const [newCuenta, setNewCuenta] = useState(null)
   const [newPago, setNewPago] = useState(null)
   const [hoy, sethoy] = useState('')
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
   const [newConcepto, setNewConcepto] = useState('')
-  const [dollars, setDollars] = useState(0)
-  const changingDollars = (bs, change) => {
-    let dolares = bs / change
-    if (isNaN(dolares) || dolares === Infinity) {
-      setDollars(0)
+  const changingDollars = (dollars, change) => {
+    let balls = dollars * change
+    if (isNaN(balls) || balls === Infinity) {
+      setBolivares(0)
     }else {
-      setDollars(dolares)
-      setNewMonto(dolares)
+      setBolivares(balls)
+      setBolos(balls)
     }
+  }
+  const cambiandoTotal = () => {
+    let t = parseInt(dollars) + parseInt(efectivo) + parseInt(zelle) 
+    setTotal(t)
+    setNewMonto(t)
   }
   function addDays(fecha, dias){ 
     fecha.setDate(fecha.getDate() + dias);
@@ -87,8 +96,11 @@ const [endDate, setEndDate] = useState(new Date());
   
 
   useEffect(() => {
-    changingDollars(bolos, cambio)
-  }, [bolos, cambio])
+    changingDollars(dollars, cambio)
+  }, [dollars, cambio])
+  useEffect(() => {
+    cambiandoTotal()
+  }, [dollars, zelle, efectivo])
   
 
   useEffect(() => {
@@ -100,7 +112,9 @@ const [endDate, setEndDate] = useState(new Date());
     sethoy(`${formatDateHoy(new Date())}`)
   }, [])
   
-    
+    useEffect(() => {
+      console.log(selectMove, newCuenta, newConcepto, newMonto, bolos, cambio, conversion, hoy)
+    }, [selectMove, newCuenta, newConcepto, newMonto, bolos, cambio, conversion, hoy])
 
   return (
     <Modal
@@ -116,12 +130,9 @@ const [endDate, setEndDate] = useState(new Date());
         <Modal.Body>
           <div id="error" className='desaparecer'>*Por Favor, rellene todos los campos</div>
           <label>Tipo de Movimiento:</label>
-          <Form.Select id='e-account' onChange={(e) => {
-            setSelectMove(e.target.value)
-          }}>
-        <option value='egreso'>Egreso</option>
-        <option value='ingreso'>Ingreso</option>
-      </Form.Select>
+          <Select onChange={(e) => {
+            setSelectMove(e.value)
+          }} options={moveI} styles={colourStyles}  />
       <br />
           <label>Cuenta Afectada:</label>
     <Select onChange={(e) => {
@@ -133,52 +144,57 @@ const [endDate, setEndDate] = useState(new Date());
 
       <br />
 
-      <label>Tipo de pago:</label>
-          <Form.Select id='e-pago' onChange={(e) => {
-           const {value} = e.target
-          setConversion(value)
-          }}>
-        <option value=''>Seleccione una Opcion</option>
-        <option value='Bs'>Bs</option>
-        <option value='Efectivo'>Efectivo</option>
-        <option value='Zelle'>Zelle</option>
-      </Form.Select>
-      <br />
-      {
-        !conversion || conversion === 'Bs'? false : <div><label >Monto:</label>
+      <h3>Pagos</h3>
+  <div><label >Efectivo:</label>
         <InputGroup className="mb-3">
           <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" onChange={(e) => {
-            setNewMonto(e.target.value)
+            setEfectivo(e.target.value)
           }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>
         </div>
-      }
-      {
-      conversion === 'Bs' ? <div className="row mb-3">
-      <InputGroup >
-      <Form.Label>Cantidad de bolivares:</Form.Label>
+        <div><label >Zelle:</label>
+        <InputGroup className="mb-3">
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" onChange={(e) => {
+            setZelle(e.target.value)
+          }}/>
+          <InputGroup.Text>$</InputGroup.Text>
+        </InputGroup>
+        </div>
+  <div className="row mb-3">
+    <div className='col-6'>
+      <InputGroup>
+      <Form.Label>Valor en dolares:</Form.Label>
         <Form.Control aria-label="Amount (to the nearest dollar)" onChange={e => {
-          setBolos(e.target.value)
+          setDollars(e.target.value)
         }}/>
-        <InputGroup.Text>Bs</InputGroup.Text>
       </InputGroup>
+      </div>
+      <div className='col-6 mb-3'>
       <InputGroup >
         <Form.Label>Valor de cambio:</Form.Label>
         <Form.Control  aria-label="Amount (to the nearest dollar)" onChange={e => {
           setCambio(e.target.value)
         }}/>
-        <InputGroup.Text>Bs</InputGroup.Text>
       </InputGroup>
-        <InputGroup >
-        <Form.Label>Valor en dolares:</Form.Label>
-        <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={dollars} onChange={(e) => {
-            setNewMonto(e.target.value)
+      </div>
+      <div className='col-12'>
+        <InputGroup>
+        <Form.Label>Cantidad de bolivares:</Form.Label>
+        <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={bolivares} onChange={(e) => {
+            setBolos(e.target.value)
           }}/>
-        <InputGroup.Text>$</InputGroup.Text>
       </InputGroup>
-      </div> : false
-    }
+      </div>
+      <br />
+      <div><label >Monto:</label>
+        <InputGroup className="mb-3">
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={total} onChange={(e) => {
+          }}/>
+          <InputGroup.Text>$</InputGroup.Text>
+        </InputGroup>
+        </div>
+      </div> 
       <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
         <Form.Label>Concepto de Registro:</Form.Label>
         <Form.Control id="e-concepto" as="textarea" rows={3} onChange={(e) => {
@@ -216,8 +232,12 @@ const [endDate, setEndDate] = useState(new Date());
             Cerrar
           </Button>
           <Button variant="primary" onClick={() => {
-
-            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, conversion, hoy)
+            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle)
+            setEfectivo(0)
+            setZelle(0)
+            setDollars(0)
+            setNewMonto(0)
+            setTotal(0)
           }}>
             Crear
           </Button>

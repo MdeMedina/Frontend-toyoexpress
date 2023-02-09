@@ -90,6 +90,8 @@ useEffect(() => {
   console.log(move)
 }, [move])
 
+
+
 const ComPrint = React.forwardRef((props, ref) => {
   return (
  <div ref={ref} className="mx-3
@@ -129,6 +131,20 @@ const ComPrint = React.forwardRef((props, ref) => {
 
       </div>
       </div>)})
+
+      const btnId = (m) => {
+        let id = m.identificador.split('-')
+        console.log(id)
+        if (id[0] === 'E') {
+          return (<button type="button" className="btn btn-outline-danger" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
+            setMove(m)
+          }}>{m.identificador}</button>)
+        } else if (id[0] === 'I') {
+          return (<button type="button" className="btn btn-outline-success" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
+            setMove(m)
+          }}>{m.identificador}</button>)
+        }
+      }
 
 
 
@@ -176,92 +192,37 @@ function currencyFormatter({ currency, value}) {
   }) 
   return formatter.format(value)
 }
-const ingreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
+const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle ) => {
   let name = localStorage.getItem("name");
   let obj = {
+     id,
     cuenta,
     concepto,
+    dollars,
+    efectivo,
+    zelle,
     bs,
     change,
     fecha,
     monto,
     name: name,
-    pago,
-    email: localStorage.getItem('email'),
-    messageId: localStorage.getItem("messageID")
-  };
-  let error = document.getElementById("error");
-  if (!cuenta) {
-    if (error.classList.contains("desaparecer")) {
-      error.classList.remove("desaparecer");
-    }
-  } else if (!pago) {
-    if (error.classList.contains("desaparecer")) {
-      error.classList.remove("desaparecer");
-    }
-  } else if (!monto) {
-    if (error.classList.contains("desaparecer")) {
-      error.classList.remove("desaparecer");
-    }
-  } else if (!concepto) {
-    if (error.classList.contains("desaparecer")) {
-      error.classList.remove("desaparecer");
-    }
-  } else {
-    if (!error.classList.contains("desaparecer")) {
-      error.classList.add("desaparecer");
-    }
-    return fetch(`${url_api}/moves/ingreso`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(obj),
-    }).then(r => r.json()).then(r => {
-      setMoves(r.moves)
-    }).then( 
-        Swal.fire({
-          icon: "success",
-          title: "Movimiento Creado con exito",
-        })
-      )
-.then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(getMoves());
-
-  }
-};
-const egreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
-  let name = localStorage.getItem("name");
-  let obj = {
-    cuenta,
-    concepto,
-    bs,
-    change,
-    fecha,
-    monto,
-    name: name,
-    pago,
     email: localStorage.getItem('email'),
     messageId: localStorage.getItem("messageID")
   };
   
   let error = document.getElementById("error");
   if (!cuenta) {
+    console.log(cuenta, "falta la cuenta")
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!pago) {
-
-    if (error.classList.contains("desaparecer")) {
-      error.classList.remove("desaparecer");
-    }
-  } else if (!monto) {
-
+  }  else if (!monto) {
+    console.log(monto, "falta el monto")
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
   } else if (!concepto) {
-    
+    console.log(concepto, "falta el concepto")
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
@@ -270,7 +231,7 @@ const egreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
       error.classList.add("desaparecer");
     }
 
-    return fetch(`${url_api}/moves/egreso`, {
+    return fetch(`${url_api}/moves/movimiento`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -287,7 +248,6 @@ const egreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
         })
       )
 .then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(setEgresoShow(false));
-    
   }
 };
 
@@ -301,13 +261,8 @@ const editMoves = (m, i) => {
   
 }
 
-
-const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago, fecha) => {
-  if (sm === 'egreso'){
-    egreso(cuenta, concepto, bs, change, monto, pago, fecha)
-  } else if (sm === 'ingreso') {
-  ingreso(cuenta, concepto, bs, change, monto, pago, fecha)
-  }
+const settingMounts = (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle) => {
+    movimiento(id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle)
 }
 
 const settingactmounts = (cuenta, concepto, bs, change, monto, pago, fecha) => {
@@ -358,7 +313,8 @@ const removeMove = async (identificador) => {
   icon: 'success',
   title: 'Movimiento Eliminado con exito',
 })).then(r => r.json()).then(r => {
-  setMoves(r)
+  console.log(r)
+  setMoves(r.moves)
 }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setDeletingMove(false))
 }
 const deleteMoves = (m) => {
@@ -1089,9 +1045,7 @@ Movimientos a visualizar {"  "}
        }
       return (
         <tr className='tra'>
-      <td><button type="button" className="btn btn-outline-primary" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
-        setMove(m)
-      }}>{m.identificador}</button>
+      <td>{btnId(m)}
 <div className="modal fade" id={bsId} tabIndex="-1" aria-labelledby={`exampleModalLabel-${i}`} aria-hidden="true" key={m.identificador}>
   <div className="modal-dialog">
     <div className="modal-content">

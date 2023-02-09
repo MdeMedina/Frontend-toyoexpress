@@ -5,13 +5,22 @@ import Form from 'react-bootstrap/Form';
 import Select from 'react-select'
 import chroma from 'chroma-js'
 import InputGroup from 'react-bootstrap/InputGroup';
+import DatePicker from 'react-datepicker'
 import {formatDateHoyEn, formatDateHoy} from '../../dates/dates'
 import {cuentas} from '../../../lib/data/SelectOptions'
 
 function ActModal(props) {
+  const arreglarFecha = (fecha) => {
+    let f = fecha.split('/')
+    f = new Date(f[2],  parseInt(f[1] - 1), parseInt(f[0]) )
+    console.log(f)
+    return f
+  }
+
   const {move, settingactmounts, i} = props
   const [conversion, setConversion] = useState(true)
   const [newMonto, setNewMonto] = useState('')
+  const [startDate, setStartDate] = useState(arreglarFecha(move.fecha));
   const [newCuenta, setNewCuenta] = useState(null)
   const [newPago, setNewPago] = useState(null)
   const [hoy, sethoy] = useState('')
@@ -28,6 +37,10 @@ function ActModal(props) {
       setNewMonto(dolares)
     }
   }
+  function addDays(fecha, dias){ 
+    fecha.setDate(fecha.getDate() + dias);
+    return fecha;
+  }
   const dot = (color = 'transparent') => ({
     alignItems: 'center',
     display: 'flex',
@@ -43,10 +56,7 @@ function ActModal(props) {
     },
   });
 
-  useEffect(() => {
- console.log(formatDateHoyEn(new Date(move.fecha)))
-  }, [])
-  
+
   const colourStyles = {
     control: (styles) => ({ ...styles, backgroundColor: 'white' }),
     option: (styles, { data, isDisabled, isFocused, isSelected }) => {
@@ -173,20 +183,21 @@ function ActModal(props) {
           }} controlId="ControlTextArea-Act"/>
       </Form.Group>
 
-      <Form.Control
-      type="date"
-      defaultValue={formatDateHoyEn(new Date(move.fecha))}
+      <DatePicker
+      selected={startDate}
+      dateFormat="dd/MM/yyyy"
+      maxDate={addDays(new Date(move.fecha), 0)}
       onChange={(e) => {
-        let {value} = e.target
-       value = value.split('-')
+        setStartDate(e)
+        let value = formatDateHoy(e)
+       value = value.split('/')
         console.log(value)
-        let f = new Date(parseInt(value[0]), parseInt(value[1] - 1), value[2])
+        let f = new Date(value[2],  parseInt(value[1] - 1), parseInt(value[0]) )
         console.log(f)
         f = formatDateHoy(f)
         console.log(f)
         sethoy(f)
       }}
-      aria-label="Disabled input example"
     />
 
         </Modal.Body>

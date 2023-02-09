@@ -179,6 +179,7 @@ function Navg({ socket }) {
   useEffect(() => {
     setfilterMove(
       moves.filter((m) => {
+        console.log(m.identificador, m.disabled, m.vale )
         return !m.vale && !m.disabled;
       })
     );

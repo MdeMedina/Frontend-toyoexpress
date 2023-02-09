@@ -1,6 +1,18 @@
 import { url_api } from "../../lib/data/server";
 
 let cuentas = [];
+let moveI = [
+  {
+    value: "E",
+    label: "Egreso",
+    color: "#e00202"
+  },
+  {
+    value: "I",
+    label: "Ingreso",
+    color: "#17e002"
+  }
+]
 const gettingAccounts = async () => {
   await fetch(`${url_api}/cuentas`)
     .then((res) => res.json())
@@ -11,4 +23,6 @@ const gettingAccounts = async () => {
 
 gettingAccounts();
 
-export { cuentas };
+
+
+export { cuentas, moveI };
