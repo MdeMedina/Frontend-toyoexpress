@@ -218,6 +218,8 @@ const ingreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(obj),
+    }).then(r => r.json()).then(r => {
+      setMoves(r.moves)
     }).then( 
         Swal.fire({
           icon: "success",
@@ -309,78 +311,55 @@ const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago, fecha) => 
 }
 
 const settingactmounts = (cuenta, concepto, bs, change, monto, pago, fecha) => {
-  setNewCuenta(cuenta)
-  setNewConcepto(concepto)
-  setBolos(bs)
-  setCambio(change)
-  setNewMonto(monto)
-  setNewPago(pago)
-  setNewFecha(fecha)
-  setActMovimiento(true)
+  updateMove(cuenta, concepto, bs, change, monto, pago, fecha)
 }
 
-const updateMove = () => {
+const updateMove = async (cuenta, concepto, bs, change, monto, pago, fecha) => {
   let obj = {
     identificador: identificador,
-    cuenta: newCuenta,
-    concepto: newConcepto,
-    bs: bolos,
-    change: cambio,
-    fecha: newFecha,
-    monto: newMonto,
+    cuenta,
+    concepto,
+    bs,
+    change,
+    fecha,
+    monto,
     name: name,
-    pago: newPago,
+    pago,
 
   };
 
-  if (!actMovimiento) {
-    return false
-  } else {
-    fetch(`${url_api}/moves/updateMove`, {
+
+   await fetch(`${url_api}/moves/updateMove`, {
       method: "PUT",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(obj),
-    })
-      .then(
+    }).then(r => r.json()).then(r => {
+      setMoves(r)
+    }).then(
         Swal.fire({
           icon: "success",
           title: "Movimiento Actualizado con exito",
         })
-      )
-      .then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
+      ).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
+
   }
-  }
-  useEffect(() => {
-    updateMove()
-    }, [actMovimiento])
-
-const movimiento = () => {
-if (selectMove === 'egreso'){
-  egreso()
-} else if (selectMove === 'ingreso') {
-ingreso()
-}
-}
-
-useEffect(() => {
-movimiento()
-}, [selectMove])
 
 
-const removeMove = async () => {
-  if(deletingMove){
+const removeMove = async (identificador) => {
+
   await fetch(`${url_api}/moves/deleteMoves`, {
     method: 'PUT',
-    body: JSON.stringify(deletingMove),
+    body: JSON.stringify(identificador),
   headers: new Headers({ 'Content-type': 'application/json'})
-}).then(r => gettingUsers()).then(r => Swal.fire({
+}).then( gettingUsers()).then(Swal.fire({
   icon: 'success',
   title: 'Movimiento Eliminado con exito',
-})).then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setDeletingMove(false))
-  }
+})).then(r => r.json()).then(r => {
+  setMoves(r)
+}).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setDeletingMove(false))
 }
 const deleteMoves = (m) => {
   if (dm) {
@@ -402,7 +381,7 @@ const deleteMoves = (m) => {
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
     
-        setDeletingMove({identificador: m.identificador})
+        removeMove({identificador: m.identificador})
       
         }
       })
@@ -411,9 +390,6 @@ const deleteMoves = (m) => {
       }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button>)
   }
 }
-useEffect(() => {
-removeMove()
-}, [deletingMove])
 useEffect(() => {
   let diff =  meEncuentro - estaba
   setCurrentPage(currentPage + (vPage * diff))
