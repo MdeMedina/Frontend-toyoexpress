@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import DatePicker from 'react-datepicker'
 import Select from 'react-select'
 import chroma from 'chroma-js'
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -15,6 +16,8 @@ import {cuentas} from '../../../lib/data/SelectOptions'
 function EModal(props) {
   const mf = JSON.parse(localStorage.getItem("permissions")).modificarFechas
   const {settingMounts} = props
+  const [startDate, setStartDate] = useState(new Date());
+const [endDate, setEndDate] = useState(new Date());
   const [conversion, setConversion] = useState(false)
   const [selectMove, setSelectMove] = useState('egreso')
   const [newMonto, setNewMonto] = useState('')
@@ -33,6 +36,14 @@ function EModal(props) {
       setDollars(dolares)
       setNewMonto(dolares)
     }
+  }
+  function addDays(fecha, dias){ 
+    fecha.setDate(fecha.getDate() + dias);
+    return fecha;
+  }
+  function subDays(fecha, dias){
+    fecha.setDate(fecha.getDate() - dias);
+    return fecha;
   }
   const dot = (color = 'transparent') => ({
     alignItems: 'center',
@@ -180,13 +191,15 @@ function EModal(props) {
         placeholder={hoy}
         aria-label="Disabled input example"
         readOnly
-      />:  <Form.Control
-      type="date"
-      max={formatDateHoyEn(new Date())}
-      placeholder={hoy}
+      />:
+      <DatePicker
+      selected={startDate}
+      dateFormat="dd/MM/yyyy"
+      maxDate={addDays(new Date(), 0)}
       onChange={(e) => {
+        setStartDate(e)
         let {value} = e.target
-       value = value.split('-')
+       value = value.split('/')
         console.log(value)
         let f = new Date(parseInt(value[0]), parseInt(value[1] - 1), value[2])
         console.log(f)
@@ -194,8 +207,7 @@ function EModal(props) {
         console.log(f)
         sethoy(f)
       }}
-      aria-label="Disabled input example"
-    /> }
+    />}
 
 
         </Modal.Body>

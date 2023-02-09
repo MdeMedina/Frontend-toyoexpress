@@ -176,34 +176,34 @@ function currencyFormatter({ currency, value}) {
   }) 
   return formatter.format(value)
 }
-const ingreso = () => {
+const ingreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
   let name = localStorage.getItem("name");
   let obj = {
-    cuenta: newCuenta,
-    concepto: newConcepto,
-    bs: bolos,
-    change: cambio,
-    fecha: Fecha,
-    monto: newMonto,
+    cuenta,
+    concepto,
+    bs,
+    change,
+    fecha,
+    monto,
     name: name,
-    pago: newPago,
+    pago,
     email: localStorage.getItem('email'),
     messageId: localStorage.getItem("messageID")
   };
   let error = document.getElementById("error");
-  if (!newCuenta) {
+  if (!cuenta) {
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!newPago) {
+  } else if (!pago) {
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!newMonto) {
+  } else if (!monto) {
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!newConcepto) {
+  } else if (!concepto) {
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
@@ -211,54 +211,54 @@ const ingreso = () => {
     if (!error.classList.contains("desaparecer")) {
       error.classList.add("desaparecer");
     }
-    fetch(`${url_api}/moves/ingreso`, {
+    return fetch(`${url_api}/moves/ingreso`, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(obj),
-    }).then(
+    }).then( 
         Swal.fire({
           icon: "success",
           title: "Movimiento Creado con exito",
         })
       )
 .then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(getMoves());
-    setEgresoShow(false)
+
   }
 };
-const egreso = () => {
+const egreso = async (cuenta, concepto, bs, change,  monto, pago, fecha ) => {
   let name = localStorage.getItem("name");
   let obj = {
-    cuenta: newCuenta,
-    concepto: newConcepto,
-    bs: bolos,
-    change: cambio,
-    fecha: Fecha,
-    monto: newMonto,
+    cuenta,
+    concepto,
+    bs,
+    change,
+    fecha,
+    monto,
     name: name,
-    pago: newPago,
+    pago,
     email: localStorage.getItem('email'),
     messageId: localStorage.getItem("messageID")
   };
   
   let error = document.getElementById("error");
-  if (!newCuenta) {
+  if (!cuenta) {
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!newPago) {
+  } else if (!pago) {
 
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!newMonto) {
+  } else if (!monto) {
 
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
-  } else if (!newConcepto) {
+  } else if (!concepto) {
     
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
@@ -268,7 +268,7 @@ const egreso = () => {
       error.classList.add("desaparecer");
     }
 
-    fetch(`${url_api}/moves/egreso`, {
+    return fetch(`${url_api}/moves/egreso`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -276,14 +276,16 @@ const egreso = () => {
       },
       body: JSON.stringify(obj),
     })
-      .then(
+      .then(r => r.json()).then(r => {
+        setMoves(r.moves)
+      }).then(
         Swal.fire({
           icon: "success",
           title: "Movimiento Creado con exito",
         })
       )
-.then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(getMoves());
-    setEgresoShow(false);
+.then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(setEgresoShow(false));
+    
   }
 };
 
@@ -299,20 +301,14 @@ const editMoves = (m, i) => {
 
 
 const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago, fecha) => {
- 
-  setSelectMove(sm)
-  setNewCuenta(cuenta)
-  setNewConcepto(concepto)
-  setBolos(bs)
-  setCambio(change)
-  setNewMonto(monto)
-  setFecha(fecha)
-  setNewPago(pago)
-
+  if (sm === 'egreso'){
+    egreso(cuenta, concepto, bs, change, monto, pago, fecha)
+  } else if (sm === 'ingreso') {
+  ingreso(cuenta, concepto, bs, change, monto, pago, fecha)
+  }
 }
 
 const settingactmounts = (cuenta, concepto, bs, change, monto, pago, fecha) => {
-  setActMovimiento(true)
   setNewCuenta(cuenta)
   setNewConcepto(concepto)
   setBolos(bs)
@@ -320,6 +316,7 @@ const settingactmounts = (cuenta, concepto, bs, change, monto, pago, fecha) => {
   setNewMonto(monto)
   setNewPago(pago)
   setNewFecha(fecha)
+  setActMovimiento(true)
 }
 
 const updateMove = () => {
@@ -367,6 +364,7 @@ if (selectMove === 'egreso'){
 ingreso()
 }
 }
+
 useEffect(() => {
 movimiento()
 }, [selectMove])
