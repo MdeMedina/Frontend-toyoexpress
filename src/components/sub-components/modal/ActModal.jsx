@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Select from 'react-select'
 import chroma from 'chroma-js'
 import InputGroup from 'react-bootstrap/InputGroup';
-import {formatDateHoy} from '../../dates/dates'
+import {formatDateHoyEn, formatDateHoy} from '../../dates/dates'
 import {cuentas} from '../../../lib/data/SelectOptions'
 
 function ActModal(props) {
@@ -42,6 +42,10 @@ function ActModal(props) {
       width: 10,
     },
   });
+
+  useEffect(() => {
+ console.log(formatDateHoyEn(new Date(move.fecha)))
+  }, [])
   
   const colourStyles = {
     control: (styles) => ({ ...styles, backgroundColor: 'white' }),
@@ -169,13 +173,29 @@ function ActModal(props) {
           }} controlId="ControlTextArea-Act"/>
       </Form.Group>
 
+      <Form.Control
+      type="date"
+      defaultValue={formatDateHoyEn(new Date(move.fecha))}
+      onChange={(e) => {
+        let {value} = e.target
+       value = value.split('-')
+        console.log(value)
+        let f = new Date(parseInt(value[0]), parseInt(value[1] - 1), value[2])
+        console.log(f)
+        f = formatDateHoy(f)
+        console.log(f)
+        sethoy(f)
+      }}
+      aria-label="Disabled input example"
+    />
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={props.onHide}>
             Cerrar
           </Button>
           <Button variant="primary" onClick={() => {
-            props.settingActMounts(newCuenta, newConcepto, bolos, cambio, newMonto, conversion)
+            props.settingActMounts(newCuenta, newConcepto, bolos, cambio, newMonto, conversion, hoy)
           }}>
             Guardar
           </Button>

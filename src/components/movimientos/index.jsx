@@ -43,6 +43,7 @@ const [monto, setMonto] = useState('')
 const [myMove, setMyMove] = useState()
 const [move, setMove] = useState()
 const [actShow, setActShow] = useState(false)
+const [newFecha, setNewFecha] = useState()
 const [mostrar, setMostrar] = useState(false)
 const [cuenta, setCuenta] = useState(null)
 const [pago, setPago] = useState(null)
@@ -310,7 +311,7 @@ const settingMounts = (sm, cuenta, concepto, bs, change, monto, pago, fecha) => 
 
 }
 
-const settingactmounts = (cuenta, concepto, bs, change, monto, pago) => {
+const settingactmounts = (cuenta, concepto, bs, change, monto, pago, fecha) => {
   setActMovimiento(true)
   setNewCuenta(cuenta)
   setNewConcepto(concepto)
@@ -318,6 +319,7 @@ const settingactmounts = (cuenta, concepto, bs, change, monto, pago) => {
   setCambio(change)
   setNewMonto(monto)
   setNewPago(pago)
+  setNewFecha(fecha)
 }
 
 const updateMove = () => {
@@ -327,10 +329,11 @@ const updateMove = () => {
     concepto: newConcepto,
     bs: bolos,
     change: cambio,
-    fecha: hoy,
+    fecha: newFecha,
     monto: newMonto,
     name: name,
     pago: newPago,
+
   };
 
   if (!actMovimiento) {
@@ -378,7 +381,7 @@ const removeMove = async () => {
 }).then(r => gettingUsers()).then(r => Swal.fire({
   icon: 'success',
   title: 'Movimiento Eliminado con exito',
-})).then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`))
+})).then(getMoves()).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setDeletingMove(false))
   }
 }
 const deleteMoves = (m) => {
@@ -400,7 +403,9 @@ const deleteMoves = (m) => {
         cancelButtonText: `Cancelar`,
         denyButtonText: `Eliminar`,
       }).then((result) => { if (result.isDenied) {
+    
         setDeletingMove({identificador: m.identificador})
+      
         }
       })
       }
@@ -593,12 +598,22 @@ await fetch(`${url_api}/moves/updateStatus`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})
+  }).then(r => {
+    console.log(r)
+    if (r.status === 403) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Ese Nro de aprobacion ya existe',
+      })
+    } else if (r.status === 200) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Movimiento Aprobado con exito',
+      })
+    }
   }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(socket.emit("join_room", move.messageId)).then(socket.emit("send_aprove", { email, message, messageId }))
 getMoves()
-Swal.fire({
-  icon: 'success',
-  title: 'Movimiento Aprobado con exito',
-})
+
 }   
 
 }
@@ -866,6 +881,7 @@ filteredResultsPDF(init, fin).map((m, i) => {
   cuenta: m.cuenta,
   concepto: m.concepto,
   status: statusSetterPdf(m),
+  aprobacion: m.vale,
   fecha: m.fecha,
   monto: `${m.monto}`,
   }
@@ -1036,7 +1052,9 @@ Movimientos a visualizar {"  "}
       html:
         '<div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1"></div> <br />' +
         '<div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2"></div>',
-    }).then(() => {
+        
+    }).then((result) => {
+      if (result.isConfirmed) {
       var doc = new jsPDF()
       let input1 = document.getElementById('swal-input1').value
       let input2 = document.getElementById('swal-input2').value
@@ -1063,6 +1081,7 @@ Movimientos a visualizar {"  "}
       { header: 'Monto', dataKey: 'monto' }
     ], })
     doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`)
+  }
     })
   }}>Imprimir</button>
   </div>
@@ -1182,7 +1201,7 @@ Movimientos a visualizar {"  "}
                         handleClose()
                         setActShow(false)
                       }}
-                      settingActMounts={(cuenta, concepto, bs, change, monto, pago) => settingactmounts(cuenta, concepto, bs, change, monto, pago)}
+                      settingActMounts={(cuenta, concepto, bs, change, monto, pago, fecha) => settingactmounts(cuenta, concepto, bs, change, monto, pago, fecha)}
                       i={i} /> : false}
                       </div>
                       <div className="col-4">
