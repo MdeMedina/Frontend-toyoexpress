@@ -215,7 +215,7 @@ const deleteCuenta = (u) => {
     <div className="d-flex justify-content-center ">
     <div className="container-fluid row  d-flex justify-content-center">
     <div className="row bg-light col-11 filtros">
-        <div className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Crear una cuenta</div>
+        <div className="toyox" data-bs-toggle="modal" data-bs-target="#registerModal">Crear una cuenta</div>
         <div className="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
   <div className="modal-dialog modal-dialog-scrollable">
     <div className="modal-content">

@@ -35,7 +35,7 @@ function Home({ socket }) {
                 Crea, visualiza, elimina y edita, ingresos y egresos
               </p>
               <Link to="/moves" className="d-flex justify-content-center">
-                <btn class="btn btn-primary">Entrar</btn>
+                <btn class="toyox">Entrar</btn>
               </Link>
             </div>
           </div>
@@ -50,7 +50,7 @@ function Home({ socket }) {
               Crea, visualiza, elimina y edita usuarios
             </p>
             <Link to="/user" className="d-flex justify-content-center">
-              <btn class="btn btn-primary">Entrar</btn>
+              <btn class="toyox">Entrar</btn>
             </Link>
           </div>
         </div>
@@ -66,7 +66,7 @@ function Home({ socket }) {
                 Actualiza las horas de ingreso de los usuarios a la aplicacion
               </p>
               <Link to="/update" className="d-flex justify-content-center">
-                <btn class="btn btn-primary">Entrar</btn>
+                <btn class="toyox">Entrar</btn>
               </Link>
             </div> 
           </div>

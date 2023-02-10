@@ -75,7 +75,7 @@ const handleVPage = (e) => {
       method: 'DELETE',
       body: JSON.stringify(deletingUser),
     headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(r => gettingUsers()).then(Swal.fire({
+  }).then(res => res.json()).then(r => setUsers(r)).then(Swal.fire({
     icon: 'success',
     title: 'Usuario Eliminado con exito',
   }))
@@ -174,9 +174,11 @@ const handleVPage = (e) => {
         method: 'POST',
         body: JSON.stringify(registerData),
       headers: new Headers({ 'Content-type': 'application/json'})
-    }).then(res => res.json()).then(r => gettingUsers()).then(Swal.fire({
-      icon: 'success',
-      title: 'Usuario registrado con exito',
+    }).then(res => res.json()).then(r => setUsers(r)).then(  Swal.fire({
+      icon: "success",
+      title: "Usuario Creado con exito",
+      showConfirmButton: false,
+      timer: 1100
     }))
 
     }
@@ -216,8 +218,8 @@ const handleVPage = (e) => {
       method: 'PUT',
       body: JSON.stringify(actData),
     headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(r => {
-    gettingUsers()
+  }).then(res => res.json()).then(r => {
+    setUsers(r)
   }).then(Swal.fire({
     icon: 'success',
     title: 'Usuario modificado con exito',

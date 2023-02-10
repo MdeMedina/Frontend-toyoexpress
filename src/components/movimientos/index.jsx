@@ -1,4 +1,4 @@
-import React, {useState, ChangeEvent, useRef} from 'react'
+import React, {useState, ChangeEvent, useRef, forwardRef} from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
 import { useEffect } from 'react'
@@ -77,6 +77,13 @@ const getMoves = async () => {
  setMoves(data)
 }
 
+const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
+  <button className="toyox" onClick={onClick} ref={ref}>
+    {value}
+  </button>
+));
+
+
 const componentRef = useRef()
 const handlePrint = useReactToPrint({
   content: () => componentRef.current,
@@ -136,11 +143,11 @@ const ComPrint = React.forwardRef((props, ref) => {
         let id = m.identificador.split('-')
         console.log(id)
         if (id[0] === 'E') {
-          return (<button type="button" className="btn btn-outline-danger" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
+          return (<button type="button" className="btn btn-danger" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
             setMove(m)
           }}>{m.identificador}</button>)
         } else if (id[0] === 'I') {
-          return (<button type="button" className="btn btn-outline-success" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
+          return (<button type="button" className="btn btn-success" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
             setMove(m)
           }}>{m.identificador}</button>)
         }
@@ -241,12 +248,23 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
     })
       .then(r => r.json()).then(r => {
         setMoves(r.moves)
-      }).then(
-        Swal.fire({
-          icon: "success",
-          title: "Movimiento Creado con exito",
-        })
-      )
+        if (r.status === 200) {
+          Swal.fire({
+            icon: "success",
+            title: "Movimiento Creado con exito",
+            showConfirmButton: false,
+            timer: 1100
+          })
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Algo extraño ha ocurrido",
+            text: "Comuniquese con el administrador",
+            showConfirmButton: false,
+            timer: 1100
+          })
+        }
+      })
 .then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setSelectMove(false)).then(setEgresoShow(false));
   }
 };
@@ -295,13 +313,24 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       },
       body: JSON.stringify(obj),
     }).then(r => r.json()).then(r => {
-      setMoves(r)
-    }).then(
+      setMoves(r.moves)
+      if (r.status === 200) {
         Swal.fire({
           icon: "success",
           title: "Movimiento Actualizado con exito",
+          showConfirmButton: false,
+          timer: 1100
         })
-      ).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Algo extraño ha ocurrido",
+          text: "Comuniquese con el administrador",
+          showConfirmButton: false,
+          timer: 1100
+        })
+      }
+    }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
 
   }
 
@@ -312,12 +341,24 @@ const removeMove = async (identificador) => {
     method: 'PUT',
     body: JSON.stringify(identificador),
   headers: new Headers({ 'Content-type': 'application/json'})
-}).then( gettingUsers()).then(Swal.fire({
-  icon: 'success',
-  title: 'Movimiento Eliminado con exito',
-})).then(r => r.json()).then(r => {
-  console.log(r)
+}).then(r => r.json()).then(r => {
   setMoves(r.moves)
+  if (r.status === 200) {
+    Swal.fire({
+      icon: "success",
+      title: "Movimiento Eliminado con exito",
+      showConfirmButton: false,
+      timer: 1100
+    })
+  } else {
+    Swal.fire({
+      icon: "error",
+      title: "Algo extraño ha ocurrido",
+      text: "Comuniquese con el administrador",
+      showConfirmButton: false,
+      timer: 1100
+    })
+  }
 }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setDeletingMove(false))
 }
 const deleteMoves = (m) => {
@@ -431,7 +472,7 @@ let tPagos = [
 const aproveSetter2 = (move) => {
   if (am) { return(<div className="row px-3 py-2">
     <div className="col-4 d-flex align-items-center">
-<label htmlFor="vale" className="form-label col-12">Nro de aprobacion</label>
+<label htmlFor="vale" className="form-label col-12 subtitulo">Nro de aprobacion</label>
 </div>
 <div className="col-6">
 <input type="text" className="form-control" id="vale" aria-describedby="emailHelp" defaultValue={move.vale} onChange={(e) =>{
@@ -827,7 +868,7 @@ return (
   <div className="d-flex justify-content-center">
   <div className="container-fluid row  d-flex justify-content-center">
   <div className="row bg-light col-11 div-btn">
-  <div className="btn btn-primary" onClick={() => setEgresoShow(true)}>Crear un movimiento</div>
+  <div className="toyox" onClick={() => setEgresoShow(true)}>Crear un movimiento</div>
   <EModal
                       show={egresoShow}
                       onHide={() => setEgresoShow(false)}
@@ -900,6 +941,7 @@ return (
         onChange={(date) => stDateSetter(date)}
         dateFormat="dd/MM/yyyy"
         maxDate={addDays(new Date(), 0)}
+        customInput={<ExampleCustomInput />}
         selectsStart
         startDate={startDate}
         endDate={endDate}
@@ -915,6 +957,7 @@ return (
         dateFormat="dd/MM/yyyy"
         selectsEnd
         startDate={startDate}
+        customInput={<ExampleCustomInput />}
         endDate={endDate}
         maxDate={addDays(new Date(), 0)}
         minDate={startDate}
@@ -947,7 +990,7 @@ return (
 
 </div>
 <div className='col-1 d-flex align-items-center justify-content-end'>
-<button className='btn btn-primary lt' onClick={() => {   
+<button className='toyox lt' onClick={() => {   
                 window.location.reload(false);
 }}><FontAwesomeIcon icon={faArrowsRotate} /></button> 
 </div>
@@ -979,7 +1022,7 @@ Movimientos a visualizar {"  "}
 </select>
 </div>
 <div className="col-8 d-flex align-items-center justify-content-end">
-  <button type="button" class="btn btn-primary" onClick={() => {
+  <button type="button" class="toyox" onClick={() => {
     Swal.fire({
       title: 'Escoja la fecha para la impresion',
       html:
@@ -1066,7 +1109,7 @@ Movimientos a visualizar {"  "}
         </div>
       </div>
       <div className="modal-body row d-flex justify-content-center">
-        <div className="col-6 row">
+        <div className="col-5  d">
           <h6 className="col-12 titulo">Datos Generales</h6>
           <div className="col-12 subtitulo">Fecha de Creacion</div>
         <div className="col-12 texto">{m.fecha}</div>
@@ -1082,17 +1125,23 @@ Movimientos a visualizar {"  "}
 
 
         </div>
-        <div className="col-6 row">
+        <div className="col-7 row ca">
         <h6 className="col-12 titulo">Datos de facturacion</h6>
-        <div className="col-12 texto">{m.name}</div>
+        <div className="col-12 texto"><span className="subtitulo">Usuario: </span>{m.name}</div>
         <div className="col-12 subtitulo">Correo Electronico</div>
         <div className="col-12 texto">{m.email}</div>
-        <div className="col-12 subtitulo">Tipo de Pago</div>
+        <div className="col-12 subtitulo">Pagos:</div>
+        {m.efectivo > 0 ? <div className="col-12 texto">Efectivo: ${m.efectivo}</div> : false}
+        {m.zelle > 0 ? <div className="col-12 texto">Zelle:${m.zelle}</div> : false}
+        {m.dollars > 0 ? <div className="col-12 texto">Pago en Bolivares</div> : false}
+        {m.dollars > 0 ? <div className="col-4 texto">Valor $: ${m.dollars} </div> : false}
+        {m.dollars > 0 ? <div className="col-4 texto">Cambio: {m.change}Bs</div> : false}
+        {m.dollars > 0 ? <div className="col-4 texto"><div >Bs:</div> {m.bs}Bs</div> : false}
         <div className="col-12 texto">{m.pago}</div>
           <div className="col-12 subtitulo">Cuenta</div>
           <div className="col-12 texto">{m.cuenta}</div>
           {
-          m.pago === 'Bs'?  <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}<div className="sub-texto">*Este monto es resultado de {m.bs}Bs a un cambio de {m.change}Bs por dolar</div></div></div> : <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}</div></div>
+          m.pago === 'Bs'?  <div><div className="col-12 subtitulo">Total</div><div className="col-12 texto">{numberFormat.format(m.monto)}<div className="sub-texto">*Este monto es resultado de {m.bs}Bs a un cambio de {m.change}Bs por dolar</div></div></div> : <div><div className="col-12 subtitulo">Monto</div><div className="col-12 texto">{numberFormat.format(m.monto)}</div></div>
         }
         </div>
 
@@ -1103,7 +1152,7 @@ Movimientos a visualizar {"  "}
         !m.vale && am ? <div className="col-12"><hr />{aproveSetter2(m)}</div> : false
         }
       <div className="modal-footer">
-        <button className='btn btn-primary' onClick={() => {
+        <button className='toyox' onClick={() => {
           setMostrar(true)
           }}>Imprimir</button>
         {!m.vale && am ? <div>{aproveSetter3(m)}</div>: false}

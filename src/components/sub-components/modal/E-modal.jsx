@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, forwardRef} from 'react'
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
@@ -41,7 +41,24 @@ const [endDate, setEndDate] = useState(new Date());
       setBolos(balls)
     }
   }
+
+  const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
+    <button className="toyox" onClick={onClick} ref={ref}>
+      {value}
+    </button>
+  ));
+  
+
   const cambiandoTotal = () => {
+    if (!dollars) {
+      setDollars(0)
+    }
+    if (!efectivo) {
+      setEfectivo(0)
+    }
+    if (!zelle) {
+      setZelle(0)
+    }
     let t = parseInt(dollars) + parseInt(efectivo) + parseInt(zelle) 
     setTotal(t)
     setNewMonto(t)
@@ -144,52 +161,59 @@ const [endDate, setEndDate] = useState(new Date());
 
       <br />
 
+<div className='row'>
       <h3>Pagos</h3>
-  <div><label >Efectivo:</label>
-        <InputGroup className="mb-3">
-          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" onChange={(e) => {
+  <div className='col-4'><label >Efectivo:</label>
+        <InputGroup className="mb-3 col-6">
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" className='input-form' onChange={(e) => {
             setEfectivo(e.target.value)
           }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>
         </div>
-        <div><label >Zelle:</label>
-        <InputGroup className="mb-3">
-          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" onChange={(e) => {
+        <div className='col-4'><label >Zelle:</label>
+        <InputGroup className="mb-3 col-6">
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" className='input-form' onChange={(e) => {
             setZelle(e.target.value)
           }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>
         </div>
   <div className="row mb-3">
-    <div className='col-6'>
+  <label >Bolivares:</label>
+    <div className='col-4'>
       <InputGroup>
-      <Form.Label>Valor en dolares:</Form.Label>
+      <Form.Label>Valor en<br />dolares:</Form.Label>
         <Form.Control aria-label="Amount (to the nearest dollar)" onChange={e => {
           setDollars(e.target.value)
         }}/>
+        <InputGroup.Text>$</InputGroup.Text>
       </InputGroup>
       </div>
-      <div className='col-6 mb-3'>
+      <div className='col-4 mb-3'>
       <InputGroup >
-        <Form.Label>Valor de cambio:</Form.Label>
+        <Form.Label>Valor de<br />cambio:</Form.Label>
         <Form.Control  aria-label="Amount (to the nearest dollar)" onChange={e => {
           setCambio(e.target.value)
         }}/>
+        <InputGroup.Text>Bs</InputGroup.Text>
       </InputGroup>
       </div>
-      <div className='col-12'>
+      <div className='col-4'>
         <InputGroup>
-        <Form.Label>Cantidad de bolivares:</Form.Label>
-        <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={bolivares} onChange={(e) => {
+        <Form.Label>Cantidad de<br />bolivares:</Form.Label>
+        <br />
+        <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={bolivares} readOnly onChange={(e) => {
             setBolos(e.target.value)
           }}/>
+          <InputGroup.Text>Bs</InputGroup.Text>
       </InputGroup>
       </div>
+      </div>
       <br />
-      <div><label >Monto:</label>
+      <div><label >Total:</label>
         <InputGroup className="mb-3">
-          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" value={total} onChange={(e) => {
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" className='input-form total' size='lg' readOnly value={total} onChange={(e) => {
           }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>
@@ -212,6 +236,7 @@ const [endDate, setEndDate] = useState(new Date());
       selected={startDate}
       dateFormat="dd/MM/yyyy"
       maxDate={addDays(new Date(), 0)}
+      customInput={<ExampleCustomInput />}
       onChange={(e) => {
         setStartDate(e)
         let {value} = e.target
