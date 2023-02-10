@@ -265,24 +265,27 @@ const settingMounts = (id, cuenta, concepto, bs, change, monto, fecha, dollars, 
     movimiento(id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle)
 }
 
-const settingactmounts = (cuenta, concepto, bs, change, monto, pago, fecha) => {
-  updateMove(cuenta, concepto, bs, change, monto, pago, fecha)
+const settingactmounts = (id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle) => {
+  console.log(efectivo, dollars, zelle)
+  updateMove(id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle)
 }
 
-const updateMove = async (cuenta, concepto, bs, change, monto, pago, fecha) => {
+const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle) => {
+  console.log(efectivo, dollars, zelle)
   let obj = {
     identificador: identificador,
+    id,
     cuenta,
+    dollars, 
+    efectivo, 
+    zelle,
     concepto,
     bs,
     change,
     fecha,
     monto,
     name: name,
-    pago,
-
   };
-
 
    await fetch(`${url_api}/moves/updateMove`, {
       method: "PUT",
@@ -1131,7 +1134,7 @@ Movimientos a visualizar {"  "}
                         handleClose()
                         setActShow(false)
                       }}
-                      settingActMounts={(cuenta, concepto, bs, change, monto, pago, fecha) => settingactmounts(cuenta, concepto, bs, change, monto, pago, fecha)}
+                      settingActMounts={(id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle) => settingactmounts(id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle)}
                       i={i} /> : false}
                       </div>
                       <div className="col-4">
