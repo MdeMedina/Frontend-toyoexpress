@@ -241,7 +241,7 @@ const [endDate, setEndDate] = useState(new Date());
         let value = formatDateHoy(e)
        value = value.split('/')
         console.log(value)
-        let f = new Date(parseInt(value[0]), parseInt(value[1] - 1), value[2])
+        let f = new Date(value[2],  parseInt(value[1] - 1), parseInt(value[0]) )
         console.log(f)
         f = formatDateHoy(f)
         console.log(f)
