@@ -784,16 +784,14 @@ const filteredResultsPDF = (init, fin) => {
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
     const arrId2 = b.identificador.split('-')
-    if(arrId2[0] === arrId1[0]){
-    return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
-   })
-    betaResults = betaResults.sort((a, b) => {
-     const arrfecha1 =  a.fecha.split('/')
-     const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
-     const arrfecha2 =  b.fecha.split('/')
-     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-     return fechaReal1 - fechaReal2 
-   })
+    return (parseInt(arrId1[1]) - parseInt(arrId2[1]))})
+  //   betaResults = betaResults.sort((a, b) => {
+  //    const arrfecha1 =  a.fecha.split('/')
+  //    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+  //    const arrfecha2 =  b.fecha.split('/')
+  //    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+  //    return fechaReal1 - fechaReal2 
+  //  })
    results = betaResults
    console.log(results)
    return results
@@ -861,7 +859,7 @@ filteredResultsPDF(init, fin).map((m, i) => {
   }
   table.push (bodys)
 })
-table.push({fecha: "Total", monto: `$${pdfTotal}`})}
+table.push({fecha: "Total", monto: `$${pdfTotal.toFixed(2)}`})}
 let bsIdLabel
 return (
 <>
