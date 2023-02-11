@@ -59,9 +59,9 @@ const [endDate, setEndDate] = useState(new Date());
     if (!zelle) {
       setZelle(0)
     }
-    let t = parseInt(dollars) + parseInt(efectivo) + parseInt(zelle) 
-    setTotal(t)
-    setNewMonto(t)
+    let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) 
+    setTotal(t.toFixed(2))
+    setNewMonto(t.toFixed(2))
   }
   function addDays(fecha, dias){ 
     fecha.setDate(fecha.getDate() + dias);
@@ -162,7 +162,7 @@ const [endDate, setEndDate] = useState(new Date());
       <br />
 
 <div className='row'>
-      <h3>Pagos</h3>
+      <h3>Forma de Pago/Cobro</h3>
   <div className='col-4'><label >Efectivo:</label>
         <InputGroup className="mb-3 col-6">
           <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" className='input-form' onChange={(e) => {

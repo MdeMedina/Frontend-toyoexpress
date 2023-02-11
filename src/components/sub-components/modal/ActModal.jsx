@@ -36,9 +36,9 @@ function ActModal(props) {
     if (!zelle) {
       setZelle(0)
     }
-    let t = parseInt(dollars) + parseInt(efectivo) + parseInt(zelle) 
-    setTotal(t)
-    setNewMonto(t)
+    let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) 
+    setTotal(t.toFixed(2))
+    setNewMonto(t.toFixed(2))
   }
 
   const {move, settingactmounts, i} = props
@@ -179,7 +179,7 @@ function ActModal(props) {
 
       <br />
 
-      <h3>Pagos</h3>
+      <h3>Forma de Pago/Cobro</h3>
   <div><label >Efectivo:</label>
         <InputGroup className="mb-3">
           <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" defaultValue={move.efectivo} onChange={(e) => {
