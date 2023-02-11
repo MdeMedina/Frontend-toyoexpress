@@ -28,7 +28,7 @@ const [endDate, setEndDate] = useState(new Date());
   const [zelle, setZelle] = useState(0)
   const [newCuenta, setNewCuenta] = useState(null)
   const [newPago, setNewPago] = useState(null)
-  const [hoy, sethoy] = useState('')
+  const [hoy, sethoy] = useState(formatDateHoy(new Date()))
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
   const [newConcepto, setNewConcepto] = useState('')
@@ -125,9 +125,7 @@ const [endDate, setEndDate] = useState(new Date());
       setConversion(false)
     }
   }, [props])
-  useEffect(() => {
-    sethoy(`${formatDateHoy(new Date())}`)
-  }, [])
+
   
     useEffect(() => {
       console.log(selectMove, newCuenta, newConcepto, newMonto, bolos, cambio, conversion, hoy)
@@ -239,7 +237,8 @@ const [endDate, setEndDate] = useState(new Date());
       customInput={<ExampleCustomInput />}
       onChange={(e) => {
         setStartDate(e)
-        let {value} = e.target
+        console.log(e)
+        let value = formatDateHoy(e)
        value = value.split('/')
         console.log(value)
         let f = new Date(parseInt(value[0]), parseInt(value[1] - 1), value[2])
