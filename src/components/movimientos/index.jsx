@@ -63,9 +63,9 @@ const [currentPage, setCurrentPage] = useState(0)
 const [vPage, setVPage] = useState(cantidadM)
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
-const [newMonto, setNewMonto] = useState('')
-const [newCuenta, setNewCuenta] = useState(null)
-const [newPago, setNewPago] = useState(null)
+const [sortId, setSortId] = useState(0)
+const [sortStatus, setSortStatus] = useState(0)
+const [sortFecha, setSortFecha] = useState(0)
 const [Fecha, setFecha] = useState()
 const [bolos, setBolos] = useState(0)
 const [cambio, setCambio] = useState(0)
@@ -510,7 +510,9 @@ const statusSetterPdf = (move) => {
  }
 }
 
-
+useEffect(() => {
+  console.log(sortId)
+},[sortId])
 
 const statusBoxSetter = (move) => {
   if (!move.vale) {
@@ -634,9 +636,10 @@ const endDateSetter = (date) => {
   setMeEncuentro(1)
   setEndDate(date)
 }
-let results = [];
-let betaResults = [];
+
 let alphaResults = [];
+let betaResults = []
+let results = [];
 let inicio = new Date(startDate)
 let final = new Date(endDate)
 if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion) {
@@ -653,12 +656,21 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
       return dato.name.includes(localStorage.getItem('name'))
     })
   }
+
+console.log(sortId)
+if (sortId === 1) {
   betaResults = betaResults.sort((a, b) => {
-   const arrId1 = a.identificador.split('-')
-   const arrId2 = b.identificador.split('-')
-   if(arrId2[0] === arrId1[0]){
-   return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
-  })
+    const arrId1 = a.identificador.split('-')
+    const arrId2 = b.identificador.split('-')
+    return ( parseInt(arrId2[1]) - parseInt(arrId1[1]))}
+   )
+  }else if (sortId === 2) {
+    betaResults = betaResults.sort((a, b) => {
+      const arrId1 = a.identificador.split('-')
+      const arrId2 = b.identificador.split('-')
+      return ( parseInt(arrId1[1]) - parseInt(arrId2[1]) )}
+     )
+  } else if (sortFecha === 1) {
    betaResults = betaResults.sort((a, b) => {
     const arrfecha1 =  a.fecha.split('/')
     const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
@@ -666,17 +678,40 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
     return fechaReal2 -fechaReal1 
   })
-  betaResults = betaResults.sort((a, b) => {
-    if (a.vale && !b.vale) {
-      return 1
-    } else if (a.vale && b.vale) {
-      return 0
-    } else if (!a.vale && b.vale) {
-      return -1
-    } else if (!a.vale && !b.vale){
-      return 0
-    }
+  } else if (sortFecha === 2) {
+       betaResults = betaResults.sort((a, b) => {
+    const arrfecha1 =  a.fecha.split('/')
+    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+    const arrfecha2 =  b.fecha.split('/')
+    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+    return fechaReal1 -fechaReal2 
   })
+  } else if (sortStatus === 1) {
+    betaResults = betaResults.sort((a, b) => {
+      if (a.vale && !b.vale) {
+        return 1
+      } else if (a.vale && b.vale) {
+        return 0
+      } else if (!a.vale && b.vale) {
+        return -1
+      } else if (!a.vale && !b.vale){
+        return 0
+      }
+    })
+  } else if (sortStatus === 2) {
+    betaResults = betaResults.sort((a, b) => {
+      if (!a.vale && b.vale) {
+        return 1
+      } else if (!a.vale && !b.vale) {
+        return 0
+      } else if (a.vale && !b.vale) {
+        return -1
+      } else if (a.vale && b.vale){
+        return 0
+      }
+    })
+  }
+
   results = betaResults
 
 } else {
@@ -704,9 +739,28 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
     alphaResults = []
     pago.map((c) => {
       betaResults.map((dato) => {
-        if (c.value === dato.pago) {
-          alphaResults.push(dato)
+        const ident = (move) => {
+          return move.identificador = dato.identificador
         }
+        if (c.value == 'Bs' && dato.dollars > 0) {
+          console.log(alphaResults.indexOf(dato))
+          if (alphaResults.indexOf(dato) === -1){
+          alphaResults.push(dato)
+          }
+        } 
+        console.log('efectivo', c.value == 'Efectivo')
+         if (c.value == 'Efectivo' && dato.efectivo > 0) {
+          if (alphaResults.indexOf(dato) === -1 ){
+            alphaResults.push(dato)
+            }
+        } 
+        console.log('zelle', c.value == 'Zelle', )
+         if (c.value == 'Zelle' && dato.zelle > 0) {
+          if (alphaResults.indexOf(dato) === -1){
+            alphaResults.push(dato)
+            }
+        }
+        console.log(alphaResults)
       })
     })
     betaResults = alphaResults
@@ -749,19 +803,61 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
       return !dato.vale
     })
    }
-   betaResults = betaResults.sort((a, b) => {
-    const arrId1 = a.identificador.split('-')
-    const arrId2 = b.identificador.split('-')
-    if(arrId2[0] === arrId1[0]){
-    return (parseInt(arrId2[1]) - parseInt(arrId1[1]))}
-   })
+
+
+   if (sortId === 1) {
     betaResults = betaResults.sort((a, b) => {
-     const arrfecha1 =  a.fecha.split('/')
-     const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
-     const arrfecha2 =  b.fecha.split('/')
-     const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-     return fechaReal2 -fechaReal1 
-   })
+      const arrId1 = a.identificador.split('-')
+      const arrId2 = b.identificador.split('-')
+      return ( parseInt(arrId2[1]) - parseInt(arrId1[1]))}
+     )
+    }else if (sortId === 2) {
+      betaResults = betaResults.sort((a, b) => {
+        const arrId1 = a.identificador.split('-')
+        const arrId2 = b.identificador.split('-')
+        return ( parseInt(arrId1[1]) - parseInt(arrId2[1]) )}
+       )
+    } else if (sortFecha === 1) {
+     betaResults = betaResults.sort((a, b) => {
+      const arrfecha1 =  a.fecha.split('/')
+      const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+      const arrfecha2 =  b.fecha.split('/')
+      const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+      return fechaReal2 -fechaReal1 
+    })
+    } else if (sortFecha === 2) {
+         betaResults = betaResults.sort((a, b) => {
+      const arrfecha1 =  a.fecha.split('/')
+      const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+      const arrfecha2 =  b.fecha.split('/')
+      const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+      return fechaReal1 -fechaReal2 
+    })
+    } else if (sortStatus === 1) {
+      betaResults = betaResults.sort((a, b) => {
+        if (a.vale && !b.vale) {
+          return 1
+        } else if (a.vale && b.vale) {
+          return 0
+        } else if (!a.vale && b.vale) {
+          return -1
+        } else if (!a.vale && !b.vale){
+          return 0
+        }
+      })
+    } else if (sortStatus === 2) {
+      betaResults = betaResults.sort((a, b) => {
+        if (!a.vale && b.vale) {
+          return 1
+        } else if (!a.vale && !b.vale) {
+          return 0
+        } else if (a.vale && !b.vale) {
+          return -1
+        } else if (a.vale && b.vale){
+          return 0
+        }
+      })
+    }
 
   results = betaResults
 }
@@ -780,11 +876,13 @@ const filteredResultsPDF = (init, fin) => {
       return dato.name.includes(localStorage.getItem('name'))
     })
   }
+
   betaResults= filterRangePDF(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
     const arrId2 = b.identificador.split('-')
-    return (parseInt(arrId1[1]) - parseInt(arrId2[1]))})
+    return ( parseInt(arrId2[1]) - parseInt(arrId1[1]) )})
+
   //   betaResults = betaResults.sort((a, b) => {
   //    const arrfecha1 =  a.fecha.split('/')
   //    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
@@ -847,6 +945,13 @@ filteredResultsPDF(init, fin).map((m, i) => {
     }else if (m.identificador.charAt(0) === 'I') {
      pdfTotal += parseFloat(m.monto)
     }
+    let id = m.identificador.split('-')
+    let manto;
+    if (id[0] == 'I') {
+       manto = `${m.monto}`
+    }else if (id[0] == 'E'){
+       manto = `-${m.monto}`
+    }
   const bodys = {
   identificador: m.identificador, 
   username: m.name, 
@@ -855,7 +960,7 @@ filteredResultsPDF(init, fin).map((m, i) => {
   status: statusSetterPdf(m),
   aprobacion: m.vale,
   fecha: m.fecha,
-  monto: `${m.monto}`,
+  monto: manto,
   }
   table.push (bodys)
 })
@@ -1065,13 +1170,25 @@ Movimientos a visualizar {"  "}
 <table className="table">
 <thead>
         <tr>
-            <th>Identificador</th>
+            <th onClick={() => {
+              sortId === 1 ? setSortId(2) : sortId === 2 ? setSortId(1) : sortId === 0 ? setSortId(1) : setSortId(1)
+              setSortFecha(0)
+              setSortStatus(0)
+            }} ><div className='d-flex'>  Identificador{sortId === 1 ? <box-icon name='chevron-down'></box-icon> : sortId === 2  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>} </div></th>
             <th>Usuario</th>
             <th>Cuenta</th>
             <th>Concepto</th>
-            <th>Status</th>
+            <th onClick={() => {
+              sortStatus === 1 ? setSortStatus(2) : sortStatus === 2 ? setSortStatus(1) : sortStatus === 0 ? setSortStatus(1) : setSortStatus(1)
+              setSortFecha(0)
+              setSortId(0)
+            }}><div className='d-flex'>Status {sortStatus === 1 ? <box-icon name='chevron-down'></box-icon> : sortStatus === 2  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>}</div></th>
             <th>Nro de aprobacion</th>
-            <th>Fecha</th>
+            <th onClick={() => {
+              sortFecha === 1 ? setSortFecha(2) : sortFecha === 2 ? setSortFecha(1) : sortFecha === 0 ? setSortFecha(1) : setSortFecha(1)
+              setSortId(0)
+              setSortStatus(0)
+            }}><div className='d-flex'>Fecha {sortFecha === 1 ? <box-icon name='chevron-down'></box-icon> : sortFecha === 2  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>}</div></th>
             <th>Acciones</th>
             <th className='monto-table'>Monto</th>
         </tr>
@@ -1168,7 +1285,8 @@ Movimientos a visualizar {"  "}
                 <td >{statusSetter(m)}</td>
                 <td >{!m.vale ? "No aprobado" : m.vale}</td>
                 <td >{m.fecha}</td>
-                <td className='row'>
+                <td>
+                  <div className='row'>
                 <div className="col-4">
                 {editMoves(m, i)}
                 {
@@ -1187,7 +1305,7 @@ Movimientos a visualizar {"  "}
                       <div className="col-4">
                       {deleteMoves(m)}
                       </div>
-                
+                      </div>
                       </td>
                 <td className='monto-table'>{numberFormat.format(m.monto)}</td>
 
