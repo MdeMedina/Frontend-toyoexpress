@@ -82,8 +82,11 @@ function Login() {
   return (
     <>
       <form className="Form mt-5" onSubmit={handleSubmit}>
-        <h2>Toyoxpress</h2>
+
         <div className="row d-flex justify-content-center">
+        <div className="col-12">
+        <img src={require('../img/logo.png')} className="logo-login" />
+        </div>
           <div className="row col-5 bg-light filtros d-flex justify-content-center">
             <div className="Username login-div col-10">
               <label className="form-label d-flex justify-content-start">

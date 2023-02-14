@@ -61,6 +61,11 @@
     width: 230px;
     height: 42.32445520581114px;
 }
+.logo-login {
+    width: 300px !important;
+    height: 55.21px !important;
+}
+
 .logo-div {
     padding: 0 2px !important;
 }
