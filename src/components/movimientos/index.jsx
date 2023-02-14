@@ -17,6 +17,7 @@ import autoTable from 'jspdf-autotable'
 import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
 import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content'
 import { url_api, url_local } from '../../lib/data/server';
 import EModal from '../sub-components/modal/E-modal'
 import { cuentas } from '../../lib/data/SelectOptions'
@@ -26,6 +27,7 @@ function Moves({socket}) {
   const hoy = `${formatDateHoy(new Date())}`
   const navigate = useNavigate()
 
+  const MySwal = withReactContent(Swal)
     
  let handleClose = () => {
     document.body.classList.remove("modal-open");
@@ -55,6 +57,8 @@ const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
 const [identificador, setIdentificador] = useState('')
 const [Id, setId] = useState('')
+const [pdfCuenta, setPdfCuenta] = useState(null)
+const [pdfName, setPdfName] = useState(null)
 const [nroAprobacion, setNroAprobacion] = useState('')
 const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
@@ -93,9 +97,7 @@ const handlePrint = useReactToPrint({
   }
 })
 
-useEffect(() => {
-  console.log(move)
-}, [move])
+
 
 
 
@@ -141,7 +143,7 @@ const ComPrint = React.forwardRef((props, ref) => {
 
       const btnId = (m) => {
         let id = m.identificador.split('-')
-        console.log(id)
+
         if (id[0] === 'E') {
           return (<button type="button" className="btn btn-danger" data-bs-target={bsTarget} data-bs-toggle="modal" onClick={() => {
             setMove(m)
@@ -219,17 +221,17 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
   
   let error = document.getElementById("error");
   if (!cuenta) {
-    console.log(cuenta, "falta la cuenta")
+
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
   }  else if (!monto) {
-    console.log(monto, "falta el monto")
+
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
   } else if (!concepto) {
-    console.log(concepto, "falta el concepto")
+
     if (error.classList.contains("desaparecer")) {
       error.classList.remove("desaparecer");
     }
@@ -269,6 +271,15 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
   }
 };
 
+const inputsLoads = () => {
+  return (
+    <div>
+    <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Name</label></div><div className="col-6"><Select options={nombres} isMulti onChange={handlePdfNameValue} className="select-max"/></div></div> 
+<div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-6"><Select options={cuentas} isMulti onChange={handlePdfCuentaValue} className="select-max"/></div></div>
+</div>
+  )
+}
+
 const editMoves = (m, i) => { 
   if (em) {
       return(<button className='btn btn-primary closer' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
@@ -284,12 +295,12 @@ const settingMounts = (id, cuenta, concepto, bs, change, monto, fecha, dollars, 
 }
 
 const settingactmounts = (id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle) => {
-  console.log(efectivo, dollars, zelle)
+
   updateMove(id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle)
 }
 
 const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle) => {
-  console.log(efectivo, dollars, zelle)
+
   let obj = {
     identificador: identificador,
     id,
@@ -334,6 +345,26 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
 
   }
 
+
+
+const negativos = (m, i) => {
+  let id = m.identificador.split('-')
+
+  if (id[0] == 'I') {
+    return <td className='monto-table'>{numberFormat.format(m.monto)}</td>
+  } else if (id[0] == 'E') {
+    return <td className='monto-table egreso'> -{numberFormat.format(m.monto)}</td>
+  }
+}
+
+const totalNegativo = (total) => {
+  total = parseFloat(total)
+  if (total >= 0) {
+    return <td className='monto-table'><h6>{numberFormat.format(total)}</h6></td>
+  } else if (total < 0) {
+    return <td className='monto-table egreso'><h6 className='egreso'>{numberFormat.format(total)}</h6></td>
+  }
+}
 
 const removeMove = async (identificador) => {
 
@@ -419,6 +450,14 @@ if (!e.length) {
   setCuenta(e)
 }
 }
+const handlePdfCuentaValue = (e) => {
+  if (!e.length) {
+    setPdfCuenta(null)
+  }else {
+
+    setPdfCuenta(e)
+  }
+  }
 const handleTMoveValue = (e) => {
     setCurrentPage(0)
     setEstaba(1)
@@ -435,6 +474,14 @@ const handleNameValue = (e) => {
     setName(e)
   }
   }
+  const handlePdfNameValue = (e) => {
+    if (!e.length) {
+      setPdfName(null)
+    }else {
+
+      setPdfName(e)
+    }
+    }
   const handlePayValue = (e) => {
     if (!e.length) {
       setPago(null)
@@ -510,9 +557,6 @@ const statusSetterPdf = (move) => {
  }
 }
 
-useEffect(() => {
-  console.log(sortId)
-},[sortId])
 
 const statusBoxSetter = (move) => {
   if (!move.vale) {
@@ -575,7 +619,7 @@ await fetch(`${url_api}/moves/updateStatus`, {
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})
   }).then(r => {
-    console.log(r)
+
     if (r.status === 403) {
       Swal.fire({
         icon: 'error',
@@ -646,7 +690,7 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
   betaResults = moves
 
   betaResults = betaResults.filter( (dato) => {
-    console.log(dato.disabled)
+
     return !dato.disabled
   })
 
@@ -657,7 +701,7 @@ if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacio
     })
   }
 
-console.log(sortId)
+
 if (sortId === 1) {
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
@@ -743,25 +787,23 @@ if (sortId === 1) {
           return move.identificador = dato.identificador
         }
         if (c.value == 'Bs' && dato.dollars > 0) {
-          console.log(alphaResults.indexOf(dato))
+
           if (alphaResults.indexOf(dato) === -1){
           alphaResults.push(dato)
           }
         } 
-        console.log('efectivo', c.value == 'Efectivo')
+
          if (c.value == 'Efectivo' && dato.efectivo > 0) {
           if (alphaResults.indexOf(dato) === -1 ){
             alphaResults.push(dato)
             }
         } 
-        console.log('zelle', c.value == 'Zelle', )
+
          if (c.value == 'Zelle' && dato.zelle > 0) {
           if (alphaResults.indexOf(dato) === -1){
             alphaResults.push(dato)
             }
-        }
-        console.log(alphaResults)
-      })
+        }      })
     })
     betaResults = alphaResults
   }
@@ -777,7 +819,7 @@ if (sortId === 1) {
       betaResults = alphaResults
   }
   betaResults = betaResults.filter( (dato) => {
-    console.log(dato.disabled)
+
     return !dato.disabled
   })
 
@@ -866,6 +908,7 @@ const filteredResults = () => {
 }
 const filteredResultsPDF = (init, fin) => {
   let results;
+  let alphaResults = [];
   let betaResults = moves
   betaResults = betaResults.filter( (dato) => {
     return !dato.disabled
@@ -875,7 +918,30 @@ const filteredResultsPDF = (init, fin) => {
     betaResults = betaResults.filter((dato) => {
       return dato.name.includes(localStorage.getItem('name'))
     })
+
   }
+  if (pdfCuenta) {
+    alphaResults = []
+    pdfCuenta.map((c) => {
+      betaResults.map((dato) => {
+        if (c.value === dato.cuenta) {
+          alphaResults.push(dato)
+        }
+      })
+      })
+      betaResults = alphaResults
+  }
+  if (pdfName) {
+    alphaResults = []
+    pdfName.map((c) => {
+      betaResults.map((dato) => {
+        if (c.value === dato.name) {
+          alphaResults.push(dato)
+        }
+      })
+    })
+    betaResults = alphaResults
+}
 
   betaResults= filterRangePDF(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
@@ -891,7 +957,7 @@ const filteredResultsPDF = (init, fin) => {
   //    return fechaReal1 - fechaReal2 
   //  })
    results = betaResults
-   console.log(results)
+
    return results
 }
 
@@ -1122,15 +1188,19 @@ Movimientos a visualizar {"  "}
   }
 
 
+
+
 </select>
 </div>
 <div className="col-8 d-flex align-items-center justify-content-end">
   <button type="button" class="toyox" onClick={() => {
-    Swal.fire({
+    MySwal.fire({
       title: 'Escoja la fecha para la impresion',
-      html:
-        '<div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1"></div> <br />' +
-        '<div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2"></div>',
+      html:<>
+      <div className='row rw-bit d-flex justify-content-center'>
+      <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} isMulti onChange={handlePdfNameValue} className="select-max-pdf"/></div></div>
+      <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas} isMulti onChange={handlePdfCuentaValue} className="select-max-pdf"/></div></div></div><div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1" /></div> <br /> 
+        <div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2" /></div></>
         
     }).then((result) => {
       if (result.isConfirmed) {
@@ -1307,7 +1377,7 @@ Movimientos a visualizar {"  "}
                       </div>
                       </div>
                       </td>
-                <td className='monto-table'>{numberFormat.format(m.monto)}</td>
+               {negativos(m,i)}
 
         </tr>
 
@@ -1322,7 +1392,7 @@ Movimientos a visualizar {"  "}
                 <td>{"  "}</td>
                 <td>{"  "}</td>
                 <td className='monto-table'><h6>Total:</h6></td>
-                <td className='monto-table'><h6>{numberFormat.format(total)}</h6></td>
+                {totalNegativo(total)}
   </tr>
   </tbody>
   </table>

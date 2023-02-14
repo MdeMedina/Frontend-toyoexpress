@@ -8,6 +8,15 @@
 .select-max {
     max-width: 150px;
 }
+.swal2-html-container {
+    overflow: visible !important;
+}
+
+.select-max-pdf {
+    max-width: 150px;
+
+}
+
 
 .closer { 
     width: 35px !important;
@@ -39,6 +48,13 @@
 
 .d {
     border-right: 1px solid #ccc;
+}
+.egreso {
+    color: #d82400;
+}
+
+.rw-bit{
+    margin-right: 0 !important;
 }
 
 .toyox {
