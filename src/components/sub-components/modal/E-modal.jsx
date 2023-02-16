@@ -25,6 +25,7 @@ const [endDate, setEndDate] = useState(new Date());
   const [efectivo, setEfectivo] = useState(0)
   const [dollars, setDollars] = useState(0)
   const [bolivares, setBolivares] = useState(0)
+  const [otro, setOtro] = useState(0)
   const [zelle, setZelle] = useState(0)
   const [newCuenta, setNewCuenta] = useState(null)
   const [newPago, setNewPago] = useState(null)
@@ -59,7 +60,7 @@ const [endDate, setEndDate] = useState(new Date());
     if (!zelle) {
       setZelle(0)
     }
-    let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) 
+    let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) + parseFloat(otro)
     setTotal(t.toFixed(2))
     setNewMonto(t.toFixed(2))
   }
@@ -117,7 +118,7 @@ const [endDate, setEndDate] = useState(new Date());
   }, [dollars, cambio])
   useEffect(() => {
     cambiandoTotal()
-  }, [dollars, zelle, efectivo])
+  }, [dollars, zelle, efectivo, otro])
   
 
   useEffect(() => {
@@ -173,6 +174,14 @@ const [endDate, setEndDate] = useState(new Date());
         <InputGroup className="mb-3 col-6">
           <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" className='input-form' onChange={(e) => {
             setZelle(e.target.value)
+          }}/>
+          <InputGroup.Text>$</InputGroup.Text>
+        </InputGroup>
+        </div>
+        <div className='col-4'><label >Otro:</label>
+        <InputGroup className="mb-3 col-6">
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" className='input-form' onChange={(e) => {
+            setOtro(e.target.value)
           }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>
@@ -256,12 +265,13 @@ const [endDate, setEndDate] = useState(new Date());
             Cerrar
           </Button>
           <Button variant="primary" onClick={() => {
-            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle)
+            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle, otro)
             setEfectivo(0)
             setZelle(0)
             setDollars(0)
             setNewMonto(0)
             setTotal(0)
+            setOtro(0)
           }}>
             Crear
           </Button>

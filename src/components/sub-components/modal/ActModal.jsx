@@ -36,7 +36,7 @@ function ActModal(props) {
     if (!zelle) {
       setZelle(0)
     }
-    let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) 
+    let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) + parseFloat(otro)
     setTotal(t.toFixed(2))
     setNewMonto(t.toFixed(2))
   }
@@ -52,6 +52,7 @@ function ActModal(props) {
   const [startDate, setStartDate] = useState(arreglarFecha(move.fecha));
   const [newCuenta, setNewCuenta] = useState(null)
   const [newPago, setNewPago] = useState(null)
+  const [otro, setOtro] = useState(move.otro)
   const [hoy, sethoy] = useState('')
   const [bolivares, setBolivares] = useState(move.bs)
   const [bolos, setBolos] = useState(move.bs)
@@ -134,7 +135,7 @@ function ActModal(props) {
     }
   }, [props])
   useEffect(() => {
-    sethoy(`${formatDateHoy(new Date())}`)
+    sethoy(`${formatDateHoy(arreglarFecha(move.fecha))}`)
     setNewCuenta(move.cuenta)
     setConversion(move.pago)
     setNewMonto(move.monto)
@@ -192,6 +193,14 @@ function ActModal(props) {
         <InputGroup className="mb-3">
           <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" defaultValue={move.zelle} onChange={(e) => {
             setZelle(e.target.value)
+          }}/>
+          <InputGroup.Text>$</InputGroup.Text>
+        </InputGroup>
+        </div>
+        <div><label >Otro:</label>
+        <InputGroup className="mb-3">
+          <Form.Control id='e-monto' aria-label="Amount (to the nearest dollar)" defaultValue={move.otro} onChange={(e) => {
+            setOtro(e.target.value)
           }}/>
           <InputGroup.Text>$</InputGroup.Text>
         </InputGroup>

@@ -28,7 +28,8 @@ function Moves({socket}) {
   const navigate = useNavigate()
 
   const MySwal = withReactContent(Swal)
-    
+  let fechaActual = new Date()
+  let primerDia = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), 1);
  let handleClose = () => {
     document.body.classList.remove("modal-open");
   }
@@ -53,6 +54,8 @@ const [aproveN, setAproveN] = useState([])
 const [egresoShow, setEgresoShow] = React.useState(false);
 const [selectMove, setSelectMove] = useState('')
 const [startDate, setStartDate] = useState(subDays(new Date(), 30));
+const [startUDate, setStartUDate] = useState(primerDia)
+const [minDate, setMinDate] = useState(primerDia)
 const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
 const [identificador, setIdentificador] = useState('')
@@ -201,13 +204,14 @@ function currencyFormatter({ currency, value}) {
   }) 
   return formatter.format(value)
 }
-const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle ) => {
+const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle, otro ) => {
   let name = localStorage.getItem("name");
   let obj = {
      id,
     cuenta,
     concepto,
     dollars,
+    otro,
     efectivo,
     zelle,
     bs,
@@ -290,16 +294,16 @@ const editMoves = (m, i) => {
   
 }
 
-const settingMounts = (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle) => {
-    movimiento(id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle)
+const settingMounts = (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle, otro) => {
+    movimiento(id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle, otro)
 }
 
-const settingactmounts = (id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle) => {
+const settingactmounts = (id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle, otro) => {
 
-  updateMove(id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle)
+  updateMove(id, cuenta, concepto, bs, change, monto, fecha,  dollars, efectivo, zelle, otro)
 }
 
-const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle) => {
+const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle, otro) => {
 
   let obj = {
     identificador: identificador,
@@ -308,6 +312,7 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
     dollars, 
     efectivo, 
     zelle,
+    otro,
     concepto,
     bs,
     change,
@@ -672,6 +677,13 @@ const stDateSetter = (date) => {
   setEstaba(1)
   setMeEncuentro(1)
   setStartDate(date)
+}
+
+const stDateUSetter = (date) => {
+  setCurrentPage(0)
+  setEstaba(1)
+  setMeEncuentro(1)
+  setStartUDate(date)
 }
 
 const endDateSetter = (date) => {
@@ -1103,7 +1115,7 @@ return (
   <hr />
   <div className="container-fluid row d-flex justify-content-center">
     <div className="col-6 row">
-      <div className="col-6">
+{ vm ? <div className="col-6">
         fecha de inicio:
   <DatePicker
         selected={startDate}
@@ -1116,9 +1128,22 @@ return (
         endDate={endDate}
         className='yesAdmin'
       />
-
-      </div>
-      <div className="col-6">
+      </div> : <div className="col-6">
+        fecha de inicio:
+  <DatePicker
+        selected={startUDate}
+        onChange={(date) => stDateUSetter(date)}
+        dateFormat="dd/MM/yyyy"
+        maxDate={addDays(new Date(), 0)}
+        minDate={minDate}
+        customInput={<ExampleCustomInput />}
+        selectsStart
+        startDate={startUDate}
+        endDate={endDate}
+        className='yesAdmin'
+      />
+      </div>} 
+{vm ? <div className="col-6">
         fecha de cierre:
       <DatePicker
         selected={endDate}
@@ -1133,7 +1158,22 @@ return (
         wrapperClassName='d-flex justify-content-center'
         className='yesAdmin'
       />     
-      </div>
+      </div> : <div className="col-6">
+        fecha de cierre:
+      <DatePicker
+        selected={endDate}
+        onChange={(date) => endDateSetter(date)}
+        dateFormat="dd/MM/yyyy"
+        selectsEnd
+        startDate={startUDate}
+        customInput={<ExampleCustomInput />}
+        endDate={endDate}
+        maxDate={addDays(new Date(), 0)}
+        minDate={startUDate}
+        wrapperClassName='d-flex justify-content-center'
+        className='yesAdmin'
+      />     
+      </div>}
       </div>
       <div className="col-5 row ">
         <h4 className='d-flex justify-content-center'>Status de movimiento</h4> 
@@ -1198,8 +1238,9 @@ Movimientos a visualizar {"  "}
       title: 'Escoja la fecha para la impresion',
       html:<>
       <div className='row rw-bit d-flex justify-content-center'>
-      <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} isMulti onChange={handlePdfNameValue} className="select-max-pdf"/></div></div>
-      <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas} isMulti onChange={handlePdfCuentaValue} className="select-max-pdf"/></div></div></div><div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1" /></div> <br /> 
+      {vm ? <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} isMulti onChange={handlePdfNameValue} className="select-max-pdf"/></div></div> : false}
+ <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas} isMulti onChange={handlePdfCuentaValue} className="select-max-pdf"/></div></div></div>
+      <div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1" /></div> <br /> 
         <div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2" /></div></>
         
     }).then((result) => {
@@ -1318,6 +1359,7 @@ Movimientos a visualizar {"  "}
         <div className="col-12 subtitulo">Pagos:</div>
         {m.efectivo > 0 ? <div className="col-12 texto">Efectivo: ${m.efectivo}</div> : false}
         {m.zelle > 0 ? <div className="col-12 texto">Zelle:${m.zelle}</div> : false}
+        {m.otro > 0 ? <div className="col-12 texto">Otros:${m.otro}</div> : false}
         {m.dollars > 0 ? <div className="col-12 texto">Pago en Bolivares</div> : false}
         {m.dollars > 0 ? <div className="col-4 texto">Valor $: ${m.dollars} </div> : false}
         {m.dollars > 0 ? <div className="col-4 texto">Cambio: {m.change}Bs</div> : false}
