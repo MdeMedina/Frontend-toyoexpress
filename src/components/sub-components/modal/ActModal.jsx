@@ -10,6 +10,7 @@ import {formatDateHoyEn, formatDateHoy} from '../../dates/dates'
 import {cuentas, moveI} from '../../../lib/data/SelectOptions'
 
 function ActModal(props) {
+
   const arreglarFecha = (fecha) => {
     let f = fecha.split('/')
     f = new Date(f[2],  parseInt(f[1] - 1), parseInt(f[0]) )
@@ -36,12 +37,18 @@ function ActModal(props) {
     if (!zelle) {
       setZelle(0)
     }
+    if (!otro) {
+      setOtro(0)
+    }
     let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) + parseFloat(otro)
     setTotal(t.toFixed(2))
     setNewMonto(t.toFixed(2))
   }
 
   const {move, settingactmounts, i} = props
+  if (!move.otro) {
+    move.otro = 0
+  }
   let id = move.identificador.slice('-')
   console.log(id)
   id = id[0]

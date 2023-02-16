@@ -48,7 +48,6 @@ const [endDate, setEndDate] = useState(new Date());
       {value}
     </button>
   ));
-  
 
   const cambiandoTotal = () => {
     if (!dollars) {
@@ -59,6 +58,9 @@ const [endDate, setEndDate] = useState(new Date());
     }
     if (!zelle) {
       setZelle(0)
+    }
+    if (!otro) {
+      setOtro(0)
     }
     let t = parseFloat(dollars) + parseFloat(efectivo) + parseFloat(zelle) + parseFloat(otro)
     setTotal(t.toFixed(2))
