@@ -697,6 +697,9 @@ let alphaResults = [];
 let betaResults = []
 let results = [];
 let inicio = new Date(startDate)
+if (!vm) {
+  inicio = new Date(startUDate)
+}
 let final = new Date(endDate)
 if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion) {
   betaResults = moves
