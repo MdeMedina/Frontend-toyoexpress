@@ -39,7 +39,6 @@ function Login() {
       Swal.fire({
         icon: "error",
         title: loginJson.errormessage,
-        timer: 3000,
       });
     } else if (loginStatus === 200) {
       permissions = loginJson.permissions;
@@ -59,7 +58,6 @@ function Login() {
       Swal.fire({
         icon: "error",
         title: loginJson.errormessage,
-        timer: 3000,
       });
     }
   };

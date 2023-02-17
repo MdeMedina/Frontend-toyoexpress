@@ -6,6 +6,7 @@ import "../../css/hour.css";
 import { useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import { useEffect } from "react";
+import Swal from "sweetalert2";
 const socket = io.connect(`${url_api}`);
 
 function UpdateHour() {
@@ -45,10 +46,10 @@ function UpdateHour() {
     });
     hour = await updatedDate.json();
     hour = hour.response;
-    let aparecer = document.getElementById("hora");
-    aparecer.classList.remove("desaparezco");
-    let h3 = document.getElementById("h3");
-    h3.innerHTML = hour;
+    Swal.fire({
+      icon: "success",
+      text: hour,
+    });
   };
 
   const arepa = (e) => {
