@@ -16,6 +16,10 @@ body {
   border: 2px solid green;
 }
 
+.la {
+  --bs-gutter-x: 0 !important
+}
+
 .error {
   padding: 12px 4px;
   border: 2px solid red;

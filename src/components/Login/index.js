@@ -67,11 +67,11 @@ function Login() {
   return (
     <>
       <form className="Form mt-5" onSubmit={handleSubmit}>
-        <div className="row d-flex justify-content-center">
+        <div className="row la d-flex justify-content-center">
           <div className="col-12">
             <img src={require("../img/logo.png")} className="logo-login" />
           </div>
-          <div className="row col-5 bg-light filtros d-flex justify-content-center">
+          <div className="row col-3 bg-light filtros d-flex justify-content-center">
             <div className="Username login-div col-10">
               <label className="form-label d-flex justify-content-start">
                 Email
