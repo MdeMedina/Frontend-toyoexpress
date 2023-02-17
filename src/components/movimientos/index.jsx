@@ -607,6 +607,15 @@ const formatDate = (date) => {
   return formatDateHoy(init)
 }
 
+const mountingTotal = (total) => {
+  total = parseFloat(total)
+  if (total >= 0) {
+    return <label className='ingreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
+  } else if (total < 0) {
+    return <label className='egreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
+  }
+}
+
 const updateStatus = async (move) => {
   if (vale === '') {
     Swal.fire( "Oops" ,  "Por favor escriba el valor del vale!" ,  "error" )
@@ -696,6 +705,7 @@ const endDateSetter = (date) => {
 let alphaResults = [];
 let betaResults = []
 let results = [];
+let totalOriginal = 0;
 let inicio = new Date(startDate)
 if (!vm) {
   inicio = new Date(startUDate)
@@ -772,7 +782,13 @@ if (sortId === 1) {
   }
 
   results = betaResults
-
+  betaResults.map((m, i) => {
+    if (m.identificador.charAt(0) === 'E') {
+      totalOriginal -= parseFloat(m.monto)
+      }else if (m.identificador.charAt(0) === 'I') {
+       totalOriginal += parseFloat(m.monto)
+      }
+  })
 } else {
   betaResults = moves
     if (vm === false) {
@@ -917,6 +933,13 @@ if (sortId === 1) {
     }
 
   results = betaResults
+  betaResults.map((m, i) => {
+    if (m.identificador.charAt(0) === 'E') {
+      totalOriginal -= parseFloat(m.monto)
+      }else if (m.identificador.charAt(0) === 'I') {
+       totalOriginal += parseFloat(m.monto)
+      }
+  })
 }
 const filteredResults = () => {
   return results.slice(currentPage, currentPage + vPage)
@@ -1111,6 +1134,14 @@ return (
   <div className="col-6">
 
   <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
+  </div>
+  </div>
+  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-6">
+  <label htmlFor="">Total:</label>
+  </div>
+  <div className="col-6 d-flex align-items-center">
+  {mountingTotal(totalOriginal)}
   </div>
   </div>
   <br />

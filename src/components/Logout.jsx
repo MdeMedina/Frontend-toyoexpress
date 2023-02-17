@@ -11,7 +11,8 @@ export default function Logout () {
         localStorage.removeItem("HourAlert")   
         localStorage.removeItem("cantidadM")
         localStorage.removeItem("messageID")
-        localStorage.setItem("nav", false)          
+        localStorage.setItem("nav", false)  
+        localStorage.setItem("visto", true);        
 
         navigate('/login')
     

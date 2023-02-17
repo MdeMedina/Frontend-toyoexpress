@@ -2,6 +2,7 @@ import React from "react";
 import { url_api } from "../../lib/data/server";
 import { useNavigate } from "react-router-dom";
 import "../../css/login.css";
+import Swal from "sweetalert2";
 
 function Login() {
   const navigate = useNavigate();
@@ -9,14 +10,14 @@ function Login() {
   let user;
   let pass;
 
-  const actInactive = async () => {
-    let updateData = {email: localStorage.getItem('email') }
+  const actInactive = async (email) => {
+    let updateData = { email };
     await fetch(`${url_api}/users/actInactive`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(updateData),
-    headers: new Headers({ 'Content-type': 'application/json'})
-    })
-  }
+      headers: new Headers({ "Content-type": "application/json" }),
+    });
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -35,58 +36,41 @@ function Login() {
     const loginJson = await loginRes.json();
     const loginStatus = await loginRes.status;
     if (loginStatus === 403 || loginStatus === 401) {
-      let userGood = document.getElementById("userGood");
-      let isDesaparezco = userGood.classList.contains("desaparezco");
-      if (!isDesaparezco) {
-        userGood.classList.add("desaparezco");
-      }
-      let aparecer = document.getElementById("userInvalid");
-      aparecer.classList.remove("desaparezco");
-      let h3 = document.getElementById("h3Error");
-      h3.innerHTML = loginJson.errormessage;
+      Swal.fire({
+        icon: "error",
+        title: loginJson.errormessage,
+        timer: 3000,
+      });
     } else if (loginStatus === 200) {
       permissions = loginJson.permissions;
-
+      actInactive(loginJson.email);
       localStorage.setItem("key", loginJson.key);
       localStorage.setItem("HourAlert", !permissions.obviarIngreso);
       localStorage.setItem("name", loginJson.name);
       localStorage.setItem("email", loginJson.email);
       localStorage.setItem("cantidadM", loginJson.cantidadM);
       localStorage.setItem("permissions", JSON.stringify(permissions));
-      localStorage.setItem("messageID", loginJson.messageId)
-      localStorage.setItem("nav", true)
-      actInactive()
-      let userInvalid = document.getElementById("userInvalid");
-      let isDesaparezco = userInvalid.classList.contains("desaparezco");
+      localStorage.setItem("messageID", loginJson.messageId);
+      localStorage.setItem("nav", true);
+      localStorage.setItem("visto", false);
+
       navigate("/");
-      if (!isDesaparezco) {
-        userInvalid.classList.add("desaparezco");
-      }
-      let aparecer = document.getElementById("userGood");
-      aparecer.classList.remove("desaparezco");
-      let h3 = document.getElementById("h3");
-      h3.innerHTML = loginJson.message;
     } else {
-      let userGood = document.getElementById("userGood");
-      let isDesaparezco = userGood.classList.contains("desaparezco");
-      if (!isDesaparezco) {
-        userGood.classList.add("desaparezco");
-      }
-      let aparecer = document.getElementById("userInvalid");
-      aparecer.classList.remove("desaparezco");
-      let h3 = document.getElementById("h3Error");
-      h3.innerHTML = loginJson.errormessage;
+      Swal.fire({
+        icon: "error",
+        title: loginJson.errormessage,
+        timer: 3000,
+      });
     }
   };
 
   return (
     <>
       <form className="Form mt-5" onSubmit={handleSubmit}>
-
         <div className="row d-flex justify-content-center">
-        <div className="col-12">
-        <img src={require('../img/logo.png')} className="logo-login" />
-        </div>
+          <div className="col-12">
+            <img src={require("../img/logo.png")} className="logo-login" />
+          </div>
           <div className="row col-5 bg-light filtros d-flex justify-content-center">
             <div className="Username login-div col-10">
               <label className="form-label d-flex justify-content-start">

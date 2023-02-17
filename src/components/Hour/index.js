@@ -10,12 +10,12 @@ const socket = io.connect(`${url_api}`);
 
 function UpdateHour() {
   let hour;
-  
+
   const key = localStorage.getItem("key");
   if (!key) {
-    window.location.href=`${url_local}/login`;
+    window.location.href = `${url_local}/login`;
   }
-  
+
   const [apertura, setApertura] = useState("");
   const [cierre, setCierre] = useState("");
 
@@ -84,11 +84,7 @@ function UpdateHour() {
             <h1>Horarios Admin</h1>
             <div className="abre col-12">
               <label>hora de apertura:</label>
-              <input
-                type="time"
-                id="apertura"
-                defaultValue={apertura}
-              />
+              <input type="time" id="apertura" defaultValue={apertura} />
             </div>
             <div className="cierra col-12">
               <label>hora de cierre:</label>

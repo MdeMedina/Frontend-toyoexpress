@@ -17,6 +17,25 @@
 
 }
 
+.ingreso-label {
+    margin-bottom: 0;
+    font-size: 19px;
+    font-weight: 600;
+    background-color: green;
+    color: #fff;
+    padding: 0px 4px;
+    border-radius: 5px;
+}
+.egreso-label {
+    margin-bottom: 0;
+    font-size: 19px;
+    font-weight: 600;
+    background-color: #B21F00;
+    color: #fff;
+    padding: 0px 4px;
+    border-radius: 5px;
+}
+
 
 .closer { 
     width: 35px !important;
