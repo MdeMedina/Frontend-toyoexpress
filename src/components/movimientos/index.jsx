@@ -609,10 +609,12 @@ const formatDate = (date) => {
 
 const mountingTotal = (total) => {
   total = parseFloat(total)
-  if (total >= 0) {
+  if (total > 0) {
     return <label className='ingreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
   } else if (total < 0) {
     return <label className='egreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
+  } else {
+    return <label className='d-flex align-items-center'>{numberFormat.format(total)}</label>
   }
 }
 
@@ -1138,7 +1140,7 @@ return (
   </div>
   <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
-  <label htmlFor="">Total:</label>
+  <label htmlFor="">Saldo:</label>
   </div>
   <div className="col-6 d-flex align-items-center">
   {mountingTotal(totalOriginal)}
