@@ -1,20 +1,20 @@
-import { url_api } from "../../lib/data/server";
+import { backendUrl } from "../../lib/data/server";
 
 let cuentas = [];
 let moveI = [
   {
     value: "E",
     label: "Egreso",
-    color: "#e00202"
+    color: "#e00202",
   },
   {
     value: "I",
     label: "Ingreso",
-    color: "#17e002"
-  }
-]
+    color: "#17e002",
+  },
+];
 const gettingAccounts = async () => {
-  await fetch(`${url_api}/cuentas`)
+  await fetch(`${backendUrl()}/cuentas`)
     .then((res) => res.json())
     .then((r) => {
       cuentas = r;
@@ -22,7 +22,5 @@ const gettingAccounts = async () => {
 };
 
 gettingAccounts();
-
-
 
 export { cuentas, moveI };
