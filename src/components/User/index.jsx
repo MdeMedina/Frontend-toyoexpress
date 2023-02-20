@@ -1,7 +1,7 @@
 import { useEffect, useState }from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
-import { url_api, url_local } from '../../lib/data/server'
+import { backendUrl, frontUrl} from '../../lib/data/server'
 import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import 'boxicons'
@@ -11,7 +11,7 @@ function User({socket}) {
   const delUsuarios = JSON.parse(localStorage.getItem('permissions')).eliminarUsuarios
     const key = localStorage.getItem("key");
     if (!key) {
-      window.location.href=`${url_local}/login`;
+      window.location.href=`${frontUrl()}/login`;
     }
     
   
@@ -55,7 +55,7 @@ const handleVPage = (e) => {
   setVPage(e.value)
 }
   const gettingUsers = () => {
-    fetch(`${url_api}/users`).then(res => res.json()).then(({users}) => {
+    fetch(`${backendUrl()}/users`).then(res => res.json()).then(({users}) => {
       setUsers(users)
 
   })
@@ -71,7 +71,7 @@ const handleVPage = (e) => {
   }
 
   const removeUser = async () => {
-    await fetch(`${url_api}/users/deleteUser`, {
+    await fetch(`${backendUrl()}/users/deleteUser`, {
       method: 'DELETE',
       body: JSON.stringify(deletingUser),
     headers: new Headers({ 'Content-type': 'application/json'})
@@ -170,7 +170,7 @@ const handleVPage = (e) => {
             },
             password: password
         }
-    fetch(`${url_api}/users/register`, {
+    fetch(`${backendUrl()}/users/register`, {
         method: 'POST',
         body: JSON.stringify(registerData),
       headers: new Headers({ 'Content-type': 'application/json'})
@@ -214,7 +214,7 @@ const handleVPage = (e) => {
 
     const actData = {_id: _id,email: email, username: username, permissions: permissions }
     
-    await fetch(`${url_api}/users/updateUser`, {
+    await fetch(`${backendUrl()}/users/updateUser`, {
       method: 'PUT',
       body: JSON.stringify(actData),
     headers: new Headers({ 'Content-type': 'application/json'})

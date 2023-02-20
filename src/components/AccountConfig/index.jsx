@@ -1,12 +1,11 @@
 import { useEffect, useState }from 'react'
 import Navg from '../sub-components/nav'
 import Sidebar from '../sub-components/sidebar'
-import { url_api } from '../../lib/data/server'
 import { HexColorPicker } from "react-colorful";
 import Pagination from 'react-bootstrap/Pagination'
 import Select from 'react-select'
 import 'boxicons'
-import { url_local } from "../../lib/data/server";
+import { backendUrl, frontUrl } from '../../lib/data/server';
 import Swal from 'sweetalert2'
 import {useNavigate} from 'react-router-dom'
 
@@ -14,7 +13,7 @@ export const AccountConfig = ({socket}) => {
 const ca = JSON.parse(localStorage.getItem('permissions')).configurarCuentas
 const key = localStorage.getItem('key')
 if (!key) {
-  window.location.href=`${url_local}/login`;
+  window.location.href=`${frontUrl()}/login`;
 }
 const navigate = useNavigate()
  const [accountName, setAccountName] = useState('')
@@ -51,7 +50,7 @@ useEffect(() => {
   }
 
  const gettingAccounts = async () => {
- await fetch(`${url_api}/cuentas`).then(res => res.json()).then(r => {
+ await fetch(`${backendUrl()}/cuentas`).then(res => res.json()).then(r => {
     setCuentas(r)
     console.log(r)
     console.log(cuentas)
@@ -75,7 +74,7 @@ const actCuenta = async (u) => {
 
     const actData = {_id: u._id, name: nombreCuenta, color: colorCuenta}
     
-    await fetch(`${url_api}/cuentas/actualizarCuenta`, {
+    await fetch(`${backendUrl()}/cuentas/actualizarCuenta`, {
       method: 'PUT',
       body: JSON.stringify(actData),
     headers: new Headers({ 'Content-type': 'application/json'})
@@ -124,7 +123,7 @@ const deleteCuenta = (u) => {
     }
 
     const removeAccount = async (id) => {
-        await fetch(`${url_api}/cuentas/eliminarCuenta`, {
+        await fetch(`${backendUrl()}/cuentas/eliminarCuenta`, {
           method: 'DELETE',
           body: JSON.stringify({_id: id}),
         headers: new Headers({ 'Content-type': 'application/json'})
@@ -147,7 +146,7 @@ const deleteCuenta = (u) => {
             name: accountName,
             color: accountColor,
         }
-    fetch(`${url_api}/cuentas/crearCuenta`, {
+    fetch(`${backendUrl()}/cuentas/crearCuenta`, {
         method: 'POST',
         body: JSON.stringify(registerData),
       headers: new Headers({ 'Content-type': 'application/json'})

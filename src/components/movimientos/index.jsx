@@ -18,7 +18,7 @@ import {formatDateHoy} from '../dates/dates'
 import '../../css/moves.css';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content'
-import { url_api, url_local } from '../../lib/data/server';
+import { backendUrl, frontUrl } from '../../lib/data/server';
 import EModal from '../sub-components/modal/E-modal'
 import { cuentas } from '../../lib/data/SelectOptions'
 
@@ -162,7 +162,7 @@ const ComPrint = React.forwardRef((props, ref) => {
 
 const actDNote = async () => {
   let updateData = {email: localStorage.getItem('email'), notificaciones: []}
-  await fetch(`${url_api}/users/actNotificaciones`, {
+  await fetch(`${backendUrl()}/users/actNotificaciones`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})
@@ -183,7 +183,7 @@ const actmoveCantidad = async () => {
     email: localStorage.getItem('email'),
     cantidadM: parseInt(ActCantidad)
   }
-  await fetch(`${url_api}/users/actualizarCantidad`, { method: 'PUT',
+  await fetch(`${backendUrl()}/users/actualizarCantidad`, { method: 'PUT',
   body: JSON.stringify(actData),
 headers: new Headers({ 'Content-type': 'application/json'})
 }).then(localStorage.setItem('cantidadM', ActCantidad))
@@ -244,7 +244,7 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       error.classList.add("desaparecer");
     }
 
-    return fetch(`${url_api}/moves/movimiento`, {
+    return fetch(`${backendUrl()}/moves/movimiento`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -321,7 +321,7 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
     name: name,
   };
 
-   await fetch(`${url_api}/moves/updateMove`, {
+   await fetch(`${backendUrl()}/moves/updateMove`, {
       method: "PUT",
       headers: {
         Accept: "application/json",
@@ -373,7 +373,7 @@ const totalNegativo = (total) => {
 
 const removeMove = async (identificador) => {
 
-  await fetch(`${url_api}/moves/deleteMoves`, {
+  await fetch(`${backendUrl()}/moves/deleteMoves`, {
     method: 'PUT',
     body: JSON.stringify(identificador),
   headers: new Headers({ 'Content-type': 'application/json'})
@@ -430,9 +430,9 @@ useEffect(() => {
   let diff =  meEncuentro - estaba
   setCurrentPage(currentPage + (vPage * diff))
 }, [estaba, meEncuentro])
-const URL = `${url_api}/moves`
+const URL = `${backendUrl()}/moves`
 const gettingUsers = async() => {
-  await fetch(`${url_api}/users`).then(res => res.json()).then((users) => {
+  await fetch(`${backendUrl()}/users`).then(res => res.json()).then((users) => {
     setUsers(users.users)
 }) 
 }
@@ -630,7 +630,7 @@ const updateStatus = async (move) => {
     aFecha: hoy,
     vale: vale
   }
-await fetch(`${url_api}/moves/updateStatus`, {
+await fetch(`${backendUrl()}/moves/updateStatus`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
   headers: new Headers({ 'Content-type': 'application/json'})

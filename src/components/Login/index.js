@@ -1,5 +1,5 @@
 import React from "react";
-import { url_api } from "../../lib/data/server";
+import { backendUrl, frontUrl } from "../../lib/data/server";
 import { useNavigate } from "react-router-dom";
 import "../../css/login.css";
 import Swal from "sweetalert2";
@@ -12,7 +12,7 @@ function Login() {
 
   const actInactive = async (email) => {
     let updateData = { email };
-    await fetch(`${url_api}/users/actInactive`, {
+    await fetch(`${backendUrl()}/users/actInactive`, {
       method: "PUT",
       body: JSON.stringify(updateData),
       headers: new Headers({ "Content-type": "application/json" }),
@@ -28,7 +28,7 @@ function Login() {
       email: user,
       password: pass,
     };
-    const loginRes = await fetch(`${url_api}/users/login`, {
+    const loginRes = await fetch(`${backendUrl()}/users/login`, {
       method: "POST",
       body: JSON.stringify(loginData),
       headers: new Headers({ "Content-type": "application/json" }),

@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import Navg from "../sub-components/nav";
 import Sidebar from "../sub-components/sidebar";
-import { url_api, url_local } from "../../lib/data/server";
+import { backendUrl, frontUrl } from "../../lib/data/server";
 import "../../css/hour.css";
 import { useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import { useEffect } from "react";
 import Swal from "sweetalert2";
-const socket = io.connect(`${url_api}`);
+const socket = io.connect(`${backendUrl()}`);
 
 function UpdateHour() {
   let hour;
 
   const key = localStorage.getItem("key");
   if (!key) {
-    window.location.href = `${url_local}/login`;
+    window.location.href = `${frontUrl()}/login`;
   }
 
   const [apertura, setApertura] = useState("");
@@ -39,7 +39,7 @@ function UpdateHour() {
       apertura: apertura,
       cierre: cierre,
     };
-    const updatedDate = await fetch(`${url_api}/dates/update`, {
+    const updatedDate = await fetch(`${backendUrl()}/dates/update`, {
       method: "PUT",
       body: JSON.stringify(hourData),
       headers: new Headers({ "Content-type": "application/json" }),
@@ -69,7 +69,7 @@ function UpdateHour() {
     getTime();
   }, []);
   const getTime = async () => {
-    await fetch(`${url_api}/dates/`)
+    await fetch(`${backendUrl()}/dates/`)
       .then((r) => r.json())
       .then((r) => {
         setApertura(r.apertura);

@@ -1,6 +1,12 @@
-const data = {
-  url_api: "http://backend.toyoxpress.com",
-  url_local:"http://front.toyoxpress.com"
+const backendUrl = () => {
+  return process.env.REACT_APP_BACKEND;
 };
 
-module.exports = data;
+const frontUrl = () => {
+  return process.env.REACT_APP_FRONTEND;
+};
+
+module.exports = {
+  backendUrl,
+  frontUrl,
+};

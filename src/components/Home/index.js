@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import Sidebar from "../sub-components/sidebar";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { url_local } from "../../lib/data/server";
+import { frontUrl } from "../../lib/data/server";
 function Home({ socket }) {
   const navigate = useNavigate();
   const key = localStorage.getItem("key");
   if (!key) {
-    window.location.href = `${url_local}/login`;
+    window.location.href = `${frontUrl()}/login`;
   }
 
   const permissions = JSON.parse(localStorage.getItem("permissions"));

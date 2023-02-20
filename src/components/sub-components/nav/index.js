@@ -13,7 +13,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Swal from "sweetalert2";
 import "boxicons";
 import "../../../css/nav.css";
-import { url_api, url_local } from "../../../lib/data/server";
+import { backendUrl, frontUrl } from "../../../lib/data/server";
 import { PassModal } from "../modal/passModal";
 import { faL } from "@fortawesome/free-solid-svg-icons";
 
@@ -61,7 +61,7 @@ function Navg({ socket }) {
         ActualPassword: password,
         password: newPassword,
       };
-      await fetch(`${url_api}/users/actpass`, {
+      await fetch(`${backendUrl()}/users/actpass`, {
         method: "POST",
         body: JSON.stringify(updateData),
         headers: new Headers({ "Content-type": "application/json" }),
@@ -93,7 +93,7 @@ function Navg({ socket }) {
     } else {
       hoy_cierre = `${formatDateHoyEn(new Date())}T${cierre}`; // 2022-10-25T20:00
     }
-    const promResult = await fetch(`${url_api}/users/hour`);
+    const promResult = await fetch(`${backendUrl()}/users/hour`);
     const jsq = await promResult.json();
     let horaActual = await jsq.horaActual;
     horaActual = horaActual.split("-");
@@ -127,14 +127,14 @@ function Navg({ socket }) {
 
   const getInactive = async () => {
     let updateData = { email: localStorage.getItem("email") };
-    await fetch(`${url_api}/users/inactive`, {
+    await fetch(`${backendUrl()}/users/inactive`, {
       method: "POST",
       body: JSON.stringify(updateData),
       headers: new Headers({ "Content-type": "application/json" }),
     })
       .then((res) => res.json())
       .then(async (res) => {
-        const promResult = await fetch(`${url_api}/users/hour`);
+        const promResult = await fetch(`${backendUrl()}/users/hour`);
         const jsq = await promResult.json();
         let horaActual = await jsq.horaActual;
         horaActual = horaActual.split("-");
@@ -161,7 +161,7 @@ function Navg({ socket }) {
     let updateData = {
       email: localStorage.getItem("email"),
     };
-    await fetch(`${url_api}/users/actInactive`, {
+    await fetch(`${backendUrl()}/users/actInactive`, {
       method: "PUT",
       body: JSON.stringify(updateData),
       headers: new Headers({ "Content-type": "application/json" }),
@@ -180,7 +180,7 @@ function Navg({ socket }) {
   let intervalo;
 
   const getNote = async () => {
-    await fetch(`${url_api}/users/`)
+    await fetch(`${backendUrl()}/users/`)
       .then((res) => res.json())
       .then((res) => res.users)
       .then((res) =>
@@ -194,7 +194,7 @@ function Navg({ socket }) {
 
   const actNote = async (n) => {
     let updateData = { email: n.email, notificaciones: [n.message] };
-    await fetch(`${url_api}/users/actNotificaciones`, {
+    await fetch(`${backendUrl()}/users/actNotificaciones`, {
       method: "PUT",
       body: JSON.stringify(updateData),
       headers: new Headers({ "Content-type": "application/json" }),
@@ -221,7 +221,7 @@ function Navg({ socket }) {
     );
   }, [moves]);
   const getMoves = async () => {
-    const response = await fetch(`${url_api}/moves`);
+    const response = await fetch(`${backendUrl()}/moves`);
     let data = await response.json();
     await setMoves(data);
   };
@@ -233,7 +233,7 @@ function Navg({ socket }) {
   }, []);
 
   const getTime = async () => {
-    let promResult = await fetch(`${url_api}/dates/`);
+    let promResult = await fetch(`${backendUrl()}/dates/`);
     let json = await promResult.json();
     setApertura(json.apertura);
     setCierre(json.cierre);
