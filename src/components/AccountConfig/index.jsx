@@ -8,6 +8,7 @@ import 'boxicons'
 import { backendUrl, frontUrl } from '../../lib/data/server';
 import Swal from 'sweetalert2'
 import {useNavigate} from 'react-router-dom'
+import { gettingAccounts } from '../../lib/data/SelectOptions';
 
 export const AccountConfig = ({socket}) => {
 const ca = JSON.parse(localStorage.getItem('permissions')).configurarCuentas
@@ -18,6 +19,7 @@ if (!key) {
 const navigate = useNavigate()
  const [accountName, setAccountName] = useState('')
  const [accountColor, setAccountColor] = useState('')
+ const [accountChecked, setAccountChecked] = useState(true)
  const [cuentas, setCuentas] = useState([])
  const [_id, set_id] = useState('')
 const [currentPage, setCurrentPage] = useState(0)
@@ -41,15 +43,19 @@ useEffect(() => {
 useEffect(() => {
     let diff =  meEncuentro - estaba
     setCurrentPage(currentPage + (vPage * diff))
-    gettingAccounts()
+    getAccounts()
   }, [estaba, meEncuentro])
 
  
  const editCuenta = (u, i) => { 
-        return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {setAccountColor(u.color)}}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
+        return(<button className='btn btn-primary' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {
+          setAccountChecked(u.saldo)
+          setAccountColor(u.color)
+          setAccountName(u.name)
+        }}><box-icon name='edit-alt' color='#ffffff' ></box-icon></button>)
   }
 
- const gettingAccounts = async () => {
+ const getAccounts = async () => {
  await fetch(`${backendUrl()}/cuentas`).then(res => res.json()).then(r => {
     setCuentas(r)
     console.log(r)
@@ -72,7 +78,7 @@ const actCuenta = async (u) => {
     colorCuenta = accountColor
     }
 
-    const actData = {_id: u._id, name: nombreCuenta, color: colorCuenta}
+    const actData = {_id: u._id, name: nombreCuenta, color: colorCuenta, saldo: accountChecked}
     
     await fetch(`${backendUrl()}/cuentas/actualizarCuenta`, {
       method: 'PUT',
@@ -92,8 +98,12 @@ const actCuenta = async (u) => {
       })
 }
 }).then(r => console.log(r)).then(r => {
-    gettingAccounts()
-  })
+    getAccounts()
+  }).then(
+    setAccountName(''),
+    setAccountColor(''),
+    setAccountChecked(true)
+  ).then(gettingAccounts())
 }
 const deleteCuenta = (u) => {
         return(<button className='btn btn-danger' value={u._id} onClick={(e) => {
@@ -138,13 +148,14 @@ const deleteCuenta = (u) => {
             title: 'Algo extraño ha ocurrido',
           })
       }
-    }).then(r => console.log(r)).then(r => gettingAccounts())
+    }).then(r => console.log(r)).then(r => getAccounts())
       }
   
  const createAccount = () => {
         const registerData = {
             name: accountName,
             color: accountColor,
+            saldo: accountChecked
         }
     fetch(`${backendUrl()}/cuentas/crearCuenta`, {
         method: 'POST',
@@ -163,7 +174,7 @@ const deleteCuenta = (u) => {
             title: 'Algo extraño ha ocurrido!',
           })
     }
-}).then(r => gettingAccounts()).then(setAccountColor('')).then(setAccountName(''))
+}).then(r => getAccounts()).then(setAccountColor('')).then(setAccountName('')).then(gettingAccounts())
  }
  let itemPagination = [];
  let pages;
@@ -224,18 +235,27 @@ const deleteCuenta = (u) => {
       </div>
       <div className="modal-body">
       <form className="row">
-  <div className="mb-3 col-6">
+  <div className="mb-1 col-6">
     <label className="form-label">Nombre de la cuenta</label>
     <input type="text" className="form-control"  onChange={(e) => {
         const value = e.target.value
         setAccountName(value)
     }}/>
   </div>
-  <div className="mb-3 col-6">
+  <div className="mb-1 col-6">
     <label className="form-label">Color de la cuenta</label>
     <HexColorPicker color={`#aabbcc`} onChange={setAccountColor} />
     color: {accountColor}
   </div>
+  <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="modTime" defaultChecked={accountChecked} onChange={(e) => {
+            let {checked} = e.target
+            setAccountChecked(checked)
+  }}/>
+  <label class="form-check-label" for="modTime">
+    Agregar a Saldo
+  </label>
+</div>
 </form>
       </div>
       <div className="modal-footer">
@@ -277,7 +297,7 @@ const deleteCuenta = (u) => {
   <form>
   <div className="mb-3 col-6">
     <label className="form-label">Nombre de la cuenta</label>
-    <input type="text" className="form-control" defaultValue={u.name} onChange={(e) => {
+    <input type="text" className="form-control" defaultValue={u.label} onChange={(e) => {
         const value = e.target.value
         setAccountName(value)
     }}/>
@@ -287,6 +307,15 @@ const deleteCuenta = (u) => {
     <HexColorPicker color={accountColor} onChange={setAccountColor} />
     color: {accountColor}
   </div>
+  <div class="form-check ">
+  <input class="form-check-input disabled" type="checkbox" value="" id={`actAproveMoves-${i}`}  defaultChecked={u.saldo} onChange={(e) => {
+            const {checked} = e.target
+            setAccountChecked(checked)
+  }}/>
+  <label class="form-check-label" for={`actAproveMoves-${i}`}>
+    Agregar a saldo
+  </label>
+</div>
 </form>
   </div>
   <div class="modal-footer">

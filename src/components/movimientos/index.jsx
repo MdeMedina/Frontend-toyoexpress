@@ -607,8 +607,38 @@ const formatDate = (date) => {
   return formatDateHoy(init)
 }
 
-const mountingTotal = (total) => {
-  total = parseFloat(total)
+const mountingTotal = () => {
+    let betaResults = moves
+    let results = []
+    if (cuenta) {
+      alphaResults = []
+      cuenta.map((c) => {
+        betaResults.map((dato) => {
+          if (c.value === dato.cuenta) {
+            alphaResults.push(dato)
+          }
+        })
+        })
+        betaResults = alphaResults
+    }
+    betaResults.map((move) => {
+      cuentas.map((cuenta) => {
+        if (move.cuenta == cuenta.label && cuenta.saldo == true){
+          results.push(move)
+        }
+      })
+    })
+    let total = 0;
+    let tempMonto;
+    results.map((r) => {
+      tempMonto = parseFloat(r.monto)
+      if (r.identificador.charAt(0) === 'E') {
+        tempMonto = tempMonto * -1 
+      }
+      total += tempMonto
+    })
+
+
   if (total > 0) {
     return <label className='ingreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
   } else if (total < 0) {
@@ -944,8 +974,11 @@ if (sortId === 1) {
   })
 }
 const filteredResults = () => {
-  return results.slice(currentPage, currentPage + vPage)
+  let resultados = results.slice(currentPage, currentPage + vPage)
+  return resultados
 }
+
+
 const filteredResultsPDF = (init, fin) => {
   let results;
   let alphaResults = [];
@@ -996,7 +1029,18 @@ const filteredResultsPDF = (init, fin) => {
   //    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
   //    return fechaReal1 - fechaReal2 
   //  })
+  alphaResults = []
+  betaResults.map((r) => {
+   r.monto = parseFloat(r.monto)
+   if (r.identificador.charAt(0) === 'E') {
+     r.monto = r.monto * -1 
+   }
+   alphaResults.push(r)
+ })
+ console.log(alphaResults)
+ betaResults = alphaResults
    results = betaResults
+   
 
    return results
 }
@@ -1046,18 +1090,7 @@ let pdfTotal = 0;
 let table = [];
 function filtPDF (init, fin) {
 filteredResultsPDF(init, fin).map((m, i) => {
-  if (m.identificador.charAt(0) === 'E') {
-    pdfTotal -= parseFloat(m.monto)
-    }else if (m.identificador.charAt(0) === 'I') {
-     pdfTotal += parseFloat(m.monto)
-    }
-    let id = m.identificador.split('-')
-    let manto;
-    if (id[0] == 'I') {
-       manto = `${m.monto}`
-    }else if (id[0] == 'E'){
-       manto = `-${m.monto}`
-    }
+  pdfTotal += m.monto
   const bodys = {
   identificador: m.identificador, 
   username: m.name, 
@@ -1066,11 +1099,13 @@ filteredResultsPDF(init, fin).map((m, i) => {
   status: statusSetterPdf(m),
   aprobacion: m.vale,
   fecha: m.fecha,
-  monto: manto,
+  ingreso: m.monto > 0 ? m.monto : 0.00,
+  egreso: m.monto < 0 ? m.monto : 0.00
   }
   table.push (bodys)
 })
-table.push({fecha: "Total", monto: `$${pdfTotal.toFixed(2)}`})}
+console.log(pdfTotal)
+table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})}
 let bsIdLabel
 return (
 <>
@@ -1294,7 +1329,7 @@ Movimientos a visualizar {"  "}
       doc.text(`Desde: ${input1}`, 14, 12)
       doc.text(`Hasta: ${input2}`, 54, 12)
     autoTable(doc, {    
-      styles: {fontSize: 8},
+      styles: {fontSize: 7},
       theme: 'grid',
       columnStyles: { monto: { halign: 'right' } }, 
     body: table,
@@ -1306,7 +1341,8 @@ Movimientos a visualizar {"  "}
       { header: 'Status', dataKey: 'status' },
       { header: 'Nro de Aprobación', dataKey: 'aprobacion' },
       { header: 'Fecha', dataKey: 'fecha' },
-      { header: 'Monto', dataKey: 'monto' }
+      { header: 'Ingreso', dataKey: 'ingreso' },
+      { header: 'Egreso', dataKey: 'egreso' },
     ], })
     doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`)
   }
@@ -1341,6 +1377,7 @@ Movimientos a visualizar {"  "}
         </tr>
     </thead>
     <tbody>
+
   {
     filteredResults().map((m, i) => {
        bsTarget = `#exampleModal-${i}`

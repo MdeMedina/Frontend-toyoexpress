@@ -23,4 +23,4 @@ const gettingAccounts = async () => {
 
 gettingAccounts();
 
-export { cuentas, moveI };
+export { cuentas, moveI, gettingAccounts };
