@@ -354,11 +354,15 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
 
 const negativos = (m, i) => {
   let id = m.identificador.split('-')
+ let mont =  parseFloat(m.monto)
+  if (id[0] == 'E' && mont > 0) {
+    mont = mont * -1
+  }
 
   if (id[0] == 'I') {
-    return <td className='monto-table'>{numberFormat.format(m.monto)}</td>
+    return <td className='monto-table'>{numberFormat.format(mont.toFixed(2))}</td>
   } else if (id[0] == 'E') {
-    return <td className='monto-table egreso'> -{numberFormat.format(m.monto)}</td>
+    return <td className='monto-table egreso'> {numberFormat.format(mont.toFixed(2))}</td>
   }
 }
 
@@ -989,7 +993,10 @@ const filteredResults = () => {
 }
 
 
-const filteredResultsPDF = (init, fin) => {
+
+
+
+const filteredResultsPDF = (init, fin, pdC, pdN) => {
   let results;
   let alphaResults = [];
   let betaResults = moves
@@ -1003,10 +1010,10 @@ const filteredResultsPDF = (init, fin) => {
     })
 
   }
-  if (pdfCuenta) {
+  if (pdC) {
+    console.log(pdC)
     alphaResults = []
-    pdfCuenta.map((c) => {
-      
+    pdC.map((c) => {
       betaResults.map((dato) => {
         if (c.value === dato.cuenta) {
           alphaResults.push(dato)
@@ -1015,9 +1022,9 @@ const filteredResultsPDF = (init, fin) => {
       })
       betaResults = alphaResults
   }
-  if (pdfName) {
+  if (pdN) {
     alphaResults = []
-    pdfName.map((c) => {
+    pdN.map((c) => {
       betaResults.map((dato) => {
         if (c.value === dato.name) {
           alphaResults.push(dato)
@@ -1102,9 +1109,8 @@ let pdfTotal = 0;
 let totalI = 0;
 let totalE = 0;
 let table = [];
-function filtPDF (init, fin) {
-filteredResultsPDF(init, fin).map((m, i) => {
-  console.log(m.monto)
+function filtPDF (init, fin, pdC, pdN) {
+filteredResultsPDF(init, fin, pdC, pdN).map((m, i) => {
  if (m.monto > 0) {
   totalI += m.monto
  } else if (m.monto < 0) {
@@ -1124,11 +1130,13 @@ filteredResultsPDF(init, fin).map((m, i) => {
   }
   table.push (bodys)
 })
-console.log(pdfTotal)
+
 
 table.push({ingreso: `$${totalI.toFixed(2)}`, egreso: `$${totalE.toFixed(2)}`})
 table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})}
 let bsIdLabel
+let pdC;
+let pdN
 return (
 <>
   <div className="d-flex justify-content-center">
@@ -1324,54 +1332,64 @@ Movimientos a visualizar {"  "}
 
 </select>
 </div>
-{console.log(mountingTotal())}
 <div className="col-8 d-flex align-items-center justify-content-end">
   <button type="button" class="toyox" onClick={() => {
-    console.log(pdfCuenta)
     MySwal.fire({
       title: 'Escoja la fecha para la impresion',
       html:<>
       <div className='row rw-bit d-flex justify-content-center'>
-      {vm ? <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} isMulti onChange={(e) => {
-        handlePdfNameValue(e)
+      {vm ? <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} id='name' isMulti onChange={async (e) => {
+        pdN = e
   }}  className="select-max-pdf"/></div></div> : false}
- <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas} isMulti onChange={(e) => {
-  handlePdfCuentaValue(e)
+ <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas}  isMulti id='cuenta' onChange={async (e) => {
+    pdC = e
   }} className="select-max-pdf"/></div></div></div>
       <div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1" /></div> <br /> 
         <div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2" /></div></>
         
     }).then((result) => {
       if (result.isConfirmed) {
-      var doc = new jsPDF()
+      let doc
       let input1 = document.getElementById('swal-input1').value
       let input2 = document.getElementById('swal-input2').value
-      filtPDF(input1, input2)
-
-      doc.setFontSize(18)
-      doc.text('Reporte: Ingresos y Egresos', 64, 6)
-      doc.setFontSize(12)
-      input1 = formatDate(input1)
-      input2 = formatDate(input2)
-      doc.text(`Desde: ${input1}`, 14, 12)
-      doc.text(`Hasta: ${input2}`, 54, 12)
-    autoTable(doc, {    
-      styles: {fontSize: 7},
-      theme: 'grid',
-      columnStyles: { monto: { halign: 'right' } }, 
-    body: table,
-    columns: [
-      { header: 'Identificador', dataKey: 'identificador' },
-      { header: 'Nombre de Usuario', dataKey: 'username' },
-      { header: 'Cuenta', dataKey: 'cuenta' },
-      { header: 'Concepto', dataKey: 'concepto' },
-      { header: 'Status', dataKey: 'status' },
-      { header: 'Nro de Aprobación', dataKey: 'aprobacion' },
-      { header: 'Fecha', dataKey: 'fecha' },
-      { header: 'Ingreso', dataKey: 'ingreso' },
-      { header: 'Egreso', dataKey: 'egreso' },
-    ], })
-    doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`)
+      function generarPDF() {
+        doc = new jsPDF();
+        input1 = document.getElementById('swal-input1').value;
+        input2 = document.getElementById('swal-input2').value;
+        console.log(pdC, pdN);
+        filtPDF(input1, input2, pdC, pdN);
+      
+        doc.setFontSize(18);
+        doc.text('Reporte: Ingresos y Egresos', 64, 6);
+        doc.setFontSize(12);
+        input1 = formatDate(input1);
+        input2 = formatDate(input2);
+        doc.text(`Desde: ${input1}`, 14, 12);
+        doc.text(`Hasta: ${input2}`, 54, 12);
+        autoTable(doc, {    
+          styles: {fontSize: 7},
+          theme: 'grid',
+          columnStyles: { monto: { halign: 'right' } }, 
+          body: table,
+          columns: [
+            { header: 'Identificador', dataKey: 'identificador' },
+            { header: 'Nombre de Usuario', dataKey: 'username' },
+            { header: 'Cuenta', dataKey: 'cuenta' },
+            { header: 'Concepto', dataKey: 'concepto' },
+            { header: 'Status', dataKey: 'status' },
+            { header: 'Nro de Aprobación', dataKey: 'aprobacion' },
+            { header: 'Fecha', dataKey: 'fecha' },
+            { header: 'Ingreso', dataKey: 'ingreso' },
+            { header: 'Egreso', dataKey: 'egreso' },
+          ],
+        });
+        doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`);
+        doc = null; // liberar memoria asignando null al objeto doc
+        pdC = null;
+        pdN = null;
+      }
+  generarPDF()      
+  window.location.reload()
   }
     })
   }}>Imprimir</button>
@@ -1525,17 +1543,6 @@ Movimientos a visualizar {"  "}
 
     )})
   }
-  <tr>
-                 <td>{"   "}</td>
-                <td >{"   "}</td>
-                <td >{"   "}</td>
-                <td >{"   "}</td>
-                <td>{"  "}</td>
-                <td>{"  "}</td>
-                <td>{"  "}</td>
-                <td className='monto-table'><h6>Total:</h6></td>
-                {totalNegativo(total)}
-  </tr>
   </tbody>
   </table>
   <div className="col-12 d-flex justify-content-end">
