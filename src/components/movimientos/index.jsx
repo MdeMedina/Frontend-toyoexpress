@@ -1125,8 +1125,8 @@ filteredResultsPDF(init, fin).map((m, i) => {
   table.push (bodys)
 })
 console.log(pdfTotal)
-table.push({aprobacion: "Total:", fecha: `$${totalI.toFixed(2)}`})
-table.push({ingreso: "Total:", egreso: `$${totalE.toFixed(2)}`})
+
+table.push({ingreso: `$${totalI.toFixed(2)}`, egreso: `$${totalE.toFixed(2)}`})
 table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})}
 let bsIdLabel
 return (
