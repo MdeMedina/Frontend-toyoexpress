@@ -1203,14 +1203,16 @@ return (
   <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
   </div>
   </div>
+  {vm ? (
   <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Saldo:</label>
   </div>
   <div className="col-6 d-flex align-items-center">
-  {mountingTotal(totalOriginal)}
+  {mountingTotal(totalOriginal) }
   </div>
   </div>
+  ) : false}
   <br />
   <br />
   <hr />
