@@ -67,7 +67,7 @@ const [deletingMove, setDeletingMove] = useState()
 const [searchStatus, setSearchStatus] = useState('')
 const [vale, setVale] = useState('')
 const [currentPage, setCurrentPage] = useState(0)
-const [vPage, setVPage] = useState(cantidadM)
+const [vPage, setVPage] = useState(parseInt(cantidadM))
 const [meEncuentro, setMeEncuentro] = useState(1)
 const [estaba, setEstaba] = useState(1)
 const [sortId, setSortId] = useState(0)
@@ -442,7 +442,7 @@ const handleVPage = (e) => {
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
-  setVPage(e)
+  setVPage(parseInt(e))
 }
 
 const handleCuentaValue = (e) => {
@@ -459,15 +459,14 @@ const handlePdfCuentaValue = (e) => {
   if (!e.length) {
     setPdfCuenta(null)
   }else {
-
     setPdfCuenta(e)
-  }
+  } 
   }
 const handleTMoveValue = (e) => {
     setCurrentPage(0)
-    setEstaba(1)
-    setMeEncuentro(1)
-    setId(e.value)
+      setEstaba(1)
+      setMeEncuentro(1)
+      setId(e.value)
   }
 const handleNameValue = (e) => {
   if (!e.length) {
@@ -628,15 +627,24 @@ const mountingTotal = () => {
         }
       })
     })
+
     let total = 0;
     let tempMonto;
+ 
     results.map((r) => {
       tempMonto = parseFloat(r.monto)
       if (r.identificador.charAt(0) === 'E') {
+        if (tempMonto > 0) {
         tempMonto = tempMonto * -1 
+        }
       }
+
+
+      if (r.disabled == false) {
       total += tempMonto
+      }
     })
+
 
 
   if (total > 0) {
@@ -647,6 +655,7 @@ const mountingTotal = () => {
     return <label className='d-flex align-items-center'>{numberFormat.format(total)}</label>
   }
 }
+
 
 const updateStatus = async (move) => {
   if (vale === '') {
@@ -974,6 +983,7 @@ if (sortId === 1) {
   })
 }
 const filteredResults = () => {
+  console.log(currentPage, currentPage + vPage)
   let resultados = results.slice(currentPage, currentPage + vPage)
   return resultados
 }
@@ -996,6 +1006,7 @@ const filteredResultsPDF = (init, fin) => {
   if (pdfCuenta) {
     alphaResults = []
     pdfCuenta.map((c) => {
+      
       betaResults.map((dato) => {
         if (c.value === dato.cuenta) {
           alphaResults.push(dato)
@@ -1033,11 +1044,12 @@ const filteredResultsPDF = (init, fin) => {
   betaResults.map((r) => {
    r.monto = parseFloat(r.monto)
    if (r.identificador.charAt(0) === 'E') {
+    if (r.monto > 0) {
      r.monto = r.monto * -1 
+    }
    }
    alphaResults.push(r)
  })
- console.log(alphaResults)
  betaResults = alphaResults
    results = betaResults
    
@@ -1087,9 +1099,17 @@ const makePages = () => {
 }
 let total = 0;
 let pdfTotal = 0;
+let totalI = 0;
+let totalE = 0;
 let table = [];
 function filtPDF (init, fin) {
 filteredResultsPDF(init, fin).map((m, i) => {
+  console.log(m.monto)
+ if (m.monto > 0) {
+  totalI += m.monto
+ } else if (m.monto < 0) {
+  totalE += m.monto
+ }
   pdfTotal += m.monto
   const bodys = {
   identificador: m.identificador, 
@@ -1105,6 +1125,8 @@ filteredResultsPDF(init, fin).map((m, i) => {
   table.push (bodys)
 })
 console.log(pdfTotal)
+table.push({aprobacion: "Total:", fecha: `$${totalI.toFixed(2)}`})
+table.push({ingreso: "Total:", egreso: `$${totalE.toFixed(2)}`})
 table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})}
 let bsIdLabel
 return (
@@ -1300,17 +1322,22 @@ Movimientos a visualizar {"  "}
 
 
 
-
 </select>
 </div>
+{console.log(mountingTotal())}
 <div className="col-8 d-flex align-items-center justify-content-end">
   <button type="button" class="toyox" onClick={() => {
+    console.log(pdfCuenta)
     MySwal.fire({
       title: 'Escoja la fecha para la impresion',
       html:<>
       <div className='row rw-bit d-flex justify-content-center'>
-      {vm ? <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} isMulti onChange={handlePdfNameValue} className="select-max-pdf"/></div></div> : false}
- <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas} isMulti onChange={handlePdfCuentaValue} className="select-max-pdf"/></div></div></div>
+      {vm ? <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} isMulti onChange={(e) => {
+        handlePdfNameValue(e)
+  }}  className="select-max-pdf"/></div></div> : false}
+ <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas} isMulti onChange={(e) => {
+  handlePdfCuentaValue(e)
+  }} className="select-max-pdf"/></div></div></div>
       <div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1" /></div> <br /> 
         <div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2" /></div></>
         
