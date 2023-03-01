@@ -610,6 +610,60 @@ const formatDate = (date) => {
   return formatDateHoy(init)
 }
 
+const mountingTotalCC = () => {
+  let betaResults = moves
+  let results = []
+  if (cuenta) {
+    alphaResults = []
+    cuenta.map((c) => {
+      betaResults.map((dato) => {
+        if (c.value === dato.cuenta) {
+          alphaResults.push(dato)
+        }
+      })
+      })
+      betaResults = alphaResults
+  }
+  betaResults.map((move) => {
+    cuentas.map((cuenta) => {
+      if (move.cuenta == cuenta.label && cuenta.saldo == false){
+        results.push(move)
+      }
+    })
+  })
+
+  let total = 0;
+  let tempMonto;
+
+  results.map((r) => {
+    tempMonto = parseFloat(r.monto)
+    if (r.identificador.charAt(0) === 'E') {
+      if (tempMonto > 0) {
+      tempMonto = tempMonto * -1 
+      }
+    }
+
+    
+    
+
+
+    if (r.disabled == false) {
+    total = (total + tempMonto).toFixed(2)
+    total = parseFloat(total)
+    }
+  })
+
+
+
+if (total > 0) {
+  return <label className='ingreso-label d-flex align-items-center'>{total}$</label>
+} else if (total < 0) {
+  return <label className='egreso-label d-flex align-items-center'>{total}$</label>
+} else {
+  return <label className='d-flex align-items-center'>{total}$</label>
+}
+}
+
 const mountingTotal = () => {
     let betaResults = moves
     let results = []
@@ -643,20 +697,24 @@ const mountingTotal = () => {
         }
       }
 
+      
+      
+
 
       if (r.disabled == false) {
-      total += tempMonto
+      total = (total + tempMonto).toFixed(2)
+      total = parseFloat(total)
       }
     })
 
 
 
   if (total > 0) {
-    return <label className='ingreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
+    return <label className='ingreso-label d-flex align-items-center'>{total}$</label>
   } else if (total < 0) {
-    return <label className='egreso-label d-flex align-items-center'>{numberFormat.format(total)}</label>
+    return <label className='egreso-label d-flex align-items-center'>{total}$</label>
   } else {
-    return <label className='d-flex align-items-center'>{numberFormat.format(total)}</label>
+    return <label className='d-flex align-items-center'>{total}$</label>
   }
 }
 
@@ -999,6 +1057,7 @@ const filteredResults = () => {
 const filteredResultsPDF = (init, fin, pdC, pdN) => {
   let results;
   let alphaResults = [];
+  let inicialSald = []
   let betaResults = moves
   betaResults = betaResults.filter( (dato) => {
     return !dato.disabled
@@ -1034,11 +1093,12 @@ const filteredResultsPDF = (init, fin, pdC, pdN) => {
     betaResults = alphaResults
 }
 
+  inicialSald = filterRangePDF(betaResults, '09-01-2023', init)
   betaResults= filterRangePDF(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
     const arrId2 = b.identificador.split('-')
-    return ( parseInt(arrId2[1]) - parseInt(arrId1[1]) )})
+    return (  parseInt(arrId1[1]) - parseInt(arrId2[1])  )})
 
   //   betaResults = betaResults.sort((a, b) => {
   //    const arrfecha1 =  a.fecha.split('/')
@@ -1048,6 +1108,78 @@ const filteredResultsPDF = (init, fin, pdC, pdN) => {
   //    return fechaReal1 - fechaReal2 
   //  })
   alphaResults = []
+  let tempSald = 0;
+  let initFinalSald = 0;
+  let finalSald = 0
+  inicialSald.map((i) => {
+    tempSald = parseFloat(i.monto)
+    if (i.identificador.charAt(0) === 'E') {
+   if (tempSald > 0) {
+     tempSald = tempSald * -1 
+    }
+  }
+  if (i.disabled == false) {
+    initFinalSald = (initFinalSald + tempSald).toFixed(2)
+    initFinalSald = parseFloat(initFinalSald)
+  }
+})
+betaResults.map((r) => {
+ r.monto = parseFloat(r.monto)
+ if (r.identificador.charAt(0) === 'E') {
+  if (r.monto > 0) {
+   r.monto = r.monto * -1 
+  }
+ }
+ if (r.disabled == false) {
+  finalSald = (finalSald + r.monto).toFixed(2)
+  finalSald = parseFloat(finalSald)
+  }
+ alphaResults.push(r)
+})
+betaResults = alphaResults
+   results = betaResults
+   finalSald = (finalSald + initFinalSald).toFixed(2)
+   
+
+   return {results, initFinalSald, finalSald}
+}
+
+const filteredResultsPDFCC = (init, fin, pdC, pdN) => {
+  let results;
+  let alphaResults = [];
+  let inicialSald = []
+  let betaResults = moves
+  betaResults = betaResults.filter( (dato) => {
+    return !dato.disabled
+  })
+
+  betaResults.map((dato) => {
+    cuentas.map((c) => {
+      if (dato.cuenta == c.label && c.saldo == false) {
+        alphaResults.push(dato)
+      }
+    })
+  })
+  betaResults = alphaResults
+
+  inicialSald = filterRangePDF(betaResults, '09-01-2023', init)
+  betaResults= filterRangePDF(betaResults, init, fin)
+  betaResults = betaResults.sort((a, b) => {
+    const arrId1 = a.identificador.split('-')
+    const arrId2 = b.identificador.split('-')
+    return (  parseInt(arrId1[1]) - parseInt(arrId2[1])  )})
+
+  //   betaResults = betaResults.sort((a, b) => {
+  //    const arrfecha1 =  a.fecha.split('/')
+  //    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
+  //    const arrfecha2 =  b.fecha.split('/')
+  //    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
+  //    return fechaReal1 - fechaReal2 
+  //  })
+  alphaResults = []
+  let tempSald = 0;
+  let initFinalSald = 0;
+  let finalSald = 0
   betaResults.map((r) => {
    r.monto = parseFloat(r.monto)
    if (r.identificador.charAt(0) === 'E') {
@@ -1055,13 +1187,29 @@ const filteredResultsPDF = (init, fin, pdC, pdN) => {
      r.monto = r.monto * -1 
     }
    }
+   if (r.disabled == false) {
+    finalSald = (finalSald + r.monto).toFixed(2)
+    finalSald = parseFloat(finalSald)
+    }
    alphaResults.push(r)
  })
+inicialSald.map((i) => {
+  tempSald = parseFloat(i.monto)
+  if (i.identificador.charAt(0) === 'E') {
+   if (tempSald > 0) {
+    tempSald = tempSald * -1 
+   }
+  }
+  if (i.disabled == false) {
+    initFinalSald = (initFinalSald + tempSald).toFixed(2)
+    initFinalSald = parseFloat(initFinalSald)
+    }
+})
  betaResults = alphaResults
    results = betaResults
-   
+   finalSald = (finalSald + initFinalSald).toFixed(2)
 
-   return results
+   return {results, initFinalSald, finalSald}
 }
 
 const nextPage = () => {
@@ -1110,7 +1258,15 @@ let totalI = 0;
 let totalE = 0;
 let table = [];
 function filtPDF (init, fin, pdC, pdN) {
-filteredResultsPDF(init, fin, pdC, pdN).map((m, i) => {
+  let resulting;
+  if(vm) {
+  const {results} = filteredResultsPDF(init, fin, pdC, pdN)
+ resulting = results
+}else {
+  const {results} = filteredResultsPDFCC(init, fin, pdC, pdN)
+  resulting = results
+}
+resulting.map((m, i) => {
  if (m.monto > 0) {
   totalI += m.monto
  } else if (m.monto < 0) {
@@ -1130,10 +1286,8 @@ filteredResultsPDF(init, fin, pdC, pdN).map((m, i) => {
   }
   table.push (bodys)
 })
-
-
-table.push({ingreso: `$${totalI.toFixed(2)}`, egreso: `$${totalE.toFixed(2)}`})
-table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})}
+table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})
+}
 let bsIdLabel
 let pdC;
 let pdN
@@ -1205,10 +1359,16 @@ return (
   </div>
   {vm ? (
   <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
-  <div className="col-6">
-  <label htmlFor="">Saldo:</label>
+  <div className="col-3">
+  <label htmlFor="">Saldo Caja Chica:</label>
   </div>
-  <div className="col-6 d-flex align-items-center">
+  <div className="col-4 d-flex align-items-center">
+  {mountingTotalCC(totalOriginal) }
+  </div>
+  <div className="col-2">
+  <label htmlFor="">Saldo Total:</label>
+  </div>
+  <div className="col-3 d-flex align-items-center">
   {mountingTotal(totalOriginal) }
   </div>
   </div>
@@ -1343,9 +1503,10 @@ Movimientos a visualizar {"  "}
       {vm ? <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Usuario</label></div><div className="col-12"><Select options={nombres} id='name' isMulti onChange={async (e) => {
         pdN = e
   }}  className="select-max-pdf"/></div></div> : false}
+    { vm ?
  <div className="col-6 align-self-start d-flex justify-content-start mt-2 mb-2 row"><div className="col-6"><label htmlFor="">Cuenta</label></div><div className="col-12"><Select options={cuentas}  isMulti id='cuenta' onChange={async (e) => {
     pdC = e
-  }} className="select-max-pdf"/></div></div></div>
+  }} className="select-max-pdf"/></div></div> : false }</div>
       <div class="col-12 d-flex justify-content-center">Fecha de inicio:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input1" /></div> <br /> 
         <div class="col-12 d-flex justify-content-center">Fecha final:</div><div class="col-12 d-flex justify-content-center"><input type="date" id="swal-input2" /></div></>
         
@@ -1359,13 +1520,26 @@ Movimientos a visualizar {"  "}
         input1 = document.getElementById('swal-input1').value;
         input2 = document.getElementById('swal-input2').value;
         console.log(pdC, pdN);
+        let iSald;
+        let fSald;
+        if (vm) {
+        const {initFinalSald, finalSald} = filteredResultsPDF(input1, input2, pdC, pdN)
+        iSald = initFinalSald
+        fSald = finalSald
+        }else {
+          const {initFinalSald, finalSald} = filteredResultsPDFCC(input1, input2)
+          iSald = initFinalSald
+          fSald = finalSald
+        }
         filtPDF(input1, input2, pdC, pdN);
       
         doc.setFontSize(18);
         doc.text('Reporte: Ingresos y Egresos', 64, 6);
-        doc.setFontSize(12);
         input1 = formatDate(input1);
         input2 = formatDate(input2);
+        doc.setFontSize(14);
+        doc.text(`Saldo Inicial: ${iSald}`, 154, 12)
+        doc.setFontSize(12);
         doc.text(`Desde: ${input1}`, 14, 12);
         doc.text(`Hasta: ${input2}`, 54, 12);
         autoTable(doc, {    
@@ -1385,6 +1559,9 @@ Movimientos a visualizar {"  "}
             { header: 'Egreso', dataKey: 'egreso' },
           ],
         });
+        doc.setDrawColor(0, 0, 0);
+doc.setFontSize(14);
+doc.text(`Saldo Final: ${fSald}`, 197, doc.lastAutoTable.finalY + 7, { align: 'right' });
         doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`);
         doc = null; // liberar memoria asignando null al objeto doc
         pdC = null;
