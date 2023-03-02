@@ -1276,13 +1276,21 @@ let totalE = 0;
 let table = [];
 function filtPDF (init, fin, pdC, pdN) {
   let resulting;
+  let ini;
+  let fini;
+
   if(vm) {
-  const {results} = filteredResultsPDF(init, fin, pdC, pdN)
+  const {results, initFinalSald, finalSald} = filteredResultsPDF(init, fin, pdC, pdN)
+  ini = initFinalSald
+  fini = finalSald
  resulting = results
 }else {
-  const {results} = filteredResultsPDFCC(init, fin, pdC, pdN)
+  const {results, initFinalSald, finalSald} = filteredResultsPDFCC(init, fin, pdC, pdN)
+  ini = initFinalSald
+  fini = finalSald
   resulting = results
 }
+table.push({ingreso: "Saldo Inicial:", egreso: `$${ini}`})
 resulting.map((m, i) => {
  if (m.monto > 0) {
   totalI += m.monto
@@ -1303,7 +1311,7 @@ resulting.map((m, i) => {
   }
   table.push (bodys)
 })
-table.push({ingreso: "Total:", egreso: `$${pdfTotal.toFixed(2)}`})
+table.push({ingreso: "Saldo Final:", egreso: `$${fini}`})
 }
 let bsIdLabel
 let pdC;
@@ -1556,8 +1564,6 @@ Movimientos a visualizar {"  "}
         doc.text('Reporte: Ingresos y Egresos', 64, 6);
         input1 = formatDate(input1);
         input2 = formatDate(input2);
-        doc.setFontSize(10);
-        doc.text(`Saldo Inicial: ${iSald}`, 154, 12)
         doc.setFontSize(12);
         doc.text(`Desde: ${input1}`, 14, 12);
         doc.text(`Hasta: ${input2}`, 54, 12);
@@ -1578,9 +1584,6 @@ Movimientos a visualizar {"  "}
             { header: 'Egreso', dataKey: 'egreso' },
           ],
         });
-        doc.setDrawColor(0, 0, 0);
-doc.setFontSize(10);
-doc.text(`Saldo Final: ${fSald}`, 197, doc.lastAutoTable.finalY + 5, { align: 'right' });
         doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`);
         doc = null; // liberar memoria asignando null al objeto doc
         pdC = null;
