@@ -38,6 +38,7 @@ const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
 const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
 const em = JSON.parse(localStorage.getItem("permissions")).editarMovimientos
 const [moves, setMoves] = useState([])
+const [editKey, setEditKey] = useState()
 const [room, setRoom] = useState()
 const [actMovimiento, setActMovimiento] = useState(false)
 const [ActCantidad, setActCantidad] = useState(cantidadM)
@@ -286,7 +287,8 @@ const inputsLoads = () => {
 
 const editMoves = (m, i) => { 
   if (em) {
-      return(<button className='btn btn-primary closer' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => {         
+      return(<button className='btn btn-primary closer' data-bs-toggle="modal" data-bs-target={`#actModal-${i}`} onClick={() => { 
+        setEditKey(m.identificador)        
         setMyMove(m)
         setIdentificador(m.identificador)
         setActShow(true)}}><box-icon name='edit-alt' color='#ffffff' size='20px'></box-icon></button>)
@@ -603,6 +605,20 @@ function filterRangePDF(arr, a, b) {
    return (new Date(fechaReal) >= init && new Date(fechaReal) <= end)
   });
 }
+function filterRangePDFinit(arr, a, b) {
+  // agregamos paréntesis en torno a la expresión para mayor legibilidad
+
+  return arr.filter(item => {
+   const arrfecha =  item.fecha.split('/')
+   const arrInit =  a.split('-')
+   const arrEnd =  b.split('-')
+   const fechaReal = new Date(arrfecha[2], parseInt(arrfecha[1] - 1), arrfecha[0])
+  const init = new Date (arrInit[0], parseInt(arrInit[1] - 1), arrInit[2])
+  const end = new Date (arrEnd[0], parseInt(arrEnd[1] - 1), (arrEnd[2] - 1))
+   return (new Date(fechaReal) >= init && new Date(fechaReal) <= end)
+  });
+}
+
 
 const formatDate = (date) => {
   const arrInit =  date.split('-')
@@ -1093,7 +1109,7 @@ const filteredResultsPDF = (init, fin, pdC, pdN) => {
     betaResults = alphaResults
 }
 
-  inicialSald = filterRangePDF(betaResults, '09-01-2023', init)
+  inicialSald = filterRangePDFinit(betaResults, '09-01-2023', init)
   betaResults= filterRangePDF(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
@@ -1123,6 +1139,7 @@ const filteredResultsPDF = (init, fin, pdC, pdN) => {
     initFinalSald = parseFloat(initFinalSald)
   }
 })
+
 betaResults.map((r) => {
  r.monto = parseFloat(r.monto)
  if (r.identificador.charAt(0) === 'E') {
@@ -1162,7 +1179,7 @@ const filteredResultsPDFCC = (init, fin, pdC, pdN) => {
   })
   betaResults = alphaResults
 
-  inicialSald = filterRangePDF(betaResults, '09-01-2023', init)
+  inicialSald = filterRangePDFinit(betaResults, '09-01-2023', init)
   betaResults= filterRangePDF(betaResults, init, fin)
   betaResults = betaResults.sort((a, b) => {
     const arrId1 = a.identificador.split('-')
@@ -1357,22 +1374,24 @@ return (
   <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
   </div>
   </div>
-  {vm ? (
   <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-3">
-  <label htmlFor="">Saldo Caja Chica:</label>
+  <label htmlFor="">Caja Chica:</label>
   </div>
   <div className="col-4 d-flex align-items-center">
   {mountingTotalCC(totalOriginal) }
   </div>
+  {vm ? (
+  <>
   <div className="col-2">
   <label htmlFor="">Saldo Total:</label>
   </div>
   <div className="col-3 d-flex align-items-center">
   {mountingTotal(totalOriginal) }
   </div>
-  </div>
+  </>
   ) : false}
+  </div>
   <br />
   <br />
   <hr />
@@ -1537,7 +1556,7 @@ Movimientos a visualizar {"  "}
         doc.text('Reporte: Ingresos y Egresos', 64, 6);
         input1 = formatDate(input1);
         input2 = formatDate(input2);
-        doc.setFontSize(14);
+        doc.setFontSize(10);
         doc.text(`Saldo Inicial: ${iSald}`, 154, 12)
         doc.setFontSize(12);
         doc.text(`Desde: ${input1}`, 14, 12);
@@ -1560,15 +1579,15 @@ Movimientos a visualizar {"  "}
           ],
         });
         doc.setDrawColor(0, 0, 0);
-doc.setFontSize(14);
-doc.text(`Saldo Final: ${fSald}`, 197, doc.lastAutoTable.finalY + 7, { align: 'right' });
+doc.setFontSize(10);
+doc.text(`Saldo Final: ${fSald}`, 197, doc.lastAutoTable.finalY + 5, { align: 'right' });
         doc.save(`Reporte Movimientos desde ${input1} hasta ${input2}.pdf`);
         doc = null; // liberar memoria asignando null al objeto doc
         pdC = null;
         pdN = null;
       }
   generarPDF()      
-  window.location.reload()
+    // window.location.reload()
   }
     })
   }}>Imprimir</button>
@@ -1699,7 +1718,7 @@ doc.text(`Saldo Final: ${fSald}`, 197, doc.lastAutoTable.finalY + 7, { align: 'r
                 <div className="col-4">
                 {editMoves(m, i)}
                 {
-                  actShow ?
+                  actShow && editKey === m.identificador?
                 <ActModal
                   key={i}
                       show={actShow}
