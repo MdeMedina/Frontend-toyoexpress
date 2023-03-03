@@ -1590,7 +1590,7 @@ Movimientos a visualizar {"  "}
         pdN = null;
       }
   generarPDF()      
-    // window.location.reload()
+    window.location.reload()
   }
     })
   }}>Imprimir</button>
