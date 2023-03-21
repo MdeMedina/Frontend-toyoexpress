@@ -7,6 +7,7 @@ import Logout from "./components/Logout";
 import UpdateHour from "./components/Hour";
 import Moves from "./components/movimientos";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./css/home.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import io from "socket.io-client";
 import { backendUrl } from "./lib/data/server";

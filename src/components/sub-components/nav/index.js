@@ -281,7 +281,18 @@ function Navg({ socket }) {
       <Navbar bg="light" expand="lg" className="topbar">
         <Container className="d-flex justify-content-center">
           <Row className="row-edit">
-            <Col xs={2} className="d-flex align-items-center">
+            <Col xs={2} lg={1} className="d-flex align-items-center">
+              <div onClick={toggleFunc}>
+                <Button variant="dark">
+                  <box-icon name="menu" color="white" id="hola"></box-icon>
+                </Button>{" "}
+              </div>
+            </Col>
+            <Col
+              xs={5}
+              lg={6}
+              className="d-flex align-items-center justify-content-endssss"
+            >
               <Navbar.Brand href="#home">
                 <img
                   src={require("../../img/logo.png")}
@@ -291,16 +302,12 @@ function Navg({ socket }) {
               </Navbar.Brand>
               <div id="number"></div>
             </Col>
-            <Col xs={5} className="d-flex align-items-center">
-              <div onClick={toggleFunc}>
-                <Button variant="dark">
-                  <box-icon name="menu" color="white" id="hola"></box-icon>
-                </Button>{" "}
-              </div>
-            </Col>
-            <Col xs={5}>
-              <Nav className="me-auto row">
-                <div className="notificacion col-2">
+            <Col
+              xs={5}
+              className="d-flex align-items-center justify-content-end"
+            >
+              <div className="row d-flex align-items-center justify-content-end">
+                <div className="notificacion col-6">
                   {filterMove.length > 0 && am ? (
                     <div className="bola " id="bola">
                       {filterMove.length}
@@ -331,7 +338,7 @@ function Navg({ socket }) {
                     </ul>
                   </div>
                 </div>
-                <div class="dropdown col-3 d-flex justify-content-end">
+                <div class="dropdown col-6 d-flex justify-content-end">
                   <a
                     className="nav-link dropdown-toggle"
                     role="button"
@@ -373,7 +380,7 @@ function Navg({ socket }) {
                     </li>
                   </ul>
                 </div>
-              </Nav>
+              </div>
             </Col>
           </Row>
         </Container>

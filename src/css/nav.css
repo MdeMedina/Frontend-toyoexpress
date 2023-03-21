@@ -22,7 +22,9 @@
     
 }
 
-
+.ndG {
+    top:0
+}
 
 .cl {
     padding: 0 !important;
@@ -318,4 +320,20 @@ color: var(--text-color);
 .mv {
     margin-top: 6px !important;
     margin-bottom: 6px !important;
+}
+@media (max-width: 416px) {
+    .sidebar.close{ 
+        display: none;
+    }
+    .sidebar {
+        position: fixed !important;
+        width: 100%;
+    }
+
+    .logo {
+        width: 160px;
+        height: 29.44px;
+        margin: 0 auto
+    }
+
 }

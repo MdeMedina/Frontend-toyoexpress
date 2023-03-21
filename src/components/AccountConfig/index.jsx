@@ -39,7 +39,18 @@ useEffect(() => {
 }, [ca, key, navigate])
 
 
+useEffect(() => {
+  const sidebar = document.getElementById("sidebar");
+  const navDiv = document.querySelector(".navDiv");
+  console.log(navDiv);
+  console.log(sidebar.classList.contains("close"));
 
+  if (!sidebar.classList.contains("close")) {
+    console.log("si lo tengo");
+    sidebar.classList.toggle("close");
+    // navDiv.classList.toggle("close");
+  }
+}, []);
 useEffect(() => {
     let diff =  meEncuentro - estaba
     setCurrentPage(currentPage + (vPage * diff))

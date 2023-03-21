@@ -15,6 +15,18 @@ function Home({ socket }) {
   const permissions = JSON.parse(localStorage.getItem("permissions"));
   const hi = permissions.horasIngreso;
   const cu = permissions.crearUsuarios;
+  useEffect(() => {
+    const sidebar = document.getElementById("sidebar");
+    const navDiv = document.querySelector(".navDiv");
+    console.log(navDiv);
+    console.log(sidebar.classList.contains("close"));
+
+    if (!sidebar.classList.contains("close")) {
+      console.log("si lo tengo");
+      sidebar.classList.toggle("close");
+      // navDiv.classList.toggle("close");
+    }
+  }, []);
 
   return (
     <>
@@ -22,7 +34,7 @@ function Home({ socket }) {
         <div className="col-11">
           <h2>Bienvenido</h2>
         </div>
-        <div className="col-4 row d-flex justify-content-center">
+        <div className="col-xs-12 col-lg-4 row d-flex justify-content-center mb-3">
           <div class="card cd col-10 cl">
             <img
               src={require("../img/moves.jpg")}
@@ -43,7 +55,7 @@ function Home({ socket }) {
           </div>
         </div>
 
-        <div className="col-4 row d-flex justify-content-center">
+        <div className="col-xs-12 col-lg-4  mb-3 row d-flex justify-content-center">
           {!cu ? (
             false
           ) : (
@@ -67,7 +79,7 @@ function Home({ socket }) {
             </div>
           )}
         </div>
-        <div className="col-4 row d-flex justify-content-center">
+        <div className="col-xs-12 col-lg-4 mb-3 row d-flex justify-content-center">
           {!hi ? (
             false
           ) : (

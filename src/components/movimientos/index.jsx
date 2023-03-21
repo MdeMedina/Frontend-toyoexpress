@@ -26,6 +26,18 @@ function Moves({socket}) {
   let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
   const navigate = useNavigate()
+  useEffect(() => {
+    const sidebar = document.getElementById("sidebar");
+    const navDiv = document.querySelector(".navDiv");
+    console.log(navDiv);
+    console.log(sidebar.classList.contains("close"));
+
+    if (!sidebar.classList.contains("close")) {
+      console.log("si lo tengo");
+      sidebar.classList.toggle("close");
+      // navDiv.classList.toggle("close");
+    }
+  }, []);
 
   const MySwal = withReactContent(Swal)
   let fechaActual = new Date()
@@ -1676,13 +1688,13 @@ Movimientos a visualizar {"  "}
         <div className="col-12 subtitulo">Correo Electronico</div>
         <div className="col-12 texto">{m.email}</div>
         <div className="col-12 subtitulo">Pagos:</div>
-        {m.efectivo > 0 ? <div className="col-12 texto">Efectivo: ${m.efectivo}</div> : false}
-        {m.zelle > 0 ? <div className="col-12 texto">Zelle:${m.zelle}</div> : false}
-        {m.otro > 0 ? <div className="col-12 texto">Otros:${m.otro}</div> : false}
+        {m.efectivo > 0 ? <div className="col-12 texto">Efectivo: ${m.efectivo.toFixed(2)}</div> : false}
+        {m.zelle > 0 ? <div className="col-12 texto">Zelle:${m.zelle.toFixed(2)}</div> : false}
+        {m.otro > 0 ? <div className="col-12 texto">Otros:${m.otro.toFixed(2)}</div> : false}
         {m.dollars > 0 ? <div className="col-12 texto">Pago en Bolivares</div> : false}
-        {m.dollars > 0 ? <div className="col-4 texto">Valor $: ${m.dollars} </div> : false}
-        {m.dollars > 0 ? <div className="col-4 texto">Cambio: {m.change}Bs</div> : false}
-        {m.dollars > 0 ? <div className="col-4 texto"><div >Bs:</div> {m.bs}Bs</div> : false}
+        {m.dollars > 0 ? <div className="col-4 texto">Valor $: ${m.dollars.toFixed(2)} </div> : false}
+        {m.dollars > 0 ? <div className="col-4 texto">Cambio: {m.change.toFixed(2)}Bs</div> : false}
+        {m.dollars > 0 ? <div className="col-4 texto"><div >Bs:</div> {m.bs.toFixed(2)}Bs</div> : false}
         <div className="col-12 texto">{m.pago}</div>
           <div className="col-12 subtitulo">Cuenta</div>
           <div className="col-12 texto">{m.cuenta}</div>
