@@ -43,6 +43,20 @@ const [endDate, setEndDate] = useState(new Date());
     }
   }
 
+  const inputDisabled = (dolares) => {
+    const e = document.getElementById('createChange')
+    console.log('Comprobacion de input',!e.hasAttribute('disabled') && dolares <= 0 )
+    if (e.hasAttribute('disabled') && dolares > 0) {
+      e.removeAttribute('disabled')
+    }
+   if (!e.hasAttribute('disabled') && dolares <= 0 ) {
+     console.log('entre')
+      e.setAttribute('disabled', "")
+    }
+  }
+
+
+
   const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
     <button className="toyox" onClick={onClick} ref={ref}>
       {value}
@@ -195,6 +209,11 @@ const [endDate, setEndDate] = useState(new Date());
       <Form.Label>Valor en<br />dolares:</Form.Label>
         <Form.Control aria-label="Amount (to the nearest dollar)" onChange={e => {
           setDollars(e.target.value)
+          let r = parseFloat(e.target.value);
+          if(isNaN(parseFloat(e.target.value))){
+            r = 0
+          }
+          inputDisabled(r)
         }}/>
         <InputGroup.Text>$</InputGroup.Text>
       </InputGroup>
@@ -202,7 +221,7 @@ const [endDate, setEndDate] = useState(new Date());
       <div className='col-4 mb-3'>
       <InputGroup >
         <Form.Label>Valor de<br />cambio:</Form.Label>
-        <Form.Control  aria-label="Amount (to the nearest dollar)" onChange={e => {
+        <Form.Control  aria-label="Amount (to the nearest dollar)" disabled id='createChange' onChange={e => {
           setCambio(e.target.value)
         }}/>
         <InputGroup.Text>Bs</InputGroup.Text>

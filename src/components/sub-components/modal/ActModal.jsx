@@ -70,6 +70,19 @@ function ActModal(props) {
   const [zelle, setZelle] = useState(move.zelle)
   const [dollars, setDollars] = useState(move.dollars)
   
+
+  const inputDisabled = (dolares) => {
+    const e = document.getElementById(`d${move.identificador}`)
+    console.log('Comprobacion de input',!e.hasAttribute('disabled') && dolares <= 0 )
+    if (e.hasAttribute('disabled') && dolares > 0) {
+      e.removeAttribute('disabled')
+    }
+   if (!e.hasAttribute('disabled') && dolares <= 0 ) {
+     console.log('entre')
+      e.setAttribute('disabled', "")
+    }
+  }
+
   function addDays(fecha, dias){ 
     fecha.setDate(fecha.getDate() + dias);
     return fecha;
@@ -166,7 +179,7 @@ function ActModal(props) {
       id={`actModal-${i}`}
     >
       <Modal.Header closeButton>
-          <Modal.Title>Editar Movimiento</Modal.Title>
+          <Modal.Title>Editar Movimiento {move.identificador}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div id="error" className='desaparecer'>*Por Favor, rellene todos los campos</div>
@@ -218,15 +231,23 @@ function ActModal(props) {
       <Form.Label>Valor en dolares:</Form.Label>
         <Form.Control aria-label="Amount (to the nearest dollar)" defaultValue={move.dollars} onChange={e => {
           setDollars(e.target.value)
+          let r = parseFloat(e.target.value);
+          if(isNaN(parseFloat(e.target.value))){
+            r = 0
+          }
+          inputDisabled(r)
         }}/>
       </InputGroup>
       </div>
       <div className='col-6 mb-3'>
       <InputGroup >
         <Form.Label>Valor de cambio:</Form.Label>
-        <Form.Control  aria-label="Amount (to the nearest dollar)" defaultValue={move.change} onChange={e => {
+        { dollars > 0 ? 
+        <Form.Control  aria-label="Amount (to the nearest dollar)" defaultValue={move.change} id={`d${move.identificador}`} onChange={e => {
           setCambio(e.target.value)
-        }}/>
+        }}/> : <Form.Control  aria-label="Amount (to the nearest dollar)" defaultValue={move.change} disabled id={`d${move.identificador}`} onChange={e => {
+          setCambio(e.target.value)
+        }}/> }
       </InputGroup>
       </div>
       <div className='col-12'>
