@@ -120,7 +120,7 @@ function ActModal(props) {
     }, [dollars, cambio])
     useEffect(() => {
       cambiandoTotal()
-    }, [dollars, zelle, efectivo])
+    }, [dollars, zelle, efectivo, otro])
 
   const colourStyles = {
     control: (styles) => ({ ...styles, backgroundColor: 'white' }),
