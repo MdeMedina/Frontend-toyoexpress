@@ -57,6 +57,14 @@
 .me-auto{
     justify-content: end;
 }
+/* .dropdown-menu {
+    transform-origin: bottom;
+    transform: scaleY(0);
+  }
+  
+  .show .dropdown-menu {
+    transform: scaleY(1);
+  } */
 
 .logo {
     float: left;
@@ -331,6 +339,8 @@ color: var(--text-color);
     }
 
     .logo {
+        display: flex;
+        float: right;
         width: 160px;
         height: 29.44px;
         margin: 0 auto

@@ -19,6 +19,9 @@ body {
 .la {
   --bs-gutter-x: 0 !important
 }
+.tg-0pky {
+  font-size: 9px;
+}
 
 .error {
   padding: 12px 4px;

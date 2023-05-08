@@ -90,6 +90,24 @@
     cursor: pointer;
 }
 
+
+.toyox-disabled {
+    background-color: #ec4d4d;
+    color: #eceaea;
+    padding: 10px;
+    text-decoration: none;
+    border: 0px;
+    border-radius: 7px;
+    text-align: center;
+}
+.toyox-disabled:hover {
+    background-color: #ec4d4d;
+}
+
+.selectpd {
+    width: 90%;
+}
+
 .lt {
     font-size: 25px !important;
 }
@@ -165,5 +183,14 @@
     font-size: 8px;
     font-weight: 100;
     margin-bottom: 8px;
+}
+
+.cent {
+margin: 0 auto !important
+}
+
+.tab-c { 
+    max-width: auto;
+    overflow: scroll;
 }
 
