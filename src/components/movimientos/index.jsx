@@ -23,6 +23,7 @@ import EModal from '../sub-components/modal/E-modal'
 import { cuentas } from '../../lib/data/SelectOptions'
 
 function Moves({socket}) {
+  const media = window.innerWidth
   let cantidadM = localStorage.getItem('cantidadM')
   const hoy = `${formatDateHoy(new Date())}`
   const navigate = useNavigate()
@@ -71,6 +72,7 @@ const [startUDate, setStartUDate] = useState(primerDia)
 const [minDate, setMinDate] = useState(primerDia)
 const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
+const [concepto, setConcepto] = useState(null)
 const [identificador, setIdentificador] = useState('')
 const [Id, setId] = useState('')
 const [pdfCuenta, setPdfCuenta] = useState(null)
@@ -496,6 +498,16 @@ const handleNameValue = (e) => {
     setName(e)
   }
   }
+  const handleConceptoValue = (e) => {
+    if (!e.length) {
+      setConcepto(null)
+    }else {
+      setCurrentPage(0)
+      setEstaba(1)
+      setMeEncuentro(1)
+      setConcepto(e)
+    }
+    }
   const handlePdfNameValue = (e) => {
     if (!e.length) {
       setPdfName(null)
@@ -524,6 +536,7 @@ const handleNameValue = (e) => {
         setNroAprobacion(e)
       }
       }
+
   
 
     let tMoves = [
@@ -684,11 +697,11 @@ const mountingTotalCC = () => {
 
 
 if (total > 0) {
-  return <label className='ingreso-label d-flex align-items-center'>{total}$</label>
+  return <label className='ingreso-label '>{total}$</label>
 } else if (total < 0) {
-  return <label className='egreso-label d-flex align-items-center'>{total}$</label>
+  return <label className='egreso-label '>{total}$</label>
 } else {
-  return <label className='d-flex align-items-center'>{total}$</label>
+  return <label className=''>{total}$</label>
 }
 }
 
@@ -738,11 +751,11 @@ const mountingTotal = () => {
 
 
   if (total > 0) {
-    return <label className='ingreso-label d-flex align-items-center'>{total}$</label>
+    return <label className='ingreso-label '>{total}$</label>
   } else if (total < 0) {
-    return <label className='egreso-label d-flex align-items-center'>{total}$</label>
+    return <label className='egreso-label'>{total}$</label>
   } else {
-    return <label className='d-flex align-items-center'>{total}$</label>
+    return <label className=''>{total}$</label>
   }
 }
 
@@ -842,7 +855,7 @@ if (!vm) {
   inicio = new Date(startUDate)
 }
 let final = new Date(endDate)
-if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion) {
+if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion && !concepto) {
   betaResults = moves
 
   betaResults = betaResults.filter( (dato) => {
@@ -922,13 +935,12 @@ if (sortId === 1) {
   })
 } else {
   betaResults = moves
+  console.log(betaResults)
     if (vm === false) {
     betaResults = betaResults.filter((dato) => {
       return dato.name.includes(localStorage.getItem('name'))
     })
   }
-  betaResults= filterRange(betaResults, inicio, final)
-
   if (Id) {
     betaResults = betaResults.filter((dato) => {
       return dato.identificador.includes(Id)
@@ -940,6 +952,8 @@ if (sortId === 1) {
       return dato.vale.includes(nroAprobacion)
     })
   }
+
+
 
   if (pago) {
     alphaResults = []
@@ -980,6 +994,19 @@ if (sortId === 1) {
       })
       betaResults = alphaResults
   }
+
+  if (concepto) {
+    alphaResults = []
+    concepto.map((c) => {
+      betaResults.map((dato) => {
+        console.log('Datos', c.value == dato.concepto)
+        if (c.value === dato.concepto) {
+          alphaResults.push(dato)
+        }
+      })
+    })
+    betaResults = alphaResults
+}
   betaResults = betaResults.filter( (dato) => {
 
     return !dato.disabled
@@ -1257,7 +1284,13 @@ let itemPagination =[];
 
 const makePages = () => {
   pages = Math.ceil(results.length / vPage)
-  for (let i = 1; i <= pages; i++) {
+  const offset = 2 // El número de páginas que se mostrarán en el paginador
+  const start = Math.max(1, meEncuentro - offset) // índice de la primera página a mostrar
+  const end = Math.min(start + offset * 2, pages)  // El número de la última página en el rango
+
+
+
+  for (let i = start; i <= end; i++) {
     if (meEncuentro == i) {
       itemPagination.push(<Pagination.Item active onClick={(e) => {
 
@@ -1279,8 +1312,13 @@ const makePages = () => {
 }
       }}>{i}</Pagination.Item>)
     }
+
   }
+
+
+  return itemPagination
 }
+
 let total = 0;
 let pdfTotal = 0;
 let totalI = 0;
@@ -1328,6 +1366,7 @@ table.push({ingreso: "Saldo Final:", egreso: `$${fini}`})
 let bsIdLabel
 let pdC;
 let pdN
+let conceptos = []
 return (
 <>
   <div className="d-flex justify-content-center">
@@ -1341,8 +1380,8 @@ return (
                     />
   </div>
   <div className="row bg-light col-11 filtros">
-  <h2 className='col-12'>Filtros de busqueda de movimientos</h2>
-  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row ">
+  <h2  className=' row col-12' data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"> <div className="col-10">Filtros de busqueda de movimientos</div><div className="col-2 cent"><div className="d-flex align-items-center"><box-icon name='chevron-down'></box-icon></div></div></h2> 
+  <div className="col-md-4 col-xs-12 align-self-start d-flex justify-content-start mt-2 mb-2 row ">
  <div className="col-6">
   <label htmlFor="">Tipo de movimiento</label>
   </div>
@@ -1352,7 +1391,7 @@ return (
   }} className="select-max"/>
   </div>
   </div>
-    { !vm ? false: <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+    { !vm ? false: <div className="col-md-4 col-xs-12 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Name</label>
   </div>
@@ -1365,7 +1404,7 @@ return (
   </div>
   </div>
   }
-  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-md-4 col-xs-12 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Cuenta</label>
   </div>
@@ -1373,7 +1412,7 @@ return (
   <Select options={cuentas} isMulti onChange={handleCuentaValue} className="select-max"/>
   </div>
   </div>
-  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-md-4 col-xs-12 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Nro de aprobacion</label>
   </div>
@@ -1385,7 +1424,7 @@ return (
   </div>
 
   </div>
-  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-md-4 col-xs-12 align-self-start d-flex justify-content-start mt-2 mb-2 row">
   <div className="col-6">
   <label htmlFor="">Tipo de pago</label>
   </div>
@@ -1394,31 +1433,51 @@ return (
   <Select options={tPagos} isMulti onChange={handlePayValue} className="select-max"/>
   </div>
   </div>
-  <div className="col-4 align-self-start d-flex justify-content-start mt-2 mb-2 row">
-  <div className="col-3">
-  <label htmlFor="">Caja Chica:</label>
+  <div className="col-md-4 col-xs-12 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+  <div className="col-6">
+  <label htmlFor="">Concepto</label>
   </div>
-  <div className="col-4 d-flex align-items-center">
-  {mountingTotalCC(totalOriginal) }
+  <div className="col-6">
+  {
+    moves.map((u) => {
+      conceptos.push({value: u.concepto, label: u.concepto})
+    })}
+  <Select options={conceptos} isMulti onChange={handleConceptoValue} className="select-max"/>
   </div>
-  {vm ? (
-  <>
-  <div className="col-2">
-  <label htmlFor="">Saldo Total:</label>
   </div>
-  <div className="col-3 d-flex align-items-center">
-  {mountingTotal(totalOriginal) }
-  </div>
-  </>
-  ) : false}
-  </div>
-  <br />
-  <br />
+  
+
+{
+    media > 414 ? 
+      <div className="col-12 align-self-center d-flex justify-content-center mt-2 mb-2 row">
+      <div className="col-md-3 col-xs-1 d-flex justify-content-end">
+      <label htmlFor="">Caja Chica:</label>
+      </div>
+      <div className="col-md-4 col-xs-6 d-flex align-items-center justify-content-start">
+      {mountingTotalCC(totalOriginal) }
+      </div>
+      {vm ? (
+      <>
+      <div className="col-md-2 col-xs-4 d-flex justify-content-end">
+      <label htmlFor="">Saldo Total:</label>
+      </div>
+      <div className="col-md-3 col-xs-6 d-flex align-items-center justify-content-start">
+      {mountingTotal(totalOriginal) }
+      </div>
+      </>
+      ) : false}
+      </div> : false
+  }
+  {
+    media > 416 ? <> <br />
+    <br /></> : false
+  }
+ 
   <hr />
   <div className="container-fluid row d-flex justify-content-center">
-    <div className="col-6 row">
+    <div className="col-md-6 col-xs-12 mb-3 row">
 { vm ? <div className="col-6">
-        fecha de inicio:
+        Fecha de inicio:
   <DatePicker
         selected={startDate}
         onChange={(date) => stDateSetter(date)}
@@ -1431,7 +1490,7 @@ return (
         className='yesAdmin'
       />
       </div> : <div className="col-6">
-        fecha de inicio:
+        Fecha de inicio:
   <DatePicker
         selected={startUDate}
         onChange={(date) => stDateUSetter(date)}
@@ -1446,7 +1505,7 @@ return (
       />
       </div>} 
 {vm ? <div className="col-6">
-        fecha de cierre:
+        Fecha de cierre:
       <DatePicker
         selected={endDate}
         onChange={(date) => endDateSetter(date)}
@@ -1461,7 +1520,7 @@ return (
         className='yesAdmin'
       />     
       </div> : <div className="col-6">
-        fecha de cierre:
+        Fecha de cierre:
       <DatePicker
         selected={endDate}
         onChange={(date) => endDateSetter(date)}
@@ -1477,21 +1536,21 @@ return (
       />     
       </div>}
       </div>
-      <div className="col-5 row ">
+      <div className="col-md-5 col-xs-12 row ">
         <h4 className='d-flex justify-content-center'>Status de movimiento</h4> 
-      <div class="form-check col-4 d-flex justify-content-center">
+      <div class="form-check col-md-4 col-xs-12 d-flex justify-content-start">
   <input class="form-check-input" type="radio" name="flexRadioDefault" value={''} id="flexRadioDefault1" defaultChecked onChange={(e) => setterStatus(e)}/>
   <label class="form-check-label" htmlFor="flexRadioDefault1">
     Todos
   </label>
 </div>
-      <div class="form-check col-4 d-flex justify-content-start">
+      <div class="form-check col-md-4 col-xs-12 d-flex justify-content-start">
   <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" value={'Unverified'}  onChange={(e) => setterStatus(e)}/>
   <label class="form-check-label" htmlFor="flexRadioDefault2">
     No verificados
   </label>
 </div>
-<div class="form-check col-4 d-flex justify-content-start">
+<div class="form-check col-md-4 col-xs-12 d-flex justify-content-start">
   <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault3"  value={'Aprove'}  onChange={(e) => setterStatus(e)}/>
   <label className="form-check-label" htmlFor="flexRadioDefault3">
     Verificados
@@ -1500,16 +1559,36 @@ return (
 </div>
 
 </div>
-<div className='col-1 d-flex align-items-center justify-content-end'>
+</div>
+{
+    media <= 414 ? 
+      <div className="col-md-12 align-self-start d-flex justify-content-start mt-2 mb-2 row">
+      <div className="col-md-3 col-xs-1">
+      <label htmlFor="">Caja Chica:</label>
+      </div>
+      <div className="col-md-4 col-xs-6 ">
+      {mountingTotalCC(totalOriginal) }
+      </div>
+      {vm ? (
+      <>
+      <div className="col-md-2 col-xs-4">
+      <label htmlFor="">Saldo Total:</label>
+      </div>
+      <div className="col-md-3 col-xs-6 ">
+      {mountingTotal(totalOriginal) }
+      </div>
+      </>
+      ) : false}
+      </div> : false
+  }
+<div className='col-12 d-flex align-items-center justify-content-center'>
 <button className='toyox lt' onClick={() => {   
                 window.location.reload(false);
 }}><FontAwesomeIcon icon={faArrowsRotate} /></button> 
 </div>
 </div>
-</div>
 <div className="col-11 bg-light t-mod row">
-  <div className="col-4">
-Movimientos a visualizar {"  "}
+  <div className="col-4 d-flex align-items-center">
 <select onChange={(e) => {
   const {value} = e.target
   handleVPage(parseInt(value))
@@ -1608,6 +1687,7 @@ Movimientos a visualizar {"  "}
   }}>Imprimir</button>
   </div>
   <hr className="e-change"/>
+  <div className="tab-c col-12">
 <table className="table">
 <thead>
         <tr>
@@ -1758,17 +1838,16 @@ Movimientos a visualizar {"  "}
   }
   </tbody>
   </table>
+  </div>
   <div className="col-12 d-flex justify-content-end">
 <Pagination>
+
 {  
 currentPage > 0 ? <Pagination.Prev onClick={prevPage}/> : false
 }
 {
   makePages()
 }
-{itemPagination.map((item) => {
-  return item
-})}
   {
     results.length > currentPage + vPage ?  <Pagination.Next onClick={nextPage}/> : false
   }
