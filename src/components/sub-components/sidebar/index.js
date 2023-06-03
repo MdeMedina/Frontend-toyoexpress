@@ -39,19 +39,18 @@ function Sidebar(props) {
 
   const accountFunction = () => {
     if (ca) {
-     return ( <li className="nav-link">
-                <Link to="/accountConfig">
-                  <div className="icon">
-                  <box-icon name='money'></box-icon>
-                  </div>
-                  <span className="text nav-text">
-                    Configuracion de cuentas
-                  </span>
-                </Link>
-              </li>
-     )
+      return (
+        <li className="nav-link">
+          <Link to="/accountConfig">
+            <div className="icon">
+              <box-icon name="money"></box-icon>
+            </div>
+            <span className="text nav-text">Configuracion de cuentas</span>
+          </Link>
+        </li>
+      );
     }
-  }
+  };
   return (
     <>
       <nav className="sidebar" id="sidebar">
@@ -74,9 +73,17 @@ function Sidebar(props) {
                   <span className="text nav-text">Movimientos</span>
                 </Link>
               </li>
+              <li className="nav-link">
+                <Link to="/products">
+                  <div className="icon">
+                    <box-icon name="store-alt" size="27px"></box-icon>
+                  </div>
+                  <span className="text nav-text">Listado</span>
+                </Link>
+              </li>
               {createFunction()}
               {hourFunction()}
-              {accountFunction()}              
+              {accountFunction()}
             </ul>
           </div>
           <div className="bottom-content">

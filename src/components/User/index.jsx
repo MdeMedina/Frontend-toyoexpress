@@ -36,6 +36,7 @@ function User({socket}) {
   const [aproveMoves, setAproveMoves] = useState(false)
   const [delMoves, setDelMoves] = useState(false)
   const [cUsers, setCUsers] = useState(false)
+  const [vExcel, setVExcel] = useState(false)
   const [modUsers, setModUsers] = useState(false)
   const [modFechas, setModFechas] = useState(false)
   const [delUsers, setDelUsers] = useState(false)
@@ -178,7 +179,8 @@ const handleVPage = (e) => {
                 modificarFechas: modFechas,
                 horasIngreso: sHours,
                 obviarIngreso: oHours, 
-                configurarCuentas: cAccounts
+                configurarCuentas: cAccounts,
+                verExcel: vExcel
             },
             password: password
         }
@@ -209,6 +211,7 @@ const handleVPage = (e) => {
     const modTime = document.getElementById(`actModTime-${i}`).checked
     const obTime = document.getElementById(`actObTime-${i}`).checked
     const cAccounts = document.getElementById(`actCAccounts-${i}`).checked
+    const verExcel = document.getElementById(`actVerExcel-${i}`).checked
     console.log(delMoves)
  const permissions = 
     {verMovimientos: movesVista,
@@ -221,7 +224,8 @@ const handleVPage = (e) => {
       horasIngreso: modTime,
       obviarIngreso: obTime,     
       editarMovimientos: eMoves,
-      configurarCuentas: cAccounts
+      configurarCuentas: cAccounts,
+      verExcel: verExcel
     }
 
     const actData = {_id: _id,email: email, username: username, permissions: permissions }
@@ -430,6 +434,15 @@ return (
     Configurar y Modificar cuentas
   </label>
 </div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="vExcel"onChange={(e) => {
+            const value = e.target.checked
+            setVExcel(value)
+  }}/>
+  <label class="form-check-label" for="cAccounts">
+  Carga mediante Excel
+  </label>
+</div>
 </form>
       </div>
       <div class="modal-footer">
@@ -585,6 +598,15 @@ Modificar fecha de Movimientos
   }}/>
   <label class="form-check-label" for={`actCAccounts-${i}`}>
   Configurar y Modificar cuentas
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id={`actVerExcel-${i}`} defaultChecked={u.permissions.verExcel} onChange={() => {
+            const value = document.getElementById(`actVerExcel-${i}`).checked
+            setVExcel(value)
+  }}/>
+  <label class="form-check-label" for={`actVerExcel-${i}`}>
+  Carga mediante excel
   </label>
 </div>
 </form>

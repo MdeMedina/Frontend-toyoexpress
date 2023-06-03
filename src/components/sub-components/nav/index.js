@@ -47,6 +47,7 @@ function Navg({ socket }) {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
+  const media = window.innerWidth;
 
   const settingPassword = (password, newPassword) => {
     setPassword(password);
@@ -281,29 +282,64 @@ function Navg({ socket }) {
       <Navbar bg="light" expand="lg" className="topbar">
         <Container className="d-flex justify-content-center">
           <Row className="row-edit">
-            <Col xs={2} lg={1} className="d-flex align-items-center">
-              <div onClick={toggleFunc}>
-                <Button variant="dark">
-                  <box-icon name="menu" color="white" id="hola"></box-icon>
-                </Button>{" "}
-              </div>
-            </Col>
+            {console.log(media > 414, media)}
+            {media > 414 ? (
+              <>
+                {" "}
+                <Col
+                  xs={5}
+                  md={3}
+                  className="d-flex align-items-center justify-content-endssss"
+                >
+                  <Navbar.Brand href="#home">
+                    <img
+                      src={require("../../img/logo.png")}
+                      className="logo"
+                      alt="..."
+                    />
+                  </Navbar.Brand>
+                  <div id="number"></div>
+                </Col>
+                <Col xs={2} md={4} className="d-flex align-items-center">
+                  <div onClick={toggleFunc}>
+                    <Button variant="dark">
+                      <box-icon name="menu" color="white" id="hola"></box-icon>
+                    </Button>{" "}
+                  </div>
+                </Col>{" "}
+              </>
+            ) : (
+              <>
+                <Col xs={5} md={4} className="d-flex align-items-center">
+                  <div onClick={toggleFunc}>
+                    <Button variant="dark">
+                      <box-icon name="menu" color="white" id="hola"></box-icon>
+                    </Button>{" "}
+                  </div>
+                </Col>
+                <Col
+                  xs={3}
+                  md={3}
+                  className="d-flex align-items-center justify-content-end"
+                >
+                  <Navbar.Brand
+                    href="/"
+                    className="d-flex justify-content-center"
+                  >
+                    <img
+                      src={require("../../img/logo.png")}
+                      className="logo"
+                      alt="..."
+                    />
+                  </Navbar.Brand>
+                  <div id="number"></div>
+                </Col>
+              </>
+            )}
+
             <Col
-              xs={5}
-              lg={6}
-              className="d-flex align-items-center justify-content-endssss"
-            >
-              <Navbar.Brand href="#home">
-                <img
-                  src={require("../../img/logo.png")}
-                  className="logo"
-                  alt="..."
-                />
-              </Navbar.Brand>
-              <div id="number"></div>
-            </Col>
-            <Col
-              xs={5}
+              xs={4}
+              md={5}
               className="d-flex align-items-center justify-content-end"
             >
               <div className="row d-flex align-items-center justify-content-end">
@@ -316,7 +352,7 @@ function Navg({ socket }) {
                     false
                   )}
                   {!note[0] ? false : <div className="bola " id="bola"></div>}
-                  <div class="dropdown col-3 d-flex justify-content-end">
+                  <div class="dropstart col-7 d-flex justify-content-center ">
                     <div
                       className="nav-link dropdown-toggle"
                       role="button"
@@ -324,7 +360,11 @@ function Navg({ socket }) {
                       aria-expanded="false"
                     >
                       {" "}
-                      <box-icon name="bell" className="campana"></box-icon>
+                      <box-icon
+                        name="bell"
+                        className="campana"
+                        size="24px"
+                      ></box-icon>
                     </div>
 
                     <ul
@@ -338,7 +378,7 @@ function Navg({ socket }) {
                     </ul>
                   </div>
                 </div>
-                <div class="dropdown col-6 d-flex justify-content-end">
+                <div class="dropstart col-6 d-flex justify-content-end">
                   <a
                     className="nav-link dropdown-toggle"
                     role="button"

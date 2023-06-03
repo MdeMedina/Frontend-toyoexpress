@@ -90,6 +90,24 @@
     cursor: pointer;
 }
 
+.pdfView {
+    width: 100%;
+    height: 100%;
+}
+
+.toyox-e {
+    background-color: #24b200;
+    color: #fff;
+    padding: 10px;
+    text-decoration: none;
+    border: 0px;
+    border-radius: 7px;
+    text-align: center;
+}
+.toyox-e:hover {
+    background-color: #00b244e1;
+    cursor: pointer;
+}
 
 .toyox-disabled {
     background-color: #ec4d4d;
@@ -127,6 +145,18 @@
     border-radius: 10px;
     margin-bottom: 12px;
 }
+
+.nota-text {
+    border-radius: 5px;
+    border: 1px solid #c5c3c3;
+    padding: 5px
+}
+
+.nota-text:focus {
+    outline: #0D6EFD !important;
+    border: 2px solid #0D6EFD;
+}
+
 .btn-imp {
     text-align: center!important;
     font-size: 13px !important;

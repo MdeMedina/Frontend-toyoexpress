@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Home from "./components/Home";
 import Appx from "./components/template/app";
+import { VentaProductos } from "./components/VentaPartes";
 import User from "./components/User";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
@@ -12,6 +13,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import io from "socket.io-client";
 import { backendUrl } from "./lib/data/server";
 import { AccountConfig } from "./components/AccountConfig";
+import VistaInventario from "./components/VentaPartes/vistaInventario";
 const socket = io.connect(`${backendUrl()}`);
 function App() {
   let permissions = JSON.parse(localStorage.getItem("permissions"));
@@ -39,8 +41,10 @@ function App() {
       <Routes>
         <Route path="/logout" element={<Logout />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/pdf" element={<VistaInventario />} />
         <Route path="/" element={<Appx socket={socket} />}>
           <Route path="/update" element={<UpdateHour />} />
+          <Route path="/products" element={<VentaProductos />} />
           <Route
             path="/accountConfig"
             element={<AccountConfig socket={socket} />}
