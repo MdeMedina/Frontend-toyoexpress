@@ -13,8 +13,21 @@ import { backendUrl, frontUrl } from '../../lib/data/server';
 
 
 export const VentaProductos = () => {
+  useEffect(() => {
+    const sidebar = document.getElementById("sidebar");
+    const navDiv = document.querySelector(".navDiv");
+    console.log(navDiv);
+    console.log(sidebar.classList.contains("close"));
+
+    if (!sidebar.classList.contains("close")) {
+      console.log("si lo tengo");
+      sidebar.classList.toggle("close");
+      // navDiv.classList.toggle("close");
+    }
+  }, []);
+
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedClient, setSelectedClient] = useState(null)
+    const [selectedClient, setSelectedClient] = useState({value: null})
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [cantidad, setcantidad] = useState(1);
     const [cliente, setCliente] = useState('');
@@ -88,12 +101,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         let obj = {
           Código: m.Código,
           "Nombre Corto": m["Nombre Corto"],
-          Referencia: m.Referencia,
           Marca: m.Marca,
           Modelo: m.Modelo,
-          "Existencia Actual": m["Existencia Actual"],
-          "Precio Oferta": m["Precio Oferta"],
-          "Precio Mayor": m["Precio Mayor"],
           "Precio Minimo": m["Precio Minimo"],
         };
         nExcel.push(obj);
@@ -172,7 +181,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
     useEffect(() => {
       insertClients()
-    }, [dataClient, selectedClient, cliente]);
+    }, [dataClient]);
     useEffect(() => {
       searchClients()
     }, [cliente]);
@@ -302,6 +311,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
 
     useEffect(() => {
+      setCliente(selectedClient.value);
+    }, [selectedClient]);
+    
+
+    useEffect(() => {
       setShoppingCart(preShoppingCart.sort((a,b) => {
         if (a.Referencia < b.Referencia) {
           return -1;
@@ -361,46 +375,32 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
     }
   return (<>
-    { !ve ? false :
+    {/* { !ve ? false :
       <div className="d-flex justify-content-center mt-3">
-    <div className="row bg-light col-11 py-3"> <div className="col-6">Insertar Excel de Clientes: {"    "} <input type="file" onChange={(e) => handleFile(e, 'clientes')} /></div><div className="col-6">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => handleFile(e, 'productos')} /></div> </div> </div>}
-  <div className="d-flex justify-content-center mt-3">
-    <div className="row bg-light col-11 py-3">
-        <div className="col-12 row mb-3">
-        <div className="col-2 row mx-1 d-flex align-items-center justify-content-start">Agregar Cliente:</div>
-        <div className="col-8 row d-flex align-items-center justify-content-end"><Select options={clientes} onChange={(e) => {
-        setSelectedClient(e)}} className="selectpd px-2" id='clientela'/> </div>
-        <div className='col-2 d-flex justify-content-end'>  <div className="toyox" onClick={(e) => {
-          setCliente(selectedClient.value)
-        }}>Agregar</div></div> 
+    <div className="row bg-light col-11 py-3"> <div className="col-6">Insertar Excel de Clientes: {"    "} <input type="file" className='Inp' onChange={(e) => handleFile(e, 'clientes')} /></div><div className="col-6">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => handleFile(e, 'productos')} /></div> </div> </div>} */}
+  <div className="d-flex justify-content-center row mt-3 ">
+    <div className="row bg-light col-11 py-4">
+        <div className="col-12 d-flex justify-content-center row mb-3 mx-0">
+        <div className="col-sm-2 mx-1 d-flex align-items-center justify-content-center">Agregar Cliente:</div>
+        <div className="col-sm-9 mx-1 d-flex align-items-center justify-content-center"><Select options={clientes} onChange={(e) => {
+       if (e === null) {
+        setSelectedClient({value: null})
+       } else {
+        setSelectedClient(e)
+       }
+}} className="selectpd px-2"  isClearable={true} id='clientela'/> </div>
         </div>
-        {
-          cliente ?  (
-            <>
-        <div className="col-6 row mx-1 d-flex align-items-center">
-        Cliente: {cliente}
-        </div>
-        <div className="col-4 row d-flex justify-content-end align-items-center">
-        Rif: {rif}
-        </div>
-        <div className="col-2 d-flex justify-content-end">
-          <div className="toyox" onClick={() => {
-            setRif('')
-            setCliente(null)
-          }}>Eliminar</div>
-        </div> </> ) :false
-}
         <hr className='mt-2'/>
-        <div className="col-12 row mb-3">
-        <div className="col-2 d-flex align-items-center">Nro de Parte:</div>
-        <div className="col-10 d-flex align-items-center"><Select options={partes} onChange={(e) => {
+        <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">
+        <div className="col-sm-2 d-flex align-items-center justify-content-center">Nro de Parte:</div>
+        <div className="col-sm-9 d-flex align-items-center justify-content-center"><Select options={partes} onChange={(e) => {
         setSelectedProduct(e)}} className="selectpd px-2"/><div className="toyox" onClick={(e) => {
           setProduct(selectedProduct.value)
         }}>Buscar</div></div>
         </div>
         <hr />
-        <div className="col-10 d-flex justify-content-center">
-        <table class="table">
+        <div className=" col-sm-12 col-md-11  paltable"> 
+        <table class="table ">
 <thead>
   <tr>
     <th class="tg-0pky">Precio Mayor</th>
@@ -425,16 +425,16 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 </tbody>
 </table>
     </div>
-    <div className="col-2 d-flex justify-content-center align-items-center">
+    <div className="boton-container col-md-1 align-items-center">
     {
       cliente ?
-      <div className="toyox" onClick={selectCart}><box-icon name='cart-add' color='#ffffff' size='40px'></box-icon></div> :
-      <div className="toyox-disabled"><box-icon name='cart-add' color='#eceaea' size='40px'></box-icon></div>
+      <div className="toyox-cart" onClick={selectCart}><box-icon name='cart-add' color='#ffffff' size='20px'></box-icon></div> :
+      <div className="toyox-disabled"><box-icon name='cart-add' color='#eceaea' size='20px'></box-icon></div>
     }
     </div>
     <hr className='mt-2'/>
-    <h3>Shopping Cart</h3>
-    <div className="col-12 d-flex justify-content-center">
+    <h3 className='sp'>Shopping Cart</h3>
+    <div className="col-sm-12 paltable">
         <table class="table">
 <thead>
   <tr>

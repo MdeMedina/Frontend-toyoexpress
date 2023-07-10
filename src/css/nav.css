@@ -329,7 +329,26 @@ color: var(--text-color);
     margin-top: 6px !important;
     margin-bottom: 6px !important;
 }
-@media (max-width: 416px) {
+@media (max-width: 375px) {
+    .sidebar.close{ 
+        display: none;
+    }
+    .sidebar {
+        position: fixed !important;
+        width: 100%;
+    }
+
+    .logo {
+        display: flex;
+        float: right;
+        width: 120px;
+        height: 22.08px;
+        margin: 0 auto
+    }
+
+}
+
+@media (min-width: 375px) and (max-width: 500px) {
     .sidebar.close{ 
         display: none;
     }
@@ -347,3 +366,4 @@ color: var(--text-color);
     }
 
 }
+

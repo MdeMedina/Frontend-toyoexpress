@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 
 function Sidebar(props) {
   let permissions = JSON.parse(localStorage.getItem("permissions"));
+  let cp = permissions.consultarPrecios;
+  let vm = permissions.verMovimientos;
   let cu = permissions.crearUsuarios;
   let sh = permissions.horasIngreso;
   let ca = permissions.configurarCuentas;
@@ -17,6 +19,35 @@ function Sidebar(props) {
               <box-icon type="solid" name="user-account" size="27px"></box-icon>
             </div>
             <span className="text nav-text">Usuarios</span>
+          </Link>
+        </li>
+      );
+    }
+  };
+
+  const listaFunction = () => {
+    if (cp) {
+      return (
+        <li className="nav-link">
+          <Link to="/products">
+            <div className="icon">
+              <box-icon name="store-alt" size="27px"></box-icon>
+            </div>
+            <span className="text nav-text">Listado</span>
+          </Link>
+        </li>
+      );
+    }
+  };
+  const movesFunction = () => {
+    if (vm) {
+      return (
+        <li className="nav-link">
+          <Link to="/moves">
+            <div className="icon">
+              <box-icon name="money-withdraw" size="27px"></box-icon>
+            </div>
+            <span className="text nav-text">Movimientos</span>
           </Link>
         </li>
       );
@@ -65,22 +96,8 @@ function Sidebar(props) {
                   <span className="text nav-text">Home</span>
                 </Link>
               </li>
-              <li className="nav-link">
-                <Link to="/moves">
-                  <div className="icon">
-                    <box-icon name="money-withdraw" size="27px"></box-icon>
-                  </div>
-                  <span className="text nav-text">Movimientos</span>
-                </Link>
-              </li>
-              <li className="nav-link">
-                <Link to="/products">
-                  <div className="icon">
-                    <box-icon name="store-alt" size="27px"></box-icon>
-                  </div>
-                  <span className="text nav-text">Listado</span>
-                </Link>
-              </li>
+              {listaFunction()}
+              {movesFunction()}
               {createFunction()}
               {hourFunction()}
               {accountFunction()}

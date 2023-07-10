@@ -33,6 +33,7 @@ function User({socket}) {
   const [password, setPassword] = useState('')
   const [_id, set_id] = useState('')
   const [verMoves, setVerMoves] = useState(false)
+  const [verMovesOt, setVerMovesOt] = useState(false)
   const [aproveMoves, setAproveMoves] = useState(false)
   const [delMoves, setDelMoves] = useState(false)
   const [cUsers, setCUsers] = useState(false)
@@ -41,6 +42,7 @@ function User({socket}) {
   const [modFechas, setModFechas] = useState(false)
   const [delUsers, setDelUsers] = useState(false)
   const [deletingUser, setDeletingUser] = useState()
+  const [consultaPrecios, setConsultaPrecios] = useState()
   const [currentPage, setCurrentPage] = useState(0)
 const [vPage, setVPage] = useState(10)
 const [meEncuentro, setMeEncuentro] = useState(1)
@@ -125,6 +127,7 @@ const handleVPage = (e) => {
 
   const handlerDisable = () => {
     const vm = document.getElementById('movesVista').checked
+    const vmo = document.getElementById('movesVistaOt')
     const cu = document.getElementById('createU').checked
     const am = document.getElementById('aproveMoves')
     const mf = document.getElementById('modFechas')
@@ -133,11 +136,13 @@ const handleVPage = (e) => {
     const mu = document.getElementById('modU')
     const du = document.getElementById('deleteU')
     if (!vm) {
+        vmo.setAttribute("disabled", "")
         am.setAttribute("disabled", "")
         dm.setAttribute("disabled", "")
         mf.setAttribute("disabled", "")
         em.setAttribute("disabled", "")
     }else if (vm) {
+      vmo.setAttribute("disabled", "")
         am.removeAttribute("disabled")
         dm.removeAttribute("disabled")
         mf.removeAttribute("disabled")
@@ -169,7 +174,9 @@ const handleVPage = (e) => {
             email: email,
             username: username,
             permissions: {
+                consultarPrecios: consultaPrecios,
                 verMovimientos: verMoves,
+                verOtrosMovimientos: verMovesOt,
                 aprobarMovimientos: aproveMoves,
                 editarMovimientos: eMoves,
                 eliminarMovimientos: delMoves,
@@ -200,7 +207,9 @@ const handleVPage = (e) => {
   const actUser = async (u ,i) => {
     const email = document.getElementById(`actInputEmail-${i}`).value
     const username = document.getElementById(`actUsernameInput-${i}`).value
+    const consultarPrecios = document.getElementById(`actConsultarPrecios-${i}`).checked;
     const movesVista = document.getElementById(`actMovesVista-${i}`).checked
+    const movesVistaOt = document.getElementById(`actMovesVistaOt-${i}`).checked
     const aproveMoves = document.getElementById(`actAproveMoves-${i}`).checked
     const modFechas = document.getElementById(`actModFechas-${i}`).checked
     const delMoves = document.getElementById(`actDelMoves-${i}`).checked
@@ -214,7 +223,10 @@ const handleVPage = (e) => {
     const verExcel = document.getElementById(`actVerExcel-${i}`).checked
     console.log(delMoves)
  const permissions = 
-    {verMovimientos: movesVista,
+    {
+      consultarPrecios: consultarPrecios,
+      verMovimientos: movesVista,
+      verOtrosMovimientos: movesVistaOt,
       aprobarMovimientos: aproveMoves,
       eliminarMovimientos: delMoves,
       crearUsuarios: createU,
@@ -325,6 +337,15 @@ return (
   </div>
   <hr />
     <h3>Permisos</h3>
+    <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" checked id="consulaPrecios" onChange={() => {
+            const value = document.getElementById('consultaPrecios').checked
+            setConsultaPrecios(value)
+  }} />
+  <label class="form-check-label" for="consultaPrecios">
+  Consultar listado de precios
+  </label>
+</div>
     <h5>- Movimientos</h5>
     <div class="form-check">
   <input class="form-check-input" type="checkbox" value="" id="movesVista" onChange={() => {
@@ -333,6 +354,15 @@ return (
             handlerDisable()
   }} />
   <label class="form-check-label" for="movesVista">
+    Ver la pestaña movimientos
+  </label>
+</div>
+    <div class="form-check">
+  <input class="form-check-input disabled" type="checkbox" value="" id="movesVistaOt" onChange={() => {
+            const value = document.getElementById('movesVistaOt').checked
+            setVerMovesOt(value)
+  }} />
+  <label class="form-check-label" for="movesVistaOt">
     Ver los movimientos de otros usuarios
   </label>
 </div>
@@ -496,12 +526,30 @@ return (
   </div>
   <hr />
     <h3>Permisos</h3>
+    <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id={`actConsultarPrecios-${i}`} defaultChecked={u.permissions.consultarPrecios}  onChange={() => {
+            const value = document.getElementById(`actConsultarPrecios-${i}`).checked
+            setConsultaPrecios(value)
+  }} />
+  <label class="form-check-label" for={`actConsultarPrecios-${i}`}>
+  Consultar listado de precios
+  </label>
+</div>
     <h5>- Movimientos</h5>
     <div class="form-check">
   <input class="form-check-input" type="checkbox" value="" id={`actMovesVista-${i}`} defaultChecked={u.permissions.verMovimientos}  onChange={() => {
             const value = document.getElementById(`actMovesVista-${i}`).checked
             setVerMoves(value)
             handlerDisable()
+  }} />
+  <label class="form-check-label" for={`actMovesVista-${i}`}>
+    Ver la pestaña movimientos
+  </label>
+</div>
+    <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id={`actMovesVistaOt-${i}`} defaultChecked={u.permissions.verMovimientos}  onChange={() => {
+            const value = document.getElementById(`actMovesVistaOt-${i}`).checked
+            setVerMovesOt(value)
   }} />
   <label class="form-check-label" for={`actMovesVista-${i}`}>
     Ver los movimientos de otros usuarios

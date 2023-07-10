@@ -15,6 +15,7 @@ function Home({ socket }) {
   const permissions = JSON.parse(localStorage.getItem("permissions"));
   const hi = permissions.horasIngreso;
   const cu = permissions.crearUsuarios;
+  const vm = permissions.verMovimientos;
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const navDiv = document.querySelector(".navDiv");
@@ -34,27 +35,30 @@ function Home({ socket }) {
         <div className="col-11">
           <h2>Bienvenido</h2>
         </div>
-        <div className="col-xs-12 col-lg-4 row d-flex justify-content-center mb-3">
-          <div class="card cd col-10 cl">
-            <img
-              src={require("../img/moves.jpg")}
-              class="card-img-top "
-              alt="..."
-            />
-            <div class="card-body ">
-              <h5 class="card-title d-flex justify-content-center">
-                Movimientos
-              </h5>
-              <p class="card-text d-flex justify-content-center">
-                Crea, visualiza, elimina y edita, ingresos y egresos
-              </p>
-              <Link to="/moves" className="d-flex justify-content-center">
-                <btn class="toyox">Entrar</btn>
-              </Link>
+        {!vm ? (
+          false
+        ) : (
+          <div className="col-xs-12 col-lg-4 row d-flex justify-content-center mb-3">
+            <div class="card cd col-10 cl">
+              <img
+                src={require("../img/moves.jpg")}
+                class="card-img-top "
+                alt="..."
+              />
+              <div class="card-body ">
+                <h5 class="card-title d-flex justify-content-center">
+                  Movimientos
+                </h5>
+                <p class="card-text d-flex justify-content-center">
+                  Crea, visualiza, elimina y edita, ingresos y egresos
+                </p>
+                <Link to="/moves" className="d-flex justify-content-center">
+                  <btn class="toyox">Entrar</btn>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-
+        )}
         <div className="col-xs-12 col-lg-4  mb-3 row d-flex justify-content-center">
           {!cu ? (
             false

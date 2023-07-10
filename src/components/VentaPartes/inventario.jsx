@@ -13,7 +13,6 @@ const styles = StyleSheet.create({
         marginRight: "auto",
         borderWidth: 1,
         borderColor: "black",
-        marginTop: 20,
         marginBottom: 20,
       },
       table: {
@@ -54,15 +53,15 @@ const styles = StyleSheet.create({
   },
 
  encabezado: {
-    width: '9.09090909091%', padding: 10, borderBottomWidth: 1, fontSize: 6, fontWeight: "bold"
+    width: '15%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
  },
  encabezadoDesc: {
-  width: '36.3636363636%', padding: 10, borderBottomWidth: 1, fontSize: 6, fontWeight: "bold"
+  width: '35%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
 },
 
 
  celda: {
-    width: '9.09090909091%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6
+    width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6
  },
  finales: {
   width: '33.3%', paddingHorizontal: 10, paddingVertical:3, fontSize: 12, 
@@ -71,7 +70,7 @@ nota: {
   width: '100%', paddingHorizontal: 10, paddingVertical:3, fontSize: 12, display: 'flex', justifyContent: 'center'
 },
  celdaDesc: {
-  width: '36.3636363636%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6
+  width: '35%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6
 },
 });
 
@@ -80,7 +79,7 @@ nota: {
 const Inventario = ({datosCliente, datos}) => 
     (
   <Document>
-    <Page size="A4" style={styles.page}>
+    <Page size="A4" style={{paddingVertical: 20}}>
       <View style={{flex: 1}}>
     <View style={styles.container}>
         <View style={styles.column}>
@@ -96,23 +95,17 @@ const Inventario = ({datosCliente, datos}) =>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.encabezado}>Código</Text>
             <Text style={styles.encabezadoDesc}>Descripción</Text>
-            <Text style={styles.encabezado}>Existencia</Text>
-            <Text style={styles.encabezado}>Referencia</Text>
-            <Text style={styles.encabezado}>Marca</Text>
-            <Text style={styles.encabezado}>Precio Oferta</Text>
-            <Text style={styles.encabezado}>Precio Mayor</Text>
+            <Text style={{width: '25%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500}}>Marca</Text>
+            <Text style={styles.encabezado}>Modelo</Text>
             <Text style={styles.encabezado}>Precio Minimo</Text>
           </View>
         {datos.map(d => (
         <View style={{ flexDirection: 'row' }}>
                       <Text style={styles.celda}>{d["Código"]}</Text>
                       <Text style={styles.celdaDesc}>{d["Nombre Corto"]}</Text>
-                      <Text style={styles.celda}>{`${d["Existencia Actual"]}`}</Text>
-                      <Text style={styles.celda}>{d["Referencia"]}</Text>
+                      <Text style={{ width: '25%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6}}>{d["Marca"]}</Text>
                       <Text style={styles.celda}>{d["Modelo"]}</Text>
-                      <Text style={styles.celda}>{d["Precio Oferta"]}$</Text>
-                      <Text style={styles.celda}>{d["Precio Mayor"]}$</Text>
-                      <Text style={styles.celda}>{d["Precio Minimo"]}$</Text>
+                      <Text style={{width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6, display:'flex', justifyContent: 'flex-end'}}>{d["Precio Minimo"]}$</Text>
         </View>
         ))}
         </View>

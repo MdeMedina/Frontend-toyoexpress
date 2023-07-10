@@ -46,7 +46,7 @@ function Moves({socket}) {
  let handleClose = () => {
     document.body.classList.remove("modal-open");
   }
-const vm = JSON.parse(localStorage.getItem("permissions")).verMovimientos
+const vm = JSON.parse(localStorage.getItem("permissions")).verOtrosMovimientos
 const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
 const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
 const em = JSON.parse(localStorage.getItem("permissions")).editarMovimientos

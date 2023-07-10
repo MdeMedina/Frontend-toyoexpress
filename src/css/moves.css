@@ -85,6 +85,17 @@
     border-radius: 7px;
     text-align: center;
 }
+
+.toyox-cart {
+    background-color: #B21F00;
+    color: #fff;
+    padding: 5px;
+    text-decoration: none;
+    border: 0px;
+    border-radius: 7px;
+    text-align: center;
+}
+
 .toyox:hover {
     background-color: #b21e00e1;
     cursor: pointer;
@@ -112,7 +123,7 @@
 .toyox-disabled {
     background-color: #ec4d4d;
     color: #eceaea;
-    padding: 10px;
+    padding: 5px;
     text-decoration: none;
     border: 0px;
     border-radius: 7px;
@@ -124,6 +135,31 @@
 
 .selectpd {
     width: 90%;
+}
+
+.paltable {
+    overflow: auto;
+}
+@media (max-width: 768px) {
+    .sp {
+        display: flex;
+        justify-content: center;
+    }
+    .toyox {
+        padding: 5px;
+    }
+    .toyox-disabled{
+        padding: 5px;
+    }
+
+
+}
+@media (min-width: 768px) {
+.boton-container {
+    display: flex;
+    justify-content: center;
+}
+
 }
 
 .lt {
