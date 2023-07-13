@@ -1089,7 +1089,7 @@ if (sortId === 1) {
         }
       })
     }
-
+    betaResults= filterRange(betaResults, inicio, final)
   results = betaResults
   betaResults.map((m, i) => {
     if (m.identificador.charAt(0) === 'E') {
