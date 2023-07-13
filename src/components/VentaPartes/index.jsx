@@ -375,9 +375,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
     }
   return (<>
-    {/* { !ve ? false :
+     { !ve ? false :
       <div className="d-flex justify-content-center mt-3">
-    <div className="row bg-light col-11 py-3"> <div className="col-6">Insertar Excel de Clientes: {"    "} <input type="file" className='Inp' onChange={(e) => handleFile(e, 'clientes')} /></div><div className="col-6">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => handleFile(e, 'productos')} /></div> </div> </div>} */}
+    <div className="row bg-light col-11 py-3"> <div className="col-6">Insertar Excel de Clientes: {"    "} <input type="file" className='Inp' onChange={(e) => handleFile(e, 'clientes')} /></div><div className="col-6">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => handleFile(e, 'productos')} /></div> </div> </div>} 
   <div className="d-flex justify-content-center row mt-3 ">
     <div className="row bg-light col-11 py-4">
         <div className="col-12 d-flex justify-content-center row mb-3 mx-0">
