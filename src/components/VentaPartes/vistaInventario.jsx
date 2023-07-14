@@ -13,7 +13,7 @@ const VistaInventario = () => {
         const response = await fetch(`${backendUrl()}/excel/products`)
         let data = await response.json()
         data = data.excel
-        let arr = data.filter((m) => m['Existencia Actual'] > 0)
+        let arr = data
         setdata(arr)
       }
 

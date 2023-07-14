@@ -27,6 +27,10 @@ export const VentaProductos = () => {
   }, []);
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [cargaClientes, setCargaClientes] = useState()
+    const [statusCliente, setStatusCliente] = useState(null)
+    const [statusProducto, setStatusProducto] = useState(null) 
+    const [cargaProductos, setCargaProductos] = useState()
     const [selectedClient, setSelectedClient] = useState({value: null})
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [cantidad, setcantidad] = useState(1);
@@ -56,18 +60,48 @@ export const VentaProductos = () => {
 
 const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const updateProducts = async (data) => {
-      await fetch(`${backendUrl()}/excel/updateProducts`, {
+      let update = await fetch(`${backendUrl()}/excel/updateProducts`, {
         method: 'PUT',
         body: JSON.stringify(data),
       headers: new Headers({ 'Content-type': 'application/json'})
-      })
+      })     
+       if (update.ok) {
+        let status = await update.status
+        return status
+      } else {
+        throw new Error('Error al actualizar los productos');
+      }
+      
     } 
+
+    useEffect(() => {
+      setSelectedProduct(null)
+    }, [product])
+    useEffect(() => {
+      if (!cargaClientes){
+        soltarAlarmas()
+      }
+      else if(!cargaProductos) {
+        soltarAlarmas()
+      }else if (statusCliente && statusProducto) {
+        soltarAlarmas()
+      }
+    }, [statusCliente, statusProducto]);
+    
+
     const updateClients = async (data) => {
-      await fetch(`${backendUrl()}/excel/updateClients`, {
+      let update = await fetch(`${backendUrl()}/excel/updateClients`, {
         method: 'PUT',
         body: JSON.stringify(data),
       headers: new Headers({ 'Content-type': 'application/json'})
       })
+      if (update.ok) {
+        let status = await update.status
+        return status
+      } else {
+        throw new Error('Error al actualizar los clientes');
+      }
+
     } 
 
     const getClient = async () => {
@@ -95,21 +129,23 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
 
     const excelInventario = (data) => {
-      let arr = data.filter((m) => m['Existencia Actual'] > 0)
+      let arr = data
       let nExcel = [];
       arr.map((m) => {
         let obj = {
           Código: m.Código,
-          "Nombre Corto": m["Nombre Corto"],
-          Marca: m.Marca,
-          Modelo: m.Modelo,
-          "Precio Minimo": m["Precio Minimo"],
+          "Descripcion": m["Nombre Corto"],
+          "Precio": m["Precio Minimo"],
+          "Precio 2": m["Precio Oferta"],
+          Modelo: m.Marca,
+          Stock: m["Existencia Actual"]
+
         };
         nExcel.push(obj);
       });
       // Convertir a hoja de Excel
     const worksheet = utils.json_to_sheet(nExcel);
-  
+   
     // Crear libro de Excel y agregar hoja
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, 'Hoja1');
@@ -196,96 +232,162 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     searchProduct()
   }, [product]);
 
-    function handleFile(event, dato) {
-      const file = event.target.files[0];
+  function preHandleFile() {
+    handleFile(cargaClientes, cargaProductos)
+
+  }
+  function soltarAlarmas (){
+    if (statusCliente == 200 && statusProducto === null) {
+      Swal.fire({
+        icon: 'success',
+        title:'el archivo de clientes ha sido cargado correctamente!',
+      })
+    } else if (statusProducto == 200 && statusCliente === null) {
+      Swal.fire({
+        icon: 'success',
+        title:'el archivo de productos ha sido cargado correctamente!',
+      }) } else if (statusCliente == 200 && statusProducto == 200) {
+        Swal.fire({
+          icon: 'success',
+          title:'Todos los archivos han sido cargados correctamente!',
+        })
+      }
+     else if (statusCliente == 200 && (statusProducto !== 200 && statusProducto !== null)){
+      Swal.fire({
+        icon: 'success',
+        title:'el archivo de clientes ha sido cargado correctamente!',
+      }).then(() => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Ha ocurrido un error con la carga de los productos!'
+        })
+      })
+    } else if (statusProducto == 200 && (statusCliente !== 200 && statusCliente !== null)){
+      Swal.fire({
+        icon: 'success',
+        title:'el archivo de productos ha sido cargado correctamente!',
+      }).then(() => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Ha ocurrido un error con la carga de los clientes!'
+        })
+      })
+    } else if ((statusCliente !== 200 && statusCliente !== null) &&  (statusProducto !== 200 && statusProducto !== null)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Ha ocurrido un error con la carga de los excel!'
+      })
+    }
+  }
+
+    const handleFile = async (event1, event2) => {
+      let file1;
+      let file2;
+      let dato1;
+      let dato2;
+      if (cargaClientes) {
+      file1 = event1.target.files[0];
+       dato1 = 'clientes'
+      }
+      if (cargaProductos) {
+         file2 = event2.target.files[0];
+         dato2 = 'productos'
+      }
   
+
       // Crear un nuevo objeto FileReader
-      const reader = new FileReader();
+      const reader1 = new FileReader();
+      const reader2 = new FileReader()
   
       // Función que se ejecuta cuando se carga el archivo
-      reader.onload = (event) => {
-        // Obtener los datos del archivo
+      reader1.onload = async (event) => {
         const data = event.target.result;
-  
-        // Convertir los datos del archivo a un workbook
         const workbook = read(data, { type: 'binary' });
-  
-        // Obtener los datos de la primera hoja del workbook
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-  
-        // Convertir los datos de la hoja en un objeto JSON
-        const jsonData = utils.sheet_to_json(worksheet, {defval:''});
-  
-        // Actualizar el estado con los datos del archivo
-        if (dato === 'clientes') {
-          let correcto = true
-          console.log(jsonData)
-        jsonData.map ((m) => {
-          if (correcto === true) {
-            let a = m.hasOwnProperty("Código")
-            let b = m.hasOwnProperty("Nombre")
-            let c = m.hasOwnProperty("Persona Contacto")
-            let d = m.hasOwnProperty("Teléfonos")
-            let e = m.hasOwnProperty("Fax")
-            let f = m.hasOwnProperty("Correo Electrónico")
-            let g = m.hasOwnProperty("Limite Credito")
-            let h = m.hasOwnProperty("Dias Credito")
-            let i = m.hasOwnProperty("Credito Disponible")
-            let j = m.hasOwnProperty("Precio de Venta")
-            let k = m.hasOwnProperty("Ultima Venta a Contado")
-            let l = m.hasOwnProperty("Ultima Venta a Crédito")
-            if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j || !k || !l) {
-              console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}, j: ${j}, k: ${k}, l: ${l},` )
-              correcto = false
+        const jsonData = utils.sheet_to_json(worksheet, { defval: '' });
+    
+          let correcto = true;
+          jsonData.map((m) => {
+            if (correcto === true) {
+              let a = m.hasOwnProperty("Código");
+              let b = m.hasOwnProperty("Nombre");
+              let c = m.hasOwnProperty("Persona Contacto");
+              let d = m.hasOwnProperty("Teléfonos");
+              let e = m.hasOwnProperty("Fax");
+              let f = m.hasOwnProperty("Correo Electrónico");
+              let g = m.hasOwnProperty("Limite Credito");
+              let h = m.hasOwnProperty("Dias Credito");
+              let i = m.hasOwnProperty("Credito Disponible");
+              let j = m.hasOwnProperty("Precio de Venta");
+              let k = m.hasOwnProperty("Ultima Venta a Contado");
+              let l = m.hasOwnProperty("Ultima Venta a Crédito");
+              if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j || !k || !l) {
+                console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}, j: ${j}, k: ${k}, l: ${l},`);
+                correcto = false;
+              }
             }
+          });
+          if (correcto) {
+            let status = await updateClients(jsonData);
+            setStatusCliente(status)
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'El archivo insertado no corresponde a los clientes!',
+            });
           }
-        })
-        if (correcto) {
-        updateClients(jsonData)
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'El archivo insertado no corresponde a los clientes!',
-          })
-        }
-        } else if (dato === 'productos'){
-          let correcto = true
-        jsonData.map ((m) => {
-          if (correcto === true) {
-            let a = m.hasOwnProperty("Código")
-            let b = m.hasOwnProperty("Nombre Corto")
-            let c = m.hasOwnProperty("Referencia")
-            let d = m.hasOwnProperty("Marca")
-            let e = m.hasOwnProperty("Modelo")
-            let f = m.hasOwnProperty("Existencia Actual")
-            let g = m.hasOwnProperty("Precio Oferta")
-            let h = m.hasOwnProperty("Precio Mayor")
-            let i = m.hasOwnProperty("Precio Minimo")
 
-            if (!a || !b || !c || !d || !e || !f || !g || !h || !i) {
-              console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}` )
-              correcto = false
-            }
-          }
-        })
-        if (correcto) {
-          updateProducts(jsonData)
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'El archivo insertado no corresponde a los productos!',
-          })
-        }
-
-        }
       };
-  
+      reader2.onload = async (event) => {
+        const data = event.target.result;
+        const workbook = read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = utils.sheet_to_json(worksheet, { defval: '' });
+
+          let correcto = true;
+          jsonData.map((m) => {
+            if (correcto === true) {
+              let a = m.hasOwnProperty("Código");
+              let b = m.hasOwnProperty("Nombre Corto");
+              let c = m.hasOwnProperty("Referencia");
+              let d = m.hasOwnProperty("Marca");
+              let e = m.hasOwnProperty("Modelo");
+              let f = m.hasOwnProperty("Existencia Actual");
+              let g = m.hasOwnProperty("Precio Oferta");
+              let h = m.hasOwnProperty("Precio Mayor");
+              let i = m.hasOwnProperty("Precio Minimo");
+    
+              if (!a || !b || !c || !d || !e || !f || !g || !h || !i) {
+                console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}`);
+                correcto = false;
+              }
+            }
+          });
+          if (correcto) {
+            let status = await updateProducts(jsonData);
+            setStatusProducto(status)
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'El archivo insertado no corresponde a los productos!',
+            });
+          }
+      };
       // Leer el archivo como un array buffer
-      reader.readAsArrayBuffer(file);
-    }
+      if (cargaClientes) {
+       reader1.readAsArrayBuffer(file1);
+      }
+      if (cargaProductos) {
+       reader2.readAsArrayBuffer(file2);
+      }
+    };
+    
+
+    
 
   
   
@@ -373,11 +475,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           }
         });
       }
-    }
+    };
   return (<>
      { !ve ? false :
       <div className="d-flex justify-content-center mt-3">
-    <div className="row bg-light col-11 py-3"> <div className="col-6">Insertar Excel de Clientes: {"    "} <input type="file" className='Inp' onChange={(e) => handleFile(e, 'clientes')} /></div><div className="col-6">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => handleFile(e, 'productos')} /></div> </div> </div>} 
+    <div className="row bg-light col-11 py-3 d-flex justify-content-center"> 
+    <div className="col-5 d-flex justify-content-center text-center">Insertar Excel de Clientes: {"    "} <input type="file" className='Inp' onChange={(e) => setCargaClientes(e)} /></div>
+    <div className="col-5 d-flex justify-content-center text-center">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => setCargaProductos(e)} /></div> 
+    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Actualizar</div></div>
+
+    </div> 
+    </div>} 
   <div className="d-flex justify-content-center row mt-3 ">
     <div className="row bg-light col-11 py-4">
         <div className="col-12 d-flex justify-content-center row mb-3 mx-0">
@@ -393,10 +501,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         <hr className='mt-2'/>
         <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">
         <div className="col-sm-2 d-flex align-items-center justify-content-center">Nro de Parte:</div>
-        <div className="col-sm-9 d-flex align-items-center justify-content-center"><Select options={partes} onChange={(e) => {
-        setSelectedProduct(e)}} className="selectpd px-2"/><div className="toyox" onClick={(e) => {
-          setProduct(selectedProduct.value)
-        }}>Buscar</div></div>
+        <div className="col-sm-9 d-flex align-items-center justify-content-center"><Select options={partes} value={selectedProduct} onChange={(e) => {
+        setSelectedProduct(e)
+        setProduct(e.value)}} className="selectpd px-2"/></div>
         </div>
         <hr />
         <div className=" col-sm-12 col-md-11  paltable"> 

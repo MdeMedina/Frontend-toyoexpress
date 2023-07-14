@@ -996,16 +996,10 @@ if (sortId === 1) {
   }
 
   if (concepto) {
-    alphaResults = []
-    concepto.map((c) => {
-      betaResults.map((dato) => {
-        console.log('Datos', c.value == dato.concepto)
-        if (c.value === dato.concepto) {
-          alphaResults.push(dato)
-        }
-      })
+    betaResults = betaResults.filter((dato) => {
+      let string = dato.concepto.toLowerCase()
+      return string.includes(concepto.toLowerCase())
     })
-    betaResults = alphaResults
 }
   betaResults = betaResults.filter( (dato) => {
 
@@ -1438,11 +1432,10 @@ return (
   <label htmlFor="">Concepto</label>
   </div>
   <div className="col-6">
-  {
-    moves.map((u) => {
-      conceptos.push({value: u.concepto, label: u.concepto})
-    })}
-  <Select options={conceptos} isMulti onChange={handleConceptoValue} className="select-max"/>
+  <input type="text" className="form-control onda" onChange={(e) => {
+      const {value} = e.target
+      handleConceptoValue(value)
+    }}/>
   </div>
   </div>
   
