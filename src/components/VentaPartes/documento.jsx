@@ -102,19 +102,19 @@ const MyDocument = ({datosCliente, datos, total, items, nota}) =>
             <Text style={styles.encabezado}>Descripción</Text>
             <Text style={styles.encabezado}></Text>
             <Text style={styles.encabezado}></Text>
-            <Text style={styles.encabezado}>Cantidad</Text>
-            <Text style={styles.encabezado}>Referencia</Text>
-            <Text style={styles.encabezado}>Marca</Text>
             <Text style={styles.encabezado}>Precio</Text>
+            <Text style={styles.encabezado}>Marca</Text>
+            <Text style={styles.encabezado}>Referencia</Text>
+            <Text style={styles.encabezado}>Cantidad</Text>
           </View>
         {datos.map(d => (
         <View style={{ flexDirection: 'row' }}>
                       <Text style={styles.celda}>{d["Código"]}</Text>
                       <Text style={styles.celdaDesc}>{d["Nombre Corto"]}</Text>
-                      <Text style={styles.celda}>{`${d["cantidad"]}`}</Text>
-                      <Text style={styles.celda}>{d["Referencia"]}</Text>
-                      <Text style={styles.celda}>{d["Modelo"]}</Text>
                       <Text style={styles.celda}>{`${d["precio"]}`}</Text>
+                      <Text style={styles.celda}>{d["Modelo"]}</Text>
+                      <Text style={styles.celda}>{d["Referencia"]}</Text>
+                      <Text style={styles.celda}>{`${d["cantidad"]}`}</Text>
         </View>
         ))}
         </View>

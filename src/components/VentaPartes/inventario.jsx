@@ -100,7 +100,7 @@ const Inventario = ({datosCliente, datos}) =>
             <Text style={styles.encabezadoDesc}>Descripción</Text>
             <Text style={styles.encabezado}>Precio</Text>
             <Text style={styles.encabezado}>Precio 2</Text>
-            <Text style={{width: '25%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500}}>Modelo</Text>
+            <Text style={{width: '25%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500}}>Marca</Text>
             <Text style={styles.encabezado}>Stock</Text>
 
           </View>
@@ -110,7 +110,7 @@ const Inventario = ({datosCliente, datos}) =>
                       <Text style={styles.celdaDesc}>{d["Nombre Corto"]}</Text>
                       <Text style={{width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6, display:'flex', justifyContent: 'flex-end'}}>{d["Precio Minimo"]}$</Text>
                       <Text style={{width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6, display:'flex', justifyContent: 'flex-end'}}>{d["Precio Oferta"]}$</Text>
-                      <Text style={{ width: '25%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6}}>{d["Marca"]}</Text>
+                      <Text style={{ width: '25%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6}}>{d["Modelo"]}</Text>
                       <Text style={d['Existencia Actual'] == 0 ?  styles.celdaZero :  styles.celda}>{d["Existencia Actual"]}</Text>
         </View>
         ))}

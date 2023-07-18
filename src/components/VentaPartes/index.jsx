@@ -33,6 +33,8 @@ export const VentaProductos = () => {
     const [cargaProductos, setCargaProductos] = useState()
     const [selectedClient, setSelectedClient] = useState({value: null})
     const [selectedProduct, setSelectedProduct] = useState(null)
+    const [archivoClientes, setarchivoClientes] = useState('Inserte Excel de Clientes');
+    const [archivoProductos, setarchivoProductos] = useState('Inserte Excel de Productos');
     const [cantidad, setcantidad] = useState(1);
     const [cliente, setCliente] = useState('');
     const [sC, setSC] = useState('');
@@ -58,6 +60,8 @@ export const VentaProductos = () => {
     const [shoppingCart, setShoppingCart] = useState([])
     const [searchResults, setSearchResults] = useState([]);
 
+    
+
 const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const updateProducts = async (data) => {
       let update = await fetch(`${backendUrl()}/excel/updateProducts`, {
@@ -73,6 +77,22 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
       
     } 
+
+    useEffect(() => {
+      if (cargaClientes){
+      setarchivoClientes(cargaClientes.target.files[0].name);
+      }
+
+    }, [cargaClientes]);
+    useEffect(() => {
+      if (cargaProductos){
+      setarchivoProductos(cargaProductos.target.files[0].name);
+      }
+    
+
+    }, [cargaProductos]);
+
+    
 
     useEffect(() => {
       setSelectedProduct(null)
@@ -137,7 +157,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           "Descripcion": m["Nombre Corto"],
           "Precio": m["Precio Minimo"],
           "Precio 2": m["Precio Oferta"],
-          Modelo: m.Marca,
+          Marca: m.Modelo,
           Stock: m["Existencia Actual"]
 
         };
@@ -480,8 +500,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
      { !ve ? false :
       <div className="d-flex justify-content-center mt-3">
     <div className="row bg-light col-11 py-3 d-flex justify-content-center"> 
-    <div className="col-5 d-flex justify-content-center text-center">Insertar Excel de Clientes: {"    "} <input type="file" className='Inp' onChange={(e) => setCargaClientes(e)} /></div>
-    <div className="col-5 d-flex justify-content-center text-center">Insertar Excel de Productos: {"    "} <input type="file" onChange={(e) => setCargaProductos(e)} /></div> 
+    <div className="col-5 d-flex justify-content-center text-center"> <label htmlFor="archivoClientes" className='btn btn-primary'>{archivoClientes}</label>  <input type="file" className='Inp' id='archivoClientes' onChange={(e) => setCargaClientes(e)} /></div>
+    <div className="col-5 d-flex justify-content-center text-center"><label htmlFor="archivoProductos" className='btn btn-primary'>{archivoProductos}</label> <input type="file" className='Inp' id='archivoProductos' onChange={(e) => setCargaProductos(e)} /></div> 
     <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Actualizar</div></div>
 
     </div> 
@@ -510,24 +530,26 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         <table class="table ">
 <thead>
   <tr>
-    <th class="tg-0pky">Precio Mayor</th>
-    <th class="tg-0pky">Precio Menor</th>
-    <th class="tg-0pky">Precio Oferta</th>
     <th class="tg-0pky">Código</th>
     <th class="tg-0pky">Descripción</th>
-    <th class="tg-0pky">Modelo</th>
+    <th class="tg-0pky">Precio</th>
+    <th class="tg-0pky">Precio 2</th>
+    <th class="tg-0pky">Marca</th>
     <th class="tg-0pky">Existencia Actual</th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-0pky">{precioMayor}$</td>
-    <td class="tg-0pky">{precioMenor}$</td>
-    <td class="tg-0pky">{precioOferta}$</td>
     <td class="tg-0pky">{código}</td>
     <td class="tg-0pky">{nombreCorto}</td>
+    <td class="tg-0pky">{precioMenor}$</td>
+    <td class="tg-0pky">{precioOferta}$</td>
     <td class="tg-0pky">{marca}</td>
+    { existencia == 0 ? 
+    <td class="tg-0pky" style={{color: 'red'}}>{existencia}</td> :
     <td class="tg-0pky">{existencia}</td>
+}
+
   </tr>
 </tbody>
 </table>
@@ -545,12 +567,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         <table class="table">
 <thead>
   <tr>
-    <th class="tg-0pky">Cantidad</th>
-    <th class="tg-0pky">Precio</th>
     <th class="tg-0pky">Codigo</th>
     <th class="tg-0pky">Descripcion</th>
+    <th class="tg-0pky">Precio</th>
     <th class="tg-0pky">Marca</th>
     <th class="tg-0pky">Referencia</th>
+    <th class="tg-0pky">Cantidad</th>
     <th class="tg-0pky">Acciones</th>
   </tr>
 </thead>
@@ -558,16 +580,16 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
  {shoppingCart ? shoppingCart.map((m, i) => {
   return (
     <tr>
-    <td class="tg-0pky">{m.cantidad}</td>
+      <td class="tg-0pky">{m.Código}</td>
+      <td class="tg-0pky">{m['Nombre Corto']}</td>
     {
       sC["Precio de Venta"].trimEnd() == 'Precio Por Defecto' || sC["Precio de Venta"].trimEnd() == 'Precio Minimo' ? 
       <td class="tg-0pky">{m["Precio Minimo"]}$</td> : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
       <td class="tg-0pky">{m["Precio Mayor"]}$</td> : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
       <td class="tg-0pky">{m["Precio Oferta"]}$</td> : console.log(sC)}
-    <td class="tg-0pky">{m.Código}</td>
-    <td class="tg-0pky">{m['Nombre Corto']}</td>
     <td class="tg-0pky">{m.Modelo}</td>
     <td class="tg-0pky">{m.Referencia}</td>
+    <td class="tg-0pky">{m.cantidad}</td>
     <td class="tg-0pky"><div><button className='toyox' onClick={(e) => {
       eliminarProducto(m.Código)
     }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button></div></td>
