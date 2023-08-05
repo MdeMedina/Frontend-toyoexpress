@@ -677,7 +677,7 @@ useEffect(() => {
            }}/></div>
           </div>
           <MultiAttachmentInput onAttachmentsChange={handleAttachmentsChange}/>
-          <div className="col-2 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
+          <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
             setCorreoMsn(e.target.value)
            }}/></div>
@@ -728,7 +728,9 @@ useEffect(() => {
           showCancelButton: true,
         }).then((result) => {
           let value = Swal.getInput().value
+          value = parseInt(value)
           if (result.isConfirmed && value && value <= existencia && value > 0) {
+            
             addCart(value)
           } else if (!value){
             Swal.fire({
@@ -783,9 +785,11 @@ useEffect(() => {
     <div className="row bg-light col-11 py-4">
         <div className="col-12 d-flex justify-content-center row mb-3 mx-0">
         <div className="col-sm-2 mx-1 d-flex align-items-center justify-content-center">Agregar Cliente:</div>
- <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={clientes} components={components} menuIsOpen={menu2} value={selectedClient} onChange={(e) => {
+ <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={clientes} components={components} menuIsOpen={menu2} value={selectedClient} isClearable={true} onChange={(e) => {
+  console.log(e)
        if (e === null) {
         setSelectedClient(null)
+        setCliente(null)
        } else {
         setSelectedClient(e)
         setCliente(e.value)
@@ -802,9 +806,13 @@ useEffect(() => {
         <hr className='mt-2'/>
         <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">
         <div className="col-sm-2 d-flex align-items-center justify-content-center">Nro de Parte:</div>
-        <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={partes} components={components} menuIsOpen={menu1} value={selectedProduct} onChange={(e) => {
+        <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={partes} components={components} menuIsOpen={menu1} isClearable={true} value={selectedProduct} onChange={(e) => {
+          if (e === null) {
+            setSelectedProduct(null)
+          } else {
           console.log(e)
          setSelectedProduct(e)
+          }
         setProduct(e.value) }} placeholder='Introduce el número de parte' onInputChange={(e) => {
           if (e.length >= 5) {
             console.log('entre');
@@ -895,8 +903,8 @@ useEffect(() => {
       setNota(value)
     }} cols="60" rows="3"></textarea></div></div> </>}
  
-    <div className="col-3 d-flex justify-content-center align-items-center"> <div className="btn btn-primary" onClick={() => {handleButtonClick()}} disabled={loading}>Inventario</div></div>
-    <div className="col-3 d-flex justify-content-center align-items-center" onClick={() => {
+    <div className="col-4 d-flex justify-content-center align-items-center"> <div className="btn btn-primary" onClick={() => {handleButtonClick()}} disabled={loading}>Inventario</div></div>
+    <div className="col-4 d-flex justify-content-center align-items-center" onClick={() => {
       crearCor()
     }}>
       <PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr}/>} fileName='Pedido.pdf'>
@@ -904,9 +912,9 @@ useEffect(() => {
         </PDFDownloadLink>
         </div>
 
-    {!shoppingCart[0] ?  <div className="col-3 d-flex justify-content-center align-items-center">
+    {!shoppingCart[0] ?  <div className="col-4 d-flex justify-content-center align-items-center">
       <div className="toyox-disabled">Enviar</div>
-    </div> :     <div className="col-3 d-flex justify-content-center align-items-center" onClick={() => {
+    </div> :     <div className="col-4 d-flex justify-content-center align-items-center" onClick={() => {
       if (!pdfName) {
         generarPDF()
       } else {
