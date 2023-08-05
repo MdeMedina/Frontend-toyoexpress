@@ -6,12 +6,17 @@ import pako from 'pako';
 import Select from 'react-select'
 import ExcelFileReader from '../sub-components/ExcelReader';
 import Swal from 'sweetalert2';
-import {PDFDownloadLink, PDFViewer} from '@react-pdf/renderer';
+import withReactContent from 'sweetalert2-react-content'
+import {PDFDownloadLink, pdf} from '@react-pdf/renderer';
 import MyDocument from './documento';
 import { backendUrl, frontUrl } from '../../lib/data/server';
+import MultiAttachmentInput from './multi';
 
 
 
+const components = {
+  DropdownIndicator: 'hola'
+};
 export const VentaProductos = () => {
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
@@ -25,17 +30,25 @@ export const VentaProductos = () => {
       // navDiv.classList.toggle("close");
     }
   }, []);
-
+  let vc = JSON.parse(localStorage.getItem("permissions")).verClientes;
+  let cv = JSON.parse(localStorage.getItem("cVend"))
     const [searchQuery, setSearchQuery] = useState('');
     const [cargaClientes, setCargaClientes] = useState()
     const [statusCliente, setStatusCliente] = useState(null)
     const [statusProducto, setStatusProducto] = useState(null) 
     const [cargaProductos, setCargaProductos] = useState()
-    const [selectedClient, setSelectedClient] = useState({value: null})
+    const [menu1, setMenu1] = useState(false);
+    const [menu2, setMenu2] = useState(false);
+    const [selectedClient, setSelectedClient] = useState(null)
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [archivoClientes, setarchivoClientes] = useState('Inserte Excel de Clientes');
     const [archivoProductos, setarchivoProductos] = useState('Inserte Excel de Productos');
+    const [completeProducts, setCompleteProducts] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [pdfName, setPdfName] = useState('')
     const [cantidad, setcantidad] = useState(1);
+    const [Corr, setCorr] = useState('');
+    const [newCorr, setNewCorr] = useState(0);
     const [cliente, setCliente] = useState('');
     const [sC, setSC] = useState('');
     const [sP, setSP] = useState('');
@@ -59,6 +72,14 @@ export const VentaProductos = () => {
     const [preShoppingCart, setpreShoppingCart] = useState([])
     const [shoppingCart, setShoppingCart] = useState([])
     const [searchResults, setSearchResults] = useState([]);
+    const [attachments, setAttachments] = useState([]);
+    const [correoCliente, setCorreoCliente] = useState(true)
+    const [correoMsn, setCorreoMsn] = useState('')
+
+    const handleAttachmentsChange = (newAttachments) => {
+      console.log(newAttachments);
+      setAttachments(newAttachments);
+    };
 
     
 
@@ -94,9 +115,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
     
 
-    useEffect(() => {
-      setSelectedProduct(null)
-    }, [product])
+
     useEffect(() => {
       if (!cargaClientes){
         soltarAlarmas()
@@ -107,6 +126,70 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         soltarAlarmas()
       }
     }, [statusCliente, statusProducto]);
+
+
+
+    const generarPDF = async () => {
+      const blob = await pdf(<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr}/>).toBlob();
+            // Crear un objeto FormData y agregar el Blob bajo la clave "myFile"
+            const formData = new FormData();
+            formData.append('myFile', blob, 'file.pdf');
+              // Enviar el objeto FormData al servidor
+      try {
+        await fetch(`${backendUrl()}/upload/`, {
+          method: 'POST',
+          body: formData,
+        }).then(async (response) => {
+          if (response.ok){
+          let data  = await response.json()
+
+          data = data.data
+         setPdfName(data)
+          }
+        });
+        // Manejar la respuesta de la solicitud, si es necesario
+      } catch (error) {
+        // Manejar errores, si los hay
+      }
+    }
+    
+
+    useEffect(() => {
+      if (pdfName){
+        generadorEmail()
+    }
+    }, [pdfName]);
+
+    const generadorEmail = () => {
+      Swal.fire({
+        icon: 'info',
+        title: 'El pedido se esta generando', 
+        timer: 3000, 
+        timerProgressBar: true,
+        showConfirmButton: false
+      }).then(() => {
+        selectEmail()
+      })
+    }
+    
+
+    async function handleSendMail  (email, msn) {
+      const mailOptions = {
+        filename: pdfName,
+        email: email,
+        nota: msn
+      }
+      await fetch(`${backendUrl()}/upload/sendMail`, {
+        method: 'POST',
+        body: JSON.stringify(mailOptions),
+      headers: new Headers({ 'Content-type': 'application/json'})
+      }).then((response) => {
+        setCorreoMsn('')
+        setCorreoCliente(true)
+      });
+
+    }
+    
     
 
     const updateClients = async (data) => {
@@ -122,26 +205,81 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         throw new Error('Error al actualizar los clientes');
       }
 
-    } 
+    }
+    
+
 
     const getClient = async () => {
       const response = await fetch(`${backendUrl()}/excel/clients`)
       let data = await response.json()
       data=data.excel
-     setDataClient(data)
+      console.log(cv)
+      if (vc) {
+        setDataClient(data)
+      } else if (cv) {
+        
+        let num;
+        if (cv > 0 && cv <= 9) {
+          num = `0${cv}`
+        } else {
+          num = `${cv}`
+        }
+       data = data.filter((cliente) => {
+        return num == cliente['Vendedores Código']
+        })
+        console.log(data)
+        setDataClient(data)
+      }
     }
     const getProducts = async () => {
-      const response = await fetch(`${backendUrl()}/excel/products`)
+      setLoading(true)
+    await fetch(`${backendUrl()}/excel/productsComplete`).then(async (response) => {
+        let data = await response.json()
+        data = data.excel
+        Swal.close()
+        entregarInventario(data)
+      })
+    }
+
+    const handleButtonClick = () => {
+      getProducts()
+      Swal.fire({
+        title: 'Cargando...',
+        text: 'Espere un momento mientras se carga inventario...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+      })
+    };
+
+    const getSimpleProducts = async (search) => {
+      console.log(search)
+      const response = await fetch(`${backendUrl()}/excel/products`, {
+        method:'POST',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({Código: search})
+      })
       let data = await response.json()
       data = data.excel
      setDataProducts(data)
     }
 
-    useEffect(() => {
-      getProducts();
-      getClient();
-    
-    }, []);
+    const getSimpleClients = async (search) => {
+      console.log(search)
+      const response = await fetch(`${backendUrl()}/excel/clients`, {
+        method:'POST',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({Nombre: search})
+      })
+      let data = await response.json()
+      data = data.excel
+     setDataClient(data)
+    }
 
     const pdfInventario = () => {
       // Redirige a la ruta con los datos como parte de la URL
@@ -152,16 +290,15 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let arr = data
       let nExcel = [];
       arr.map((m) => {
-        let obj = {
-          Código: m.Código,
-          "Descripcion": m["Nombre Corto"],
-          "Precio": m["Precio Minimo"],
-          "Precio 2": m["Precio Oferta"],
-          Marca: m.Modelo,
-          Stock: m["Existencia Actual"]
-
-        };
-        nExcel.push(obj);
+        if (m["Existencia Actual"] > 0) {
+          let obj = {
+            Código: m.Código,
+            "Descripcion": m["Nombre Corto"],
+            Marca: m.Modelo,
+            "Precio": `${m["Precio Minimo"].toFixed(2)}$`,
+  
+          };
+        nExcel.push(obj);}
       });
       // Convertir a hoja de Excel
     const worksheet = utils.json_to_sheet(nExcel);
@@ -173,7 +310,61 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     // Escribir archivo de Excel
     writeFile(workbook, 'Inventario.xlsx');
     }
+  
+  const traerCor = async () => {
+    let cor = await fetch(`${backendUrl()}/pdf/`)
+    let data = await cor.json()
+    data = data[data.length-1].cor
+    setNewCorr(data)
+    let prop = data + 1
+    console.log(prop >= 9)
+    if (prop < 9) {
+      console.log('entre en menor a 9');
+      setCorr(`00000${prop}`);
+    } else if (prop >= 9 && prop < 99) {
+      console.log('entre en menor a 99');
+      setCorr(`0000${prop}`);
+    } else if (prop >= 99 && prop < 999) {
+      console.log('entre en menor a 999');
+      setCorr(`000${prop}`);
+    } else if (prop >= 999 && prop < 9999) {
+      console.log('entre en menor a 9999');
+      setCorr(`00${prop}`);
+    } else if (prop >= 9999 && prop < 99999) {
+      console.log('entre en menor a 99999');
+      setCorr(`0${prop}`);
+    } else if (prop >= 99999 && prop < 999999) {
+      console.log('entre en menor a 999999');
+      setCorr(`${prop}`);
+    }
+
+  }
+
+  useEffect(() => {
+    traerCor();
+  }, []);
+  
+
+
+  
+  
     
+  const crearCor = async () => {
+    let data = {cor: newCorr + 1}
+    let creation = await fetch(`${backendUrl()}/pdf/create`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    headers: new Headers({ 'Content-type': 'application/json'})
+    })     
+    if (creation.ok) {
+      let status = await creation
+      traerCor()
+      return status
+    } else {
+      throw new Error('Error al crear el correlativo');
+    }
+
+  }
 
   const entregarInventario = (data) => {
 
@@ -199,13 +390,18 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
   }
   
    const insertClients = () => {
+    let arr = []
     dataClient.map((c) => {
-      setClientes(prevItem => [...prevItem, {value: c.Nombre, label: c.Nombre}])
+
+      arr.push({value: c.Nombre, label: c.Nombre})
     })
+    setClientes(arr)
    }
 
    const searchClients = () => {
     dataClient.map((c) => {
+      console.log('entre')
+      console.log(c)
      if (c.Nombre === cliente) {
       setSC(c)
       setRif(c.Código)
@@ -214,14 +410,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
    }
 
    const insertProducts = () => {
+    let arr = []
     dataProducts.map((c) => {
-      setPartes(prevItem => [...prevItem, {value: c.Código, label: c.Código}])
+      arr.push({value: c.Código, label: c.Código})
     })
+    setPartes(arr)
    }
 
    const searchProduct = () => {
     dataProducts.map((c) => {
      if (c.Código === product) {
+      console.log('entre en codigo de sp')
       setSP(c)
       setPrecioMayor(c["Precio Mayor"])
       setPrecioMenor(c["Precio Minimo"])
@@ -239,6 +438,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       insertClients()
     }, [dataClient]);
     useEffect(() => {
+      console.log('hola')
       searchClients()
     }, [cliente]);
 
@@ -300,6 +500,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
   }
 
+  
     const handleFile = async (event1, event2) => {
       let file1;
       let file2;
@@ -342,8 +543,10 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
               let j = m.hasOwnProperty("Precio de Venta");
               let k = m.hasOwnProperty("Ultima Venta a Contado");
               let l = m.hasOwnProperty("Ultima Venta a Crédito");
-              if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j || !k || !l) {
-                console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}, j: ${j}, k: ${k}, l: ${l},`);
+              let n = m.hasOwnProperty("Vendedores Código")
+              let o = m.hasOwnProperty("Vendedores Nombre")
+              if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j || !k || !l  || !n || !o) {
+                console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}, j: ${j}, k: ${k}, l: ${l}, n: ${n}, o: ${o},`);
                 correcto = false;
               }
             }
@@ -424,6 +627,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
     const addCart = (n) => {
       let json = sP
+      console.log(sC)
       json['cantidad'] = n
       sC["Precio de Venta"].trimEnd() == 'Precio Por Defecto' || sC["Precio de Venta"].trimEnd() == 'Precio Minimo' ? 
       json['precio'] = sP['Precio Minimo'] : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
@@ -432,9 +636,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       setpreShoppingCart(prevList => [...prevList, json])
     }
 
-    useEffect(() => {
-      setCliente(selectedClient.value);
-    }, [selectedClient]);
     
 
     useEffect(() => {
@@ -455,7 +656,63 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         setItems(i)
       })
     }, [preShoppingCart]);
+
+useEffect(() => {
+  console.log(attachments)
+}, [attachments]);
+
+
+    const selectEmail = () => {
+      const MySwal = withReactContent(Swal)
+
+         MySwal.fire({
+          icon: 'info',
+
+          html: <>
+          <p><h5>¿Cuales son los destinatarios?</h5></p>
+          <div className="row my-3">
+           <div className="col-8 d-flex justify-content-center"><label htmlFor="correoCliente" className='labelCorreo'>{sC["Correo Electrónico"]}</label></div>
+           <div className="col-4 d-flex justify-content-center"><input type="checkbox"  id="correoCliente" defaultChecked onChange={(e) => {
+            setCorreoCliente(e.target.checked)
+           }}/></div>
+          </div>
+          <MultiAttachmentInput onAttachmentsChange={handleAttachmentsChange}/>
+          <div className="col-2 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
+          <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
+            setCorreoMsn(e.target.value)
+           }}/></div>
+          
+          </>,
+          showCancelButton: true,
+        }).then((result) => {
+
+          if (result.isConfirmed ) {
+            let msn = document.getElementById('correoNota').value
+            if (!attachments[0] && !correoCliente) {
+              Swal.fire({
+                icon: 'error',
+                title: 'No ha insertado ningun correo al que enviar el archivo!',
+              }) 
+            } else {
+              let att = attachments
+              if (correoCliente) {
+                att.push(sC["Correo Electrónico"])
+              }
+              console.log(att)
+              att.map(correo => {
+                handleSendMail(correo, msn)
+              })
+            }
+          }
+        });
+      }
     
+      useEffect(() => {
+        if(selectedProduct && product) {
+          setPartes([])
+        }
+      }, [selectedProduct, product]);
+      
 
     const selectCart = () => {
       if (!sP) {
@@ -496,6 +753,22 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         });
       }
     };
+
+    useEffect(() => {
+      if(partes[0]){
+        setMenu1(true)
+      } else {
+        setMenu1(false)
+      }
+    }, [partes])
+    useEffect(() => {
+      if(clientes[0]){
+        setMenu2(true)
+      } else {
+        setMenu2(false)
+      }
+    }, [clientes])
+
   return (<>
      { !ve ? false :
       <div className="d-flex justify-content-center mt-3">
@@ -510,20 +783,37 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     <div className="row bg-light col-11 py-4">
         <div className="col-12 d-flex justify-content-center row mb-3 mx-0">
         <div className="col-sm-2 mx-1 d-flex align-items-center justify-content-center">Agregar Cliente:</div>
-        <div className="col-sm-9 mx-1 d-flex align-items-center justify-content-center"><Select options={clientes} onChange={(e) => {
+ <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={clientes} components={components} menuIsOpen={menu2} value={selectedClient} onChange={(e) => {
        if (e === null) {
-        setSelectedClient({value: null})
+        setSelectedClient(null)
        } else {
         setSelectedClient(e)
+        setCliente(e.value)
        }
-}} className="selectpd px-2"  isClearable={true} id='clientela'/> </div>
+}} placeholder='Introduce el nombre del cliente' onInputChange={(e) => {
+          if (e.length >= 4) {
+          getSimpleClients(e)
+          } else {
+            setClientes([])
+          }
+        }} className="selectpd px-2"  id='clientela'/>
+        </div>
         </div>
         <hr className='mt-2'/>
         <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">
         <div className="col-sm-2 d-flex align-items-center justify-content-center">Nro de Parte:</div>
-        <div className="col-sm-9 d-flex align-items-center justify-content-center"><Select options={partes} value={selectedProduct} onChange={(e) => {
-        setSelectedProduct(e)
-        setProduct(e.value)}} className="selectpd px-2"/></div>
+        <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={partes} components={components} menuIsOpen={menu1} value={selectedProduct} onChange={(e) => {
+          console.log(e)
+         setSelectedProduct(e)
+        setProduct(e.value) }} placeholder='Introduce el número de parte' onInputChange={(e) => {
+          if (e.length >= 5) {
+            console.log('entre');
+          getSimpleProducts(e)
+          } else {
+            setPartes([])
+          }
+        }} className="selectpd px-2"/>
+        </div>
         </div>
         <hr />
         <div className=" col-sm-12 col-md-11  paltable"> 
@@ -599,19 +889,37 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 </tbody>
 </table>
     </div>
-    {console.log(shoppingCart, shoppingCart[0], !shoppingCart[0])}
     {!shoppingCart[0] ?    false: <> <hr />
     <div className="col-12 row mb-2"><div className="d-flex justify-content-center"> <div className="mx-2">Nota:</div> <textarea className='nota-text' onChange={(e) => {
       const {value} = e.target
       setNota(value)
     }} cols="60" rows="3"></textarea></div></div> </>}
  
-    <div className="col-4 d-flex justify-content-center align-items-center">{dataProducts === [] ? <div className="btn btn-primary disabled">Inventario</div> : <div className="btn btn-primary" onClick={() => {entregarInventario(dataProducts)}}>Inventario</div> }</div>
-    <div className="col-4 d-flex justify-content-center align-items-center"><div className="toyox" onClick={(e) => {
+    <div className="col-3 d-flex justify-content-center align-items-center"> <div className="btn btn-primary" onClick={() => {handleButtonClick()}} disabled={loading}>Inventario</div></div>
+    <div className="col-3 d-flex justify-content-center align-items-center" onClick={() => {
+      crearCor()
+    }}>
+      <PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr}/>} fileName='Pedido.pdf'>
+        <div className="toyox" >Descargar</div>
+        </PDFDownloadLink>
+        </div>
+
+    {!shoppingCart[0] ?  <div className="col-3 d-flex justify-content-center align-items-center">
+      <div className="toyox-disabled">Enviar</div>
+    </div> :     <div className="col-3 d-flex justify-content-center align-items-center" onClick={() => {
+      if (!pdfName) {
+        generarPDF()
+      } else {
+        generadorEmail()
+      }
+    }}>
+      <div className="toyox">Enviar</div>
+    </div>}
+    <hr  className='mt-2'/>
+    <div className="col-12 d-flex justify-content-center align-items-center"><div className="toyox" onClick={(e) => {
       setpreShoppingCart([])
     }}>Vaciar</div></div>
-    <div className="col-4 d-flex justify-content-center align-items-center"><PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota}/>} fileName='Pedido.pdf'><div className="toyox" >Imprimir</div></PDFDownloadLink></div>
-    </div>
   </div>
+    </div>
   </>)
 };

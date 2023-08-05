@@ -51,6 +51,9 @@ const [estaba, setEstaba] = useState(1)
   const [oHours, setOHours] = useState(false)
   const [eMoves, setEMoves] = useState(false)
   const [cAccounts, setCAccounts] = useState(false)
+  const [vendP, setVendP] = useState(true)
+  const [vendedor, setVendedor] = useState(0);
+  
 
   let numeros = [
     {value: 2, label: 2},
@@ -129,6 +132,8 @@ const handleVPage = (e) => {
     const vm = document.getElementById('movesVista').checked
     const vmo = document.getElementById('movesVistaOt')
     const cu = document.getElementById('createU').checked
+    const vp = document.getElementById('vendP').checked
+    const iv = document.getElementById('InputVendedor')
     const am = document.getElementById('aproveMoves')
     const mf = document.getElementById('modFechas')
     const em = document.getElementById('eMoves')
@@ -148,6 +153,14 @@ const handleVPage = (e) => {
         mf.removeAttribute("disabled")
         em.removeAttribute("disabled")
     }
+
+    
+    if (vp) {
+
+      iv.setAttribute("disabled", "")
+  }else if (!vp) {
+      iv.removeAttribute("disabled")
+  }
 
     if (!cu) {
 
@@ -187,9 +200,11 @@ const handleVPage = (e) => {
                 horasIngreso: sHours,
                 obviarIngreso: oHours, 
                 configurarCuentas: cAccounts,
-                verExcel: vExcel
+                verExcel: vExcel,
+                verClientes: vendP
             },
-            password: password
+            password: password,
+            vendedor: vendedor
         }
     fetch(`${backendUrl()}/users/register`, {
         method: 'POST',
@@ -207,6 +222,8 @@ const handleVPage = (e) => {
   const actUser = async (u ,i) => {
     const email = document.getElementById(`actInputEmail-${i}`).value
     const username = document.getElementById(`actUsernameInput-${i}`).value
+    const vendedor = document.getElementById(`actVendedorInput-${i}`).value
+    console.log(vendedor)
     const consultarPrecios = document.getElementById(`actConsultarPrecios-${i}`).checked;
     const movesVista = document.getElementById(`actMovesVista-${i}`).checked
     const movesVistaOt = document.getElementById(`actMovesVistaOt-${i}`).checked
@@ -221,7 +238,7 @@ const handleVPage = (e) => {
     const obTime = document.getElementById(`actObTime-${i}`).checked
     const cAccounts = document.getElementById(`actCAccounts-${i}`).checked
     const verExcel = document.getElementById(`actVerExcel-${i}`).checked
-    console.log(delMoves)
+    const verC = document.getElementById(`actVendP-${i}`).checked
  const permissions = 
     {
       consultarPrecios: consultarPrecios,
@@ -237,10 +254,11 @@ const handleVPage = (e) => {
       obviarIngreso: obTime,     
       editarMovimientos: eMoves,
       configurarCuentas: cAccounts,
-      verExcel: verExcel
+      verExcel: verExcel, 
+      verClientes: verC
     }
 
-    const actData = {_id: _id,email: email, username: username, permissions: permissions }
+    const actData = {_id: _id,email: email, username: username, permissions: permissions, vendedor: vendedor }
     
     await fetch(`${backendUrl()}/users/updateUser`, {
       method: 'PUT',
@@ -334,6 +352,23 @@ return (
   <div class="mb-3">
     <label for="InputPassword2" class="form-label">Confirmar contraseña</label>
     <input type="password" class="form-control" id="InputPassword2" />
+  </div>
+  <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="vendP" defaultChecked onChange={() => {
+            const value = document.getElementById('vendP').checked
+            setVendP(value)
+            handlerDisable()
+  }}/>
+  <label class="form-check-label" for="vendP">
+   Ver todos los clientes
+  </label>
+</div>
+  <div class="mb-3">
+    <label for="InputVendedor" class="form-label">Código de Vendedor</label>
+    <input type="number" class="form-control" disabled id="InputVendedor" onChange={() => {
+      const value = parseInt(document.getElementById('InputVendedor').value, 0);
+      setVendedor(value)
+    }}/>
   </div>
   <hr />
     <h3>Permisos</h3>
@@ -523,6 +558,19 @@ return (
   <div class="mb-3">
     <label for={`actUsernameInput-${i}`} class="form-label">Nombre de usuario</label>
     <input type="email" class="form-control" id={`actUsernameInput-${i}`} aria-describedby="emailHelp" defaultValue={u.username}/>
+  </div>
+  <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id={`actVendP-${i}`} defaultChecked={u.permissions.verClientes}  onChange={() => {
+            const value = document.getElementById(`actVendP-${i}`).checked
+            setVendP(value)
+  }} />
+  <label class="form-check-label" for={`actVendP-${i}`}>
+  Ver todos los clientes
+  </label>
+</div>
+  <div class="mb-3">
+    <label for={`actVendedorInput-${i}`} class="form-label">Código de Vendedor</label>
+    <input type="number" class="form-control" id={`actVendedorInput-${i}`} aria-describedby="emailHelp" defaultValue={u.vendedor}/>
   </div>
   <hr />
     <h3>Permisos</h3>

@@ -9,6 +9,7 @@ export default function Logout () {
         localStorage.removeItem('permissions')
         localStorage.removeItem('email')
         localStorage.removeItem("HourAlert")   
+        localStorage.removeItem("cVend")   
         localStorage.removeItem("cantidadM")
         localStorage.removeItem("messageID")
         localStorage.setItem("nav", false)  

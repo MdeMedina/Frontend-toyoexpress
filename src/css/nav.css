@@ -367,3 +367,8 @@ color: var(--text-color);
 
 }
 
+.Corrector {
+    font-size: 10px;
+    margin-bottom: 4px;
+    color: red;
+}

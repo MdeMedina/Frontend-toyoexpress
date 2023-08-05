@@ -38,7 +38,7 @@
     "reactstrap": "^9.1.5",
     "socket.io-client": "^4.5.4",
     "sweetalert": "^2.1.2",
-    "sweetalert2": "^11.6.16",
+    "sweetalert2": "^11.7.20",
     "sweetalert2-react-content": "^5.0.7",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"

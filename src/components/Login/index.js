@@ -47,6 +47,7 @@ function Login() {
       localStorage.setItem("HourAlert", !permissions.obviarIngreso);
       localStorage.setItem("name", loginJson.name);
       localStorage.setItem("email", loginJson.email);
+      localStorage.setItem("cVend", loginJson.vendedor);
       localStorage.setItem("cantidadM", loginJson.cantidadM);
       localStorage.setItem("permissions", JSON.stringify(permissions));
       localStorage.setItem("messageID", loginJson.messageId);

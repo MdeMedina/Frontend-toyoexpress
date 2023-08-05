@@ -74,7 +74,7 @@ nota: {
 
 
 // Create Document Component
-const MyDocument = ({datosCliente, datos, total, items, nota}) => 
+const MyDocument = ({datosCliente, datos, total, items, nota, correlativo}) => 
     (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -82,7 +82,7 @@ const MyDocument = ({datosCliente, datos, total, items, nota}) =>
     <View style={styles.container}>
         <View style={styles.column}>
         <View style={{marginBottom: 10}}>
-        <Text>Presupuesto</Text>
+        <Text>Pedido {correlativo}</Text>
         </View>
         <View style={{ display: 'flex',
     justifyContent: 'flex-start',}}>
