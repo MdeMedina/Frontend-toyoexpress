@@ -3,3 +3,18 @@
 .Inp {
     display: none;
 }
+
+.model {
+    background-color: rgb(219, 219, 219);
+    color: rgb(100, 100, 100);
+    border-radius: 5px;
+    text-align: start;
+    border-width: 0.5px !important;
+    padding: 2px 4px;
+    font-size: 13px;
+}
+
+.model:hover {
+    background-color: rgb(160, 160, 160);
+    cursor: pointer;
+}

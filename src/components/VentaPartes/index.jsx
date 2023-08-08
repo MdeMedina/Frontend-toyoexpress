@@ -11,6 +11,7 @@ import {PDFDownloadLink, pdf} from '@react-pdf/renderer';
 import MyDocument from './documento';
 import { backendUrl, frontUrl } from '../../lib/data/server';
 import MultiAttachmentInput from './multi';
+import { json } from 'react-router-dom';
 
 
 
@@ -72,14 +73,9 @@ export const VentaProductos = () => {
     const [preShoppingCart, setpreShoppingCart] = useState([])
     const [shoppingCart, setShoppingCart] = useState([])
     const [searchResults, setSearchResults] = useState([]);
-    const [attachments, setAttachments] = useState([]);
     const [correoCliente, setCorreoCliente] = useState(true)
     const [correoMsn, setCorreoMsn] = useState('')
 
-    const handleAttachmentsChange = (newAttachments) => {
-      console.log(newAttachments);
-      setAttachments(newAttachments);
-    };
 
     
 
@@ -101,13 +97,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
     useEffect(() => {
       if (cargaClientes){
+        if(cargaClientes.target.files[0] !== undefined) {
       setarchivoClientes(cargaClientes.target.files[0].name);
+        }
       }
 
     }, [cargaClientes]);
     useEffect(() => {
       if (cargaProductos){
+        if(cargaProductos.target.files[0] !== undefined) {
       setarchivoProductos(cargaProductos.target.files[0].name);
+        }
       }
     
 
@@ -217,7 +217,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       if (vc) {
         setDataClient(data)
       } else if (cv) {
-        
         let num;
         if (cv > 0 && cv <= 9) {
           num = `0${cv}`
@@ -278,13 +277,87 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
       let data = await response.json()
       data = data.excel
-     setDataClient(data)
+      if (vc) {
+        setDataClient(data)
+      } else if (cv) {
+        let num;
+        if (cv > 0 && cv <= 9) {
+          num = `0${cv}`
+        } else {
+          num = `${cv}`
+        }
+       data = data.filter((cliente) => {
+        return num == cliente['Vendedores Código']
+        })
+        console.log(data)
+        setDataClient(data)
+      }
     }
 
     const pdfInventario = () => {
       // Redirige a la ruta con los datos como parte de la URL
       window.location.href=`${frontUrl()}/pdf`;
     }
+
+
+    const modeloProducto = () => {
+      let nExcel = [];
+          let obj = {
+          "Código": "",
+          "Nombre Corto": "",
+          "Referencia": "",
+          "Marca": "",
+          "Modelo": "",
+          "Existencia Actual": "",
+          "Precio Oferta": "",
+          "Precio Mayor": "",
+          "Precio Minimo": "",
+          };
+        nExcel.push(obj);
+
+      // Convertir a hoja de Excel
+    const worksheet = utils.json_to_sheet(nExcel);
+   
+    // Crear libro de Excel y agregar hoja
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Hoja1');
+  
+    // Escribir archivo de Excel
+    writeFile(workbook, 'modeloProducto.xlsx');
+    }
+
+    const modeloCliente = () => {
+
+      let nExcel = [];
+
+          let obj = {
+            "Código": "",
+            "Nombre": "",
+            "Persona Contacto": "",
+            "Teléfonos": "",
+            "Correo Electrónico": "",
+            "Limite Credito": "",
+            "Dias Credito": "",
+            "Credito Disponible": "",
+            "Precio de Venta": "",
+            "Ultima Venta a Crédito": "",
+            "Vendedores Nombre": "",
+            "Vendedores Código": "",
+  
+          };
+        nExcel.push(obj);
+
+      // Convertir a hoja de Excel
+    const worksheet = utils.json_to_sheet(nExcel);
+   
+    // Crear libro de Excel y agregar hoja
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Hoja1');
+  
+    // Escribir archivo de Excel
+    writeFile(workbook, 'modeloCliente.xlsx');
+    }
+  
 
     const excelInventario = (data) => {
       let arr = data
@@ -529,36 +602,91 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         const jsonData = utils.sheet_to_json(worksheet, { defval: '' });
     
           let correcto = true;
+          let arrErr = [];
           jsonData.map((m) => {
             if (correcto === true) {
               let a = m.hasOwnProperty("Código");
               let b = m.hasOwnProperty("Nombre");
               let c = m.hasOwnProperty("Persona Contacto");
               let d = m.hasOwnProperty("Teléfonos");
-              let e = m.hasOwnProperty("Fax");
               let f = m.hasOwnProperty("Correo Electrónico");
               let g = m.hasOwnProperty("Limite Credito");
               let h = m.hasOwnProperty("Dias Credito");
               let i = m.hasOwnProperty("Credito Disponible");
               let j = m.hasOwnProperty("Precio de Venta");
-              let k = m.hasOwnProperty("Ultima Venta a Contado");
               let l = m.hasOwnProperty("Ultima Venta a Crédito");
               let n = m.hasOwnProperty("Vendedores Código")
               let o = m.hasOwnProperty("Vendedores Nombre")
-              if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j || !k || !l  || !n || !o) {
-                console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}, j: ${j}, k: ${k}, l: ${l}, n: ${n}, o: ${o},`);
+              if (!a || !b || !c || !d  || !f || !g || !h || !i || !j  || !l  || !n || !o) {
+                if (!a){
+                  arrErr.push('No se encuentra el apartado de "Código" en el excel!')
+                }
+                if (!b){
+                  arrErr.push('No se encuentra el apartado de "Nombre" en el excel!')
+                }
+                if (!c){
+                  arrErr.push('No se encuentra el apartado de "Persona Contacto" en el excel!')
+                }
+                if (!d){
+                  arrErr.push('No se encuentra el apartado de "Teléfonos" en el excel!')
+                }
+                if (!f){
+                  arrErr.push('No se encuentra el apartado de "Correo Electrónico" en el excel!')
+                }
+                if (!g){
+                  arrErr.push('No se encuentra el apartado de "Limite Credito" en el excel!')
+                }
+                if (!h){
+                  arrErr.push('No se encuentra el apartado de "Dias Credito" en el excel!')
+                }
+                if (!i){
+                  arrErr.push('No se encuentra el apartado de "Credito Disponible" en el excel!')
+                }
+                if (!j){
+                  arrErr.push('No se encuentra el apartado de "Precio de Venta" en el excel!')
+                }
+                if (!l){
+                  arrErr.push('No se encuentra el apartado de "Ultima Venta a Crédito" en el excel!')
+                }
+                if (!n){
+                  arrErr.push('No se encuentra el apartado de "Vendedores Código" en el excel!')
+                }
+                if (!o){
+                  arrErr.push('No se encuentra el apartado de "Vendedores Nombre" en el excel!')
+                }
                 correcto = false;
               }
             }
           });
           if (correcto) {
+            const newArr = jsonData.map(obj => {
+              return {
+                Código: obj.Código,
+                "Nombre Corto": obj["Nombre"],
+                "Persona Contacto": obj["Persona Contacto"],
+                "Teléfonos": obj["Teléfonos"],
+                "Correo Electrónico": obj["Correo Electrónico"],
+                "Limite Credito": obj["Limite Credito"],
+                "Dias Credito": obj["Dias Credito"],
+                "Credito Disponible": obj["Credito Disponible"],
+                "Precio de Venta": obj["Precio de Venta"],
+                "Ultima Venta a Crédito": obj["Ultima Venta a Crédito"],
+                "Vendedores Código": obj["Vendedores Código"],
+                "Vendedores Nombre": obj["Vendedores Nombre"],
+              };
+            });
             let status = await updateClients(jsonData);
             setStatusCliente(status)
           } else {
-            Swal.fire({
+            MySwal.fire({
               icon: 'error',
-              title: 'Oops...',
-              text: 'El archivo insertado no corresponde a los clientes!',
+              title: 'Oops... ha ocurrido un error en el excel de clientes',
+              html: <>
+                  {arrErr.map((d) => {
+                return <li className='my-2' style={{fontSize: "15px"}}>{d}</li>
+              })}
+              Por favor, recuerde escribir los nombres como se le indica en el modelo
+              </>,
             });
           }
 
@@ -571,6 +699,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         const jsonData = utils.sheet_to_json(worksheet, { defval: '' });
 
           let correcto = true;
+          let arrErr = []
           jsonData.map((m) => {
             if (correcto === true) {
               let a = m.hasOwnProperty("Código");
@@ -584,19 +713,63 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
               let i = m.hasOwnProperty("Precio Minimo");
     
               if (!a || !b || !c || !d || !e || !f || !g || !h || !i) {
-                console.log(`a: ${a}, b: ${b}, c: ${c}, d: ${d}, e: ${e}, f: ${f}, g: ${g}, h: ${h}, i: ${i}`);
+                if (!a){
+                  arrErr.push('No se encuentra el apartado de "Código" en el excel!')
+                }
+                if (!b){
+                  arrErr.push('No se encuentra el apartado de "Nombre Corto" en el excel!')
+                }
+                if (!c){
+                  arrErr.push('No se encuentra el apartado de "Referencia" en el excel!')
+                }
+                if (!d){
+                  arrErr.push('No se encuentra el apartado de "Marca" en el excel!')
+                }
+                if (!e){
+                  arrErr.push('No se encuentra el apartado de "Modelo" en el excel!')
+                }
+                if (!f){
+                  arrErr.push('No se encuentra el apartado de "Existencia Actual" en el excel!')
+                }
+                if (!g){
+                  arrErr.push('No se encuentra el apartado de "Precio Oferta" en el excel!')
+                }
+                if (!h){
+                  arrErr.push('No se encuentra el apartado de "Precio Mayor" en el excel!')
+                }
+                if (!i){
+                  arrErr.push('No se encuentra el apartado de "Precio Minimo" en el excel!')
+                }
                 correcto = false;
               }
             }
           });
           if (correcto) {
+            const newArr = jsonData.map(obj => {
+              return {
+                Código: obj.Código,
+                "Nombre Corto": obj["Nombre Corto"],
+                Referencia: obj.Referencia,
+                Marca: obj.Marca,
+                Modelo: obj.Modelo,
+                "Existencia Actual": obj["Existencia Actual"],
+                "Precio Oferta": obj["Precio Oferta"],
+                "Precio Mayor": obj["Precio Mayor"],
+                "Precio Minimo": obj["Precio Minimo"],
+              };
+            });
             let status = await updateProducts(jsonData);
             setStatusProducto(status)
           } else {
-            Swal.fire({
+            MySwal.fire({
               icon: 'error',
-              title: 'Oops...',
-              text: 'El archivo insertado no corresponde a los productos!',
+              title: 'Oops... ha ocurrido un error en el excel de productos',
+              html: <>
+              {arrErr.map((d) => {
+                return <li className='my-2' style={{fontSize: "15px"}}>{d}</li>
+              })}
+              Por favor, recuerde escribir los nombres como se le indica en el modelo
+              </>,
             });
           }
       };
@@ -657,14 +830,14 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
     }, [preShoppingCart]);
 
-useEffect(() => {
-  console.log(attachments)
-}, [attachments]);
-
+const MySwal = withReactContent(Swal)
 
     const selectEmail = () => {
-      const MySwal = withReactContent(Swal)
-
+      let att = [];
+      const handleAttachments = (newAttachments) => {
+        console.log(newAttachments);
+        att = newAttachments
+      };
          MySwal.fire({
           icon: 'info',
 
@@ -676,7 +849,7 @@ useEffect(() => {
             setCorreoCliente(e.target.checked)
            }}/></div>
           </div>
-          <MultiAttachmentInput onAttachmentsChange={handleAttachmentsChange}/>
+          <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
             setCorreoMsn(e.target.value)
@@ -688,13 +861,12 @@ useEffect(() => {
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
-            if (!attachments[0] && !correoCliente) {
+            if (!att[0] && !correoCliente) {
               Swal.fire({
                 icon: 'error',
                 title: 'No ha insertado ningun correo al que enviar el archivo!',
               }) 
             } else {
-              let att = attachments
               if (correoCliente) {
                 att.push(sC["Correo Electrónico"])
               }
@@ -777,6 +949,8 @@ useEffect(() => {
     <div className="row bg-light col-11 py-3 d-flex justify-content-center"> 
     <div className="col-5 d-flex justify-content-center text-center"> <label htmlFor="archivoClientes" className='btn btn-primary'>{archivoClientes}</label>  <input type="file" className='Inp' id='archivoClientes' onChange={(e) => setCargaClientes(e)} /></div>
     <div className="col-5 d-flex justify-content-center text-center"><label htmlFor="archivoProductos" className='btn btn-primary'>{archivoProductos}</label> <input type="file" className='Inp' id='archivoProductos' onChange={(e) => setCargaProductos(e)} /></div> 
+    <div className="col-5 d-flex justify-content-center mt-2"> <div className="model d-flex align-items-start" onClick={modeloCliente}> <box-icon name='file-blank' size="15px" color="#646464"></box-icon> Modelo Excel de clientes</div></div>
+    <div className="col-5 d-flex justify-content-center mt-2"> <div className="model d-flex align-items-start" onClick={modeloProducto}> <box-icon name='file-blank' size="15px" color="#646464"></box-icon> Modelo Excel de productos</div></div>
     <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Actualizar</div></div>
 
     </div> 

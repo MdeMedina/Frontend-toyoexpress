@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const MultiAttachmentInput = ({onAttachmentsChange}) => {
   const [inputText, setInputText] = useState('');
@@ -21,6 +21,8 @@ const MultiAttachmentInput = ({onAttachmentsChange}) => {
       addAttachment();
     }
   };
+
+
 
   const addAttachment = () => {
     let validador = isEmailValid(inputText.trim())
