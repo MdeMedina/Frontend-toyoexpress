@@ -12,6 +12,8 @@ import MyDocument from './documento';
 import { backendUrl, frontUrl } from '../../lib/data/server';
 import MultiAttachmentInput from './multi';
 import { json } from 'react-router-dom';
+import excec from '../img/sheets.png'
+import ltx from '../img/letra-x.png'
 
 
 
@@ -42,8 +44,8 @@ export const VentaProductos = () => {
     const [menu2, setMenu2] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null)
     const [selectedProduct, setSelectedProduct] = useState(null)
-    const [archivoClientes, setarchivoClientes] = useState('Inserte Excel de Clientes');
-    const [archivoProductos, setarchivoProductos] = useState('Inserte Excel de Productos');
+    const [archivoClientes, setarchivoClientes] = useState('');
+    const [archivoProductos, setarchivoProductos] = useState('');
     const [completeProducts, setCompleteProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pdfName, setPdfName] = useState('')
@@ -186,6 +188,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }).then((response) => {
         setCorreoMsn('')
         setCorreoCliente(true)
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title:'El pedido se ha enviado correctamente!'
+          })
+        }
       });
 
     }
@@ -572,6 +580,22 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
     }
   }
+  function quitarAcentos(texto) {
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  } 
+
+  function formatearPropiedades(array) {
+    return array.map(objeto => {
+      const nuevoObjeto = {};
+      for (const clave in objeto) {
+        if (objeto.hasOwnProperty(clave)) {
+   const nuevaClave = quitarAcentos(clave)
+          nuevoObjeto[nuevaClave] = objeto[clave];
+        }
+      }
+      return nuevoObjeto;
+    });
+  }
 
   
     const handleFile = async (event1, event2) => {
@@ -599,23 +623,24 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         const workbook = read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = utils.sheet_to_json(worksheet, { defval: '' });
-    
+        let jsonData = utils.sheet_to_json(worksheet, { defval: '' });
+        jsonData = formatearPropiedades(jsonData)
+        console.log(jsonData,"json")
           let correcto = true;
           let arrErr = [];
           jsonData.map((m) => {
             if (correcto === true) {
-              let a = m.hasOwnProperty("Código");
+              let a = m.hasOwnProperty("Codigo");
               let b = m.hasOwnProperty("Nombre");
               let c = m.hasOwnProperty("Persona Contacto");
-              let d = m.hasOwnProperty("Teléfonos");
-              let f = m.hasOwnProperty("Correo Electrónico");
+              let d = m.hasOwnProperty("Telefonos");
+              let f = m.hasOwnProperty("Correo Electronico");
               let g = m.hasOwnProperty("Limite Credito");
               let h = m.hasOwnProperty("Dias Credito");
               let i = m.hasOwnProperty("Credito Disponible");
               let j = m.hasOwnProperty("Precio de Venta");
-              let l = m.hasOwnProperty("Ultima Venta a Crédito");
-              let n = m.hasOwnProperty("Vendedores Código")
+              let l = m.hasOwnProperty("Ultima Venta a Credito");
+              let n = m.hasOwnProperty("Vendedores Codigo")
               let o = m.hasOwnProperty("Vendedores Nombre")
               if (!a || !b || !c || !d  || !f || !g || !h || !i || !j  || !l  || !n || !o) {
                 if (!a){
@@ -661,21 +686,21 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           if (correcto) {
             const newArr = jsonData.map(obj => {
               return {
-                Código: obj.Código,
-                "Nombre Corto": obj["Nombre"],
+                Código: obj.Codigo,
+                "Nombre": obj["Nombre"],
                 "Persona Contacto": obj["Persona Contacto"],
-                "Teléfonos": obj["Teléfonos"],
-                "Correo Electrónico": obj["Correo Electrónico"],
+                "Teléfonos": obj["Telefonos"],
+                "Correo Electrónico": obj["Correo Electronico"],
                 "Limite Credito": obj["Limite Credito"],
                 "Dias Credito": obj["Dias Credito"],
                 "Credito Disponible": obj["Credito Disponible"],
                 "Precio de Venta": obj["Precio de Venta"],
-                "Ultima Venta a Crédito": obj["Ultima Venta a Crédito"],
-                "Vendedores Código": obj["Vendedores Código"],
+                "Ultima Venta a Crédito": obj["Ultima Venta a Credito"],
+                "Vendedores Código": obj["Vendedores Codigo"],
                 "Vendedores Nombre": obj["Vendedores Nombre"],
               };
             });
-            let status = await updateClients(jsonData);
+            let status = await updateClients(newArr);
             setStatusCliente(status)
           } else {
             MySwal.fire({
@@ -696,13 +721,14 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         const workbook = read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = utils.sheet_to_json(worksheet, { defval: '' });
-
+        let jsonData = utils.sheet_to_json(worksheet, { defval: '' });
+        jsonData = formatearPropiedades(jsonData)
+        console.log(jsonData,"json")
           let correcto = true;
           let arrErr = []
           jsonData.map((m) => {
             if (correcto === true) {
-              let a = m.hasOwnProperty("Código");
+              let a = m.hasOwnProperty("Codigo");
               let b = m.hasOwnProperty("Nombre Corto");
               let c = m.hasOwnProperty("Referencia");
               let d = m.hasOwnProperty("Marca");
@@ -747,7 +773,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           if (correcto) {
             const newArr = jsonData.map(obj => {
               return {
-                Código: obj.Código,
+                "Código": obj["Codigo"],
                 "Nombre Corto": obj["Nombre Corto"],
                 Referencia: obj.Referencia,
                 Marca: obj.Marca,
@@ -758,7 +784,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 "Precio Minimo": obj["Precio Minimo"],
               };
             });
-            let status = await updateProducts(jsonData);
+            let status = await updateProducts(newArr);
             setStatusProducto(status)
           } else {
             MySwal.fire({
@@ -870,6 +896,8 @@ const MySwal = withReactContent(Swal)
               if (correoCliente) {
                 att.push(sC["Correo Electrónico"])
               }
+              att.push("Pedidos@toyoxpress.com")
+              att.push("Toyoxpressca@gmail.com")
               console.log(att)
               att.map(correo => {
                 handleSendMail(correo, msn)
@@ -947,11 +975,19 @@ const MySwal = withReactContent(Swal)
      { !ve ? false :
       <div className="d-flex justify-content-center mt-3">
     <div className="row bg-light col-11 py-3 d-flex justify-content-center"> 
-    <div className="col-5 d-flex justify-content-center text-center"> <label htmlFor="archivoClientes" className='btn btn-primary'>{archivoClientes}</label>  <input type="file" className='Inp' id='archivoClientes' onChange={(e) => setCargaClientes(e)} /></div>
-    <div className="col-5 d-flex justify-content-center text-center"><label htmlFor="archivoProductos" className='btn btn-primary'>{archivoProductos}</label> <input type="file" className='Inp' id='archivoProductos' onChange={(e) => setCargaProductos(e)} /></div> 
-    <div className="col-5 d-flex justify-content-center mt-2"> <div className="model d-flex align-items-start" onClick={modeloCliente}> <box-icon name='file-blank' size="15px" color="#646464"></box-icon> Modelo Excel de clientes</div></div>
-    <div className="col-5 d-flex justify-content-center mt-2"> <div className="model d-flex align-items-start" onClick={modeloProducto}> <box-icon name='file-blank' size="15px" color="#646464"></box-icon> Modelo Excel de productos</div></div>
-    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Actualizar</div></div>
+    <div className="col-6 d-flex justify-content-center"> <div className="model d-flex align-items-center" onClick={modeloCliente}> <img src={excec} alt="" className='execModel'/>  Modelo Excel  </div></div>
+    <div className="col-6 d-flex justify-content-center"> <div className="model d-flex align-items-center" onClick={modeloProducto}> <img src={excec} alt="" className='execModel'/> Modelo Excel </div></div>
+{ !cargaClientes ?  <div className="col-6 d-flex justify-content-center text-center"> <label htmlFor="archivoClientes" className='btn btn-primary'>Inserte Excel de Clientes</label>  <input type="file" className='Inp' id='archivoClientes' onChange={(e) => setCargaClientes(e)} /></div> : <><div className="col-6 d-flex justify-content-center text-center"> <label htmlFor="archivoClientes" className='btn btn-primary disabled'>Excel insertado!</label>  <input type="file" className='Inp' id='archivoClientes'  /></div></>}
+    {!cargaProductos ? <div className="col-6 d-flex justify-content-center text-center"><label htmlFor="archivoProductos" className='btn btn-primary'>Inserte Excel de Productos</label> <input type="file" className='Inp' id='archivoProductos' onChange={(e) => setCargaProductos(e)} /></div> : <div className="col-6 d-flex justify-content-center text-center"><label htmlFor="archivoProductos" className='btn btn-primary disabled'>Excel insertado!</label> <input type="file" className='Inp' id='archivoProductos' /></div> }
+    { cargaClientes ? <div className="col-6 d-flex justify-content-center "><div className="execut "><div className="ltx" onClick={() => {
+      setCargaClientes(null)
+      setarchivoClientes(null)
+    }}><img src={ltx} alt="" className='img-ltx'/></div><div className="d-flex justify-content-center"><img src={excec} alt="" className='excecP'/></div><div className="col-12 mt-1">{archivoClientes}</div></div></div> : false}
+   {cargaProductos ? <div className="col-6 d-flex justify-content-center "><div className="execut "><div className="ltx" onClick={() => {
+      setCargaProductos(null)
+      setarchivoProductos(null)
+    }}><img src={ltx} alt="" className='img-ltx'/></div><div className="d-flex justify-content-center"><img src={excec} alt="" className='excecP'/></div><div className="col-12 mt-1">{archivoProductos}</div></div></div> : false}
+    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Procesar</div></div>
 
     </div> 
     </div>} 

@@ -5,6 +5,7 @@ import Pako from 'pako';
 import { useParams } from 'react-router-dom';
 import Inventario from './inventario';
 import { backendUrl } from '../../lib/data/server';
+import loading from "./loading.gif"
 
 const VistaInventario = () => {
     const [data, setdata] = useState();
@@ -40,7 +41,11 @@ const VistaInventario = () => {
           </PDFViewer>  : false
       }
       </> : <>
-      <h4 >Por favor espere, el inventario se esta cargando...</h4>
+      <div className="row d-flex justify-content-center">
+        <div className="col-12 d-flex justify-content-center"><h4 >Por favor espere, el inventario se esta cargando...</h4>
+      </div>
+      <div className="col-12 d-flex justify-content-center"><img src={loading} alt="loading" /></div>
+      </div>
 
       </>}
       </div>
