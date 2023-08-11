@@ -77,6 +77,7 @@ export const VentaProductos = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [correoCliente, setCorreoCliente] = useState(true)
     const [correoMsn, setCorreoMsn] = useState('')
+    const [fecha, setFecha] = useState('')
 
 
     
@@ -90,13 +91,87 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })     
        if (update.ok) {
         let status = await update.status
+        updateFecha()
         return status
+
       } else {
         throw new Error('Error al actualizar los productos');
       }
       
     } 
 
+    const updateStock = async (i, dd) => {
+      let data = {
+        stock: shoppingCart[i].cantidad,
+        codigo: shoppingCart[i].Código
+      }
+      let update = await fetch(`${backendUrl()}/excel/stock`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      headers: new Headers({ 'Content-type': 'application/json'})
+      })     
+       if (update.ok) {
+        if (i == shoppingCart.length - 1 && dd === 'correo') {
+        Swal.fire({
+          icon: 'success',
+          title:'El pedido se ha enviado correctamente!'
+        }).then(() => {
+          window.location= '/products'
+        })
+      }
+        let status = await update.status
+        return status
+      } else {
+        throw new Error('Error al actualizar el stock');
+      }
+      
+    } 
+
+
+    useEffect(() => {
+      console.log('primer useEffect')
+      getFecha()
+    }, [])
+
+    const getFecha = async () => {
+      const response = await fetch(`${backendUrl()}/excel/fecha`)
+      let data = await response.json()
+      console.log('fecha', data)
+      data = data.fecha
+      setFecha(data)
+    };
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      
+      let hours = date.getHours();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      const formattedDate = `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+      
+      return formattedDate;
+    }
+
+    const updateFecha = async () => {
+      let now = formatDate(Date.now())
+      let data = [{
+        fecha: now,
+      }]
+      let update = await fetch(`${backendUrl()}/excel/actFecha`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      headers: new Headers({ 'Content-type': 'application/json'})
+      })     
+      let newData = await update.json()
+      newData = newData.fecha[0].fecha
+      setFecha(newData)
+    }
     useEffect(() => {
       if (cargaClientes){
         if(cargaClientes.target.files[0] !== undefined) {
@@ -170,6 +245,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         timerProgressBar: true,
         showConfirmButton: false
       }).then(() => {
+        
         selectEmail()
       })
     }
@@ -188,12 +264,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }).then((response) => {
         setCorreoMsn('')
         setCorreoCliente(true)
-        if (response.ok) {
-          Swal.fire({
-            icon: 'success',
-            title:'El pedido se ha enviado correctamente!'
-          })
-        }
       });
 
     }
@@ -821,6 +891,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           return cart
         }
       })
+      
       setpreShoppingCart(sp)
 
     }
@@ -833,12 +904,20 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       json['precio'] = sP['Precio Mayor'] : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
       json['precio'] = sP['Precio Oferta'] : console.log(sP)
       setpreShoppingCart(prevList => [...prevList, json])
+      setSelectedProduct(null)
+      setPrecioOferta('')
+      setexistencia(0)
+      setPrecioMenor('')
+      setCódigo('')
+      setNombreCorto('')
+      setMarca('')
     }
 
     
 
     useEffect(() => {
       setShoppingCart(preShoppingCart.sort((a,b) => {
+        console.log(a.Referencia, b.Referencia, a.Referencia < b.Referencia)
         if (a.Referencia < b.Referencia) {
           return -1;
         } else if (a.Referencia > b.Referencia) {
@@ -883,7 +962,7 @@ const MySwal = withReactContent(Swal)
           
           </>,
           showCancelButton: true,
-        }).then((result) => {
+        }).then(async (result) => {
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
@@ -896,12 +975,15 @@ const MySwal = withReactContent(Swal)
               if (correoCliente) {
                 att.push(sC["Correo Electrónico"])
               }
-              att.push("Pedidos@toyoxpress.com")
-              att.push("Toyoxpressca@gmail.com")
+              att.push("pedidos@toyoxpress.com")
+              att.push("toyoxpressca@gmail.com")
               console.log(att)
-              att.map(correo => {
+              await att.map(correo => {
                 handleSendMail(correo, msn)
               })
+                shoppingCart.map((m, i) => {
+                  updateStock(i, 'correo')
+                })
             }
           }
         });
@@ -987,9 +1069,8 @@ const MySwal = withReactContent(Swal)
       setCargaProductos(null)
       setarchivoProductos(null)
     }}><img src={ltx} alt="" className='img-ltx'/></div><div className="d-flex justify-content-center"><img src={excec} alt="" className='excecP'/></div><div className="col-12 mt-1">{archivoProductos}</div></div></div> : false}
-    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Procesar</div></div>
+    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Procesar</div></div>    <div className="col-12 d-flex justify-content-center">Ultima actualizacion: {fecha}</div></div> 
 
-    </div> 
     </div>} 
   <div className="d-flex justify-content-center row mt-3 ">
     <div className="row bg-light col-11 py-4">
@@ -1050,8 +1131,8 @@ const MySwal = withReactContent(Swal)
   <tr>
     <td class="tg-0pky">{código}</td>
     <td class="tg-0pky">{nombreCorto}</td>
-    <td class="tg-0pky">{precioMenor}$</td>
-    <td class="tg-0pky">{precioOferta}$</td>
+    <td class="tg-0pky">{precioMenor}</td>
+    <td class="tg-0pky">{precioOferta}</td>
     <td class="tg-0pky">{marca}</td>
     { existencia == 0 ? 
     <td class="tg-0pky" style={{color: 'red'}}>{existencia}</td> :
@@ -1065,7 +1146,7 @@ const MySwal = withReactContent(Swal)
     <div className="boton-container col-md-1 align-items-center">
     {
       cliente ?
-      <div className="toyox-cart" onClick={selectCart}><box-icon name='cart-add' color='#ffffff' size='20px'></box-icon></div> :
+      <div className="toyox-cart" onClick={() => {selectCart()}}><box-icon name='cart-add' color='#ffffff' size='20px'></box-icon></div> :
       <div className="toyox-disabled"><box-icon name='cart-add' color='#eceaea' size='20px'></box-icon></div>
     }
     </div>
@@ -1092,9 +1173,9 @@ const MySwal = withReactContent(Swal)
       <td class="tg-0pky">{m['Nombre Corto']}</td>
     {
       sC["Precio de Venta"].trimEnd() == 'Precio Por Defecto' || sC["Precio de Venta"].trimEnd() == 'Precio Minimo' ? 
-      <td class="tg-0pky">{m["Precio Minimo"]}$</td> : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
-      <td class="tg-0pky">{m["Precio Mayor"]}$</td> : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
-      <td class="tg-0pky">{m["Precio Oferta"]}$</td> : console.log(sC)}
+      <td class="tg-0pky">{m["Precio Minimo"]}</td> : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
+      <td class="tg-0pky">{m["Precio Mayor"]}</td> : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
+      <td class="tg-0pky">{m["Precio Oferta"]}</td> : console.log(sC)}
     <td class="tg-0pky">{m.Modelo}</td>
     <td class="tg-0pky">{m.Referencia}</td>
     <td class="tg-0pky">{m.cantidad}</td>
@@ -1116,6 +1197,9 @@ const MySwal = withReactContent(Swal)
     <div className="col-4 d-flex justify-content-center align-items-center"> <div className="btn btn-primary" onClick={() => {handleButtonClick()}} disabled={loading}>Inventario</div></div>
     <div className="col-4 d-flex justify-content-center align-items-center" onClick={() => {
       crearCor()
+      shoppingCart.map((m, i) => {
+        updateStock(i, 'desc')
+      })
     }}>
       <PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr}/>} fileName='Pedido.pdf'>
         <div className="toyox" >Descargar</div>
@@ -1127,6 +1211,7 @@ const MySwal = withReactContent(Swal)
     </div> :     <div className="col-4 d-flex justify-content-center align-items-center" onClick={() => {
       if (!pdfName) {
         generarPDF()
+        crearCor()
       } else {
         generadorEmail()
       }
