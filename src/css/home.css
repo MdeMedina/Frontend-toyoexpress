@@ -57,3 +57,14 @@
     width: 16px;
     height: 16px;
 }
+
+.custom-modal-dialog {
+    max-width: none!important;
+    width: 90%;
+    height: 500px;
+}
+
+.ps45:hover {
+    background-color: #b21f00;
+    color: #fff;
+}
