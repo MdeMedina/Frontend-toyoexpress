@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import "boxicons";
 import { Link } from "react-router-dom";
+import ModalComponent from "../modal/iframeModal";
 
 function Sidebar(props) {
   let permissions = JSON.parse(localStorage.getItem("permissions"));
@@ -9,7 +10,10 @@ function Sidebar(props) {
   let cu = permissions.crearUsuarios;
   let sh = permissions.horasIngreso;
   let ca = permissions.configurarCuentas;
+  const [showModal, setShowModal] = useState(false);
 
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
   const createFunction = () => {
     if (cu) {
       return (
@@ -101,8 +105,17 @@ function Sidebar(props) {
               {createFunction()}
               {hourFunction()}
               {accountFunction()}
+              <li className="nav-link" onClick={handleShowModal}>
+                <Link to="#">
+                  <div className="icon">
+                    <box-icon name="map" size="27px"></box-icon>
+                  </div>
+                  <span className="text nav-text">Mapa</span>
+                </Link>
+              </li>
             </ul>
           </div>
+          <ModalComponent show={showModal} handleClose={handleCloseModal} />
           <div className="bottom-content">
             <li className="nav-link">
               <Link to="/logout">
