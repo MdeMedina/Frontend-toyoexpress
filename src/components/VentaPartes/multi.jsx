@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 const MultiAttachmentInput = ({onAttachmentsChange}) => {
   const [inputText, setInputText] = useState('');
@@ -10,6 +10,7 @@ const MultiAttachmentInput = ({onAttachmentsChange}) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+  const emailAdicional = useRef(null);
 
   const handleInputChange = (event) => {
     setInputText(event.target.value);
@@ -20,6 +21,10 @@ const MultiAttachmentInput = ({onAttachmentsChange}) => {
       event.preventDefault();
       addAttachment();
     }
+  };
+
+  const handleBlur = () => {
+    addAttachment()
   };
 
 
@@ -50,8 +55,10 @@ const MultiAttachmentInput = ({onAttachmentsChange}) => {
         <label htmlFor="texto" className='d-flex justify-content-start'>Emails Adicionales</label>
       <textarea
         value={inputText}
+        ref={emailAdicional}
         onChange={handleInputChange}
         onKeyDown={handleInputKeyDown}
+        onBlur={handleBlur}
         className='form-control'
         placeholder="Escribe aquí y presiona Enter o coma para agregar"
       />
