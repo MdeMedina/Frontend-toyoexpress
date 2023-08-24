@@ -33,6 +33,7 @@ export const VentaProductos = () => {
       // navDiv.classList.toggle("close");
     }
   }, []);
+  let totalSP;
   let vc = JSON.parse(localStorage.getItem("permissions")).verClientes;
   let cv = JSON.parse(localStorage.getItem("cVend"))
     const [searchQuery, setSearchQuery] = useState('');
@@ -75,9 +76,13 @@ export const VentaProductos = () => {
     const [preShoppingCart, setpreShoppingCart] = useState([])
     const [shoppingCart, setShoppingCart] = useState([])
     const [searchResults, setSearchResults] = useState([]);
-    const [correoCliente, setCorreoCliente] = useState(true)
+    const [correoCliente, setCorreoCliente] = useState(false)
     const [correoMsn, setCorreoMsn] = useState('')
     const [fecha, setFecha] = useState('')
+    const [sended, setSended] = useState([])
+    const [cantidadCor, setCantidadCor] = useState(0);
+    
+    
 
 
     
@@ -100,11 +105,21 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       
     } 
 
+    useEffect(() => {
+      if (sended.length == cantidadCor) {
+        shoppingCart.map((m, i) => {
+          updateStock(i, 'correo')
+        })
+      }
+    }, [sended]);
+    
+
     const updateStock = async (i, dd) => {
       let data = {
         stock: shoppingCart[i].cantidad,
         codigo: shoppingCart[i].Código
       }
+      console.log(sended)
       let update = await fetch(`${backendUrl()}/excel/stock`, {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -112,9 +127,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })     
        if (update.ok) {
         if (i == shoppingCart.length - 1 && dd === 'correo') {
-        Swal.fire({
+        MySwal.fire({
           icon: 'success',
-          title:'El pedido se ha enviado correctamente!'
+          title:'El pedido se ha enviado correctamente!',
+          html: <>
+          <ul>
+            {sended.map(c => {
+              console.log(c)
+              return (<li>{`${c.correo}`} {c.stat ? <box-icon name='check-circle' color='#217121' size='18px'></box-icon> : <box-icon name='x-circle' color='#a01113' size='18px'></box-icon>}</li>)
+            })}
+          </ul>
+          </>
         }).then(() => {
           window.location= '/products'
         })
@@ -233,11 +256,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
     useEffect(() => {
       if (pdfName){
-        generadorEmail()
+        generadorEmail(Corr)
     }
     }, [pdfName]);
 
-    const generadorEmail = () => {
+    const generadorEmail = (numero) => {
       Swal.fire({
         icon: 'info',
         title: 'El pedido se esta generando', 
@@ -246,26 +269,31 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         showConfirmButton: false
       }).then(() => {
         
-        selectEmail()
+        selectEmail(numero)
       })
     }
     
 
-    async function handleSendMail  (email, msn) {
+    async function handleSendMail  (numero, email, msn) {
       const mailOptions = {
         filename: pdfName,
         email: email,
-        nota: msn
+        nota: msn, 
+        corr: numero
       }
+      let res = false
       await fetch(`${backendUrl()}/upload/sendMail`, {
         method: 'POST',
         body: JSON.stringify(mailOptions),
       headers: new Headers({ 'Content-type': 'application/json'})
       }).then((response) => {
+        if(response.ok) {
+          res = true
+        } else {res = false}
         setCorreoMsn('')
         setCorreoCliente(true)
       });
-
+      return res
     }
     
     
@@ -937,7 +965,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 const MySwal = withReactContent(Swal)
 
-    const selectEmail = () => {
+    const selectEmail = (numero) => {
       let att = [];
       const handleAttachments = (newAttachments) => {
         console.log(newAttachments);
@@ -950,9 +978,7 @@ const MySwal = withReactContent(Swal)
           <p><h5>¿Cuales son los destinatarios?</h5></p>
           <div className="row my-3">
            <div className="col-8 d-flex justify-content-center"><label htmlFor="correoCliente" className='labelCorreo'>{sC["Correo Electrónico"]}</label></div>
-           <div className="col-4 d-flex justify-content-center"><input type="checkbox"  id="correoCliente" defaultChecked onChange={(e) => {
-            setCorreoCliente(e.target.checked)
-           }}/></div>
+           <div className="col-4 d-flex justify-content-center"><input type="checkbox"  id="correoCliente" defaultChecked /></div>
           </div>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
@@ -966,24 +992,23 @@ const MySwal = withReactContent(Swal)
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
+            let correoCliente = document.getElementById('correoCliente').checked
             if (!att[0] && !correoCliente) {
               Swal.fire({
                 icon: 'error',
                 title: 'No ha insertado ningun correo al que enviar el archivo!',
               }) 
             } else {
-              if (correoCliente) {
+              if (correoCliente === true) {
                 att.push(sC["Correo Electrónico"])
               }
               att.push("pedidos@toyoxpress.com")
               att.push("toyoxpressca@gmail.com")
-              console.log(att)
-              await att.map(correo => {
-                handleSendMail(correo, msn)
+              setCantidadCor(att.length)
+              await att.map(async correo => {
+                let json = {correo, stat: await handleSendMail(numero, correo, msn)}
+                setSended(prevList => [...prevList, json])
               })
-                shoppingCart.map((m, i) => {
-                  updateStock(i, 'correo')
-                })
             }
           }
         });
@@ -1119,24 +1144,24 @@ const MySwal = withReactContent(Swal)
         <table class="table ">
 <thead>
   <tr>
-    <th class="tg-0pky">Código</th>
-    <th class="tg-0pky">Descripción</th>
-    <th class="tg-0pky">Precio</th>
-    <th class="tg-0pky">Precio 2</th>
-    <th class="tg-0pky">Marca</th>
-    <th class="tg-0pky">Existencia Actual</th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Código</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Descripción</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Precio</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Precio 2</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Marca</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Existencia Actual</div></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-0pky">{código}</td>
-    <td class="tg-0pky">{nombreCorto}</td>
-    <td class="tg-0pky">{precioMenor}</td>
-    <td class="tg-0pky">{precioOferta}</td>
-    <td class="tg-0pky">{marca}</td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{código}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{nombreCorto}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{precioMenor}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{precioOferta}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{marca}</div></td>
     { existencia == 0 ? 
-    <td class="tg-0pky" style={{color: 'red'}}>{existencia}</td> :
-    <td class="tg-0pky">{existencia}</td>
+    <td class="tg-0pky" style={{color: 'red'}}><div className='d-flex justify-content-center'>{existencia}</div></td> :
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{existencia}</div></td>
 }
 
   </tr>
@@ -1156,35 +1181,44 @@ const MySwal = withReactContent(Swal)
         <table class="table">
 <thead>
   <tr>
-    <th class="tg-0pky">Codigo</th>
-    <th class="tg-0pky">Descripcion</th>
-    <th class="tg-0pky">Precio</th>
-    <th class="tg-0pky">Marca</th>
-    <th class="tg-0pky">Referencia</th>
-    <th class="tg-0pky">Cantidad</th>
-    <th class="tg-0pky">Acciones</th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Codigo</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Descripcion</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Precio</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Marca</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Referencia</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Cantidad</div></th>
+    <th class="tg-0pky"><div className='d-flex justify-content-center'>Acciones</div></th>
   </tr>
 </thead>
 <tbody>
  {shoppingCart ? shoppingCart.map((m, i) => {
   return (
     <tr>
-      <td class="tg-0pky">{m.Código}</td>
-      <td class="tg-0pky">{m['Nombre Corto']}</td>
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Código}</div></td>
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m['Nombre Corto']}</div></td>
     {
       sC["Precio de Venta"].trimEnd() == 'Precio Por Defecto' || sC["Precio de Venta"].trimEnd() == 'Precio Minimo' ? 
-      <td class="tg-0pky">{m["Precio Minimo"]}</td> : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
-      <td class="tg-0pky">{m["Precio Mayor"]}</td> : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
-      <td class="tg-0pky">{m["Precio Oferta"]}</td> : console.log(sC)}
-    <td class="tg-0pky">{m.Modelo}</td>
-    <td class="tg-0pky">{m.Referencia}</td>
-    <td class="tg-0pky">{m.cantidad}</td>
-    <td class="tg-0pky"><div><button className='toyox' onClick={(e) => {
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Minimo"]}</div></td> : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Mayor"]}</div></td> : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Oferta"]}</div></td> : console.log(sC)}
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Modelo}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Referencia}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.cantidad}</div></td>
+    <td class="tg-0pky "><div className='d-flex justify-content-center'><button className='toyox' onClick={(e) => {
       eliminarProducto(m.Código)
     }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button></div></td>
     </tr>
   )
  }): false}
+  {shoppingCart[0] ? <tr>      
+    <td class="tg-0pky"></td>
+      <td class="tg-0pky"></td>
+      <td class="tg-0pky"></td>
+      <td class="tg-0pky"></td>
+      <td class="tg-0pky"></td>
+      <td class="tg-0pky"></td>
+      <td class="tg-0pky"><h6>Total: {total}$</h6></td>
+</tr>: false}
 </tbody>
 </table>
     </div>
@@ -1213,7 +1247,7 @@ const MySwal = withReactContent(Swal)
         generarPDF()
         crearCor()
       } else {
-        generadorEmail()
+        generadorEmail(Corr)
       }
     }}>
       <div className="toyox">Enviar</div>
