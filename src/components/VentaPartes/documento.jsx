@@ -33,17 +33,13 @@ const styles = StyleSheet.create({
 
   columnImage: {
     width: "50%",
-    flex: 2,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginLeft: 20,
-    marginRight: 0,
+    marginRight: 20,
     boxSizing: "border-box",
-    padding: 10,
   },
   image: {
-    width: 110,
-    height: 110
+    width: 100,
+    height: 100,
+    alignSelf: "flex-end"
   },
   cliente: {
     width: '100%',
@@ -54,8 +50,12 @@ const styles = StyleSheet.create({
   },
 
  encabezado: {
-    width: '12.5%', padding: 10, borderBottomWidth: 1, fontSize: 8, fontWeight: "bold"
+    width: '12.5%', padding: 10, borderBottomWidth: 1, fontSize: 8, fontWeight: "bold",
  },
+ encabezadoDesc: {
+  width: '50%', padding: 10, borderBottomWidth: 1, fontSize: 8, fontWeight: "bold", 
+},
+
 
 
  celda: {
@@ -68,7 +68,7 @@ nota: {
   width: '100%', paddingHorizontal: 10, paddingVertical:3, fontSize: 12, display: 'flex', justifyContent: 'center'
 },
  celdaDesc: {
-  width: '50%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7
+  width: '50%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, 
 },
 });
 
@@ -99,9 +99,7 @@ const MyDocument = ({datosCliente, datos, total, items, nota, correlativo}) =>
         <View style={styles.table}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.encabezado}>Código</Text>
-            <Text style={styles.encabezado}>Descripción</Text>
-            <Text style={styles.encabezado}></Text>
-            <Text style={styles.encabezado}></Text>
+            <Text style={styles.encabezadoDesc}>Descripción</Text>
             <Text style={styles.encabezado}>Precio</Text>
             <Text style={styles.encabezado}>Marca</Text>
             <Text style={styles.encabezado}>Referencia</Text>
