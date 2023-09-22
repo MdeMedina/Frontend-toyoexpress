@@ -33,6 +33,7 @@ export const VentaProductos = () => {
       // navDiv.classList.toggle("close");
     }
   }, []);
+  let hora
   let totalSP;
   let vc = JSON.parse(localStorage.getItem("permissions")).verClientes;
   let cv = JSON.parse(localStorage.getItem("cVend"))
@@ -69,7 +70,7 @@ export const VentaProductos = () => {
     const [código, setCódigo] = useState('');
     const [nombreCorto, setNombreCorto] = useState('');
     const [nota, setNota] = useState('')
-    const [total, setTotal] = useState('');
+    const [total, setTotal] = useState(0);
     const [items, setItems] = useState('');
     const [marca, setMarca] = useState('');
     const [referencia, setReferencia] = useState('');
@@ -81,8 +82,8 @@ export const VentaProductos = () => {
     const [fecha, setFecha] = useState('')
     const [sended, setSended] = useState([])
     const [cantidadCor, setCantidadCor] = useState(0);
-    
-    
+    let usuario = localStorage.getItem("name")
+    console.log(usuario)
 
 
     
@@ -104,6 +105,32 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
       
     } 
+    function horaActual() {
+      // Crea un objeto Date para la hora actual en UTC
+      const horaActualUtc = new Date();
+    
+      // Establece la zona horaria de Caracas
+      const zonaHorariaCaracas = 'America/Caracas';
+    
+      // Obtén la hora actual en la zona horaria de Caracas y en español
+      const opcionesFecha = {
+        timeZone: zonaHorariaCaracas,
+        weekday: 'long',   // Día de la semana (nombre completo)
+        year: 'numeric',   // Año (ejemplo: 2023)
+        month: 'long',    // Mes (nombre completo)
+        day: 'numeric',    // Día del mes (ejemplo: 21)
+        hour: '2-digit',   // Horas (formato de 12 horas)
+        minute: '2-digit', // Minutos
+        second: '2-digit', // Segundos
+        hour12: true,      // Mostrar en formato de 12 horas (AM/PM)
+      };
+    
+      const horaActualEnCaracas = horaActualUtc.toLocaleString('es-ES', opcionesFecha);
+    
+      return horaActualEnCaracas;
+    }
+    
+
 
     useEffect(() => {
       if (sended.length == cantidadCor) {
@@ -230,7 +257,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     const generarPDF = async () => {
-      const blob = await pdf(<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr}/>).toBlob();
+      const blob = await pdf(<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr} hora={horaActual()} User={usuario}/>).toBlob();
             // Crear un objeto FormData y agregar el Blob bajo la clave "myFile"
             const formData = new FormData();
             formData.append('myFile', blob, 'file.pdf');
@@ -931,6 +958,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       json['precio'] = sP['Precio Minimo'] : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
       json['precio'] = sP['Precio Mayor'] : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
       json['precio'] = sP['Precio Oferta'] : console.log(sP)
+      json['precio'] = json['precio'].toFixed(2)
+      json['total'] = n * json['precio']
+      json['total'] = json['total'].toFixed(2)
       setpreShoppingCart(prevList => [...prevList, json])
       setSelectedProduct(null)
       setPrecioOferta('')
@@ -1229,13 +1259,14 @@ const MySwal = withReactContent(Swal)
     }} cols="60" rows="3"></textarea></div></div> </>}
  
     <div className="col-4 d-flex justify-content-center align-items-center"> <div className="btn btn-primary" onClick={() => {handleButtonClick()}} disabled={loading}>Inventario</div></div>
-    <div className="col-4 d-flex justify-content-center align-items-center" onClick={() => {
+    <div className="col-4 d-flex justify-content-center align-items-center" onClick={async () => {
       crearCor()
+      hora = horaActual()
       shoppingCart.map((m, i) => {
         updateStock(i, 'desc')
       })
     }}>
-      <PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr}/>} fileName='Pedido.pdf'>
+      <PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr} hora={horaActual()} User={usuario}/>} fileName='Pedido.pdf'>
         <div className="toyox" >Descargar</div>
         </PDFDownloadLink>
         </div>
@@ -1244,6 +1275,7 @@ const MySwal = withReactContent(Swal)
       <div className="toyox-disabled">Enviar</div>
     </div> :     <div className="col-4 d-flex justify-content-center align-items-center" onClick={() => {
       if (!pdfName) {
+        hora = horaActual()
         generarPDF()
         crearCor()
       } else {

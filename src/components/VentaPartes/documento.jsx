@@ -41,6 +41,18 @@ const styles = StyleSheet.create({
     height: 100,
     alignSelf: "flex-end"
   },
+  containerHU: {
+    flexDirection: 'row', // Alinea los hijos horizontalmente
+    justifyContent: 'space-between', // Espacio entre los hijos
+    alignItems: 'center', // Alinea los hijos verticalmente
+    // Puedes ajustar otros estilos según tus necesidades
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  letters: {
+fontSize : 10,
+width: "50%",
+},
   cliente: {
     width: '100%',
     fontSize: 9,
@@ -50,31 +62,37 @@ const styles = StyleSheet.create({
   },
 
  encabezado: {
-    width: '12.5%', padding: 10, borderBottomWidth: 1, fontSize: 8, fontWeight: "bold",
+    width: '16%', padding: 10, borderBottomWidth: 1,borderTopWidth:1, fontSize: 8, fontWeight: "bold",
  },
+ encabezadoPrecio: {
+  width: '5%', padding: 10, borderBottomWidth: 1,borderTopWidth:1, fontSize: 8, fontWeight: "bold",
+},
  encabezadoDesc: {
-  width: '50%', padding: 10, borderBottomWidth: 1, fontSize: 8, fontWeight: "bold", 
+  width: '37%', padding: 10, borderBottomWidth: 1, borderTopWidth:1, fontSize: 8, fontWeight: "bold", 
 },
 
 
 
  celda: {
-    width: '12.5%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, 
+    width: '16%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, 
  },
+ celdaPrecio: {
+  width: '5%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, 
+},
  finales: {
-  width: '33.3%', paddingHorizontal: 10, paddingVertical:3, fontSize: 12, 
+  width: '33.3%', paddingVertical:3, fontSize: 12, 
 },
 nota: {
-  width: '100%', paddingHorizontal: 10, paddingVertical:3, fontSize: 12, display: 'flex', justifyContent: 'center'
+  width: '100%', paddingVertical:3, fontSize: 12, display: 'flex', justifyContent: 'center',
 },
  celdaDesc: {
-  width: '50%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, 
+  width: '37%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, 
 },
 });
 
 
 // Create Document Component
-const MyDocument = ({datosCliente, datos, total, items, nota, correlativo}) => 
+const MyDocument = ({datosCliente, datos, total, items, nota, correlativo, hora, User}) => 
     (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -96,33 +114,41 @@ const MyDocument = ({datosCliente, datos, total, items, nota, correlativo}) =>
         <Image source={require('../img/favicon.ico')} style={styles.image}/>
         </View>
         </View>
+        <View style={styles.containerHU}>
+          <View><Text style={styles.letters} >Fecha: {hora}</Text><Text style={styles.letters}>Usuario: {User}</Text></View>
+        </View>
         <View style={styles.table}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.encabezado}>Código</Text>
             <Text style={styles.encabezadoDesc}>Descripción</Text>
-            <Text style={styles.encabezado}>Precio</Text>
             <Text style={styles.encabezado}>Marca</Text>
-            <Text style={styles.encabezado}>Referencia</Text>
-            <Text style={styles.encabezado}>Cantidad</Text>
+            <Text style={{width: '11%', padding: 10, borderBottomWidth: 1,borderTopWidth:1, fontSize: 8, fontWeight: "bold"}}>Referencia</Text>
+            <Text style={styles.encabezadoPrecio}>Cant.</Text>
+            <Text style={styles.encabezadoPrecio}>P.U.</Text>
+            <Text style={{width: '10%', padding: 10, borderBottomWidth: 1,borderTopWidth:1, fontSize: 8, fontWeight: "bold"}}>Total</Text>
           </View>
         {datos.map(d => (
         <View style={{ flexDirection: 'row' }}>
                       <Text style={styles.celda}>{d["Código"]}</Text>
                       <Text style={styles.celdaDesc}>{d["Nombre Corto"]}</Text>
-                      <Text style={styles.celda}>{`${d["precio"]}`}</Text>
                       <Text style={styles.celda}>{d["Modelo"]}</Text>
-                      <Text style={styles.celda}>{d["Referencia"]}</Text>
-                      <Text style={styles.celda}>{`${d["cantidad"]}`}</Text>
+                      <Text style={{width: '11%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7}}>{d["Referencia"]}</Text>
+                      <Text style={styles.celdaPrecio}>{`${d["cantidad"]}`}</Text>
+                      <Text style={styles.celdaPrecio}>{`${d["precio"]}`}</Text>
+                      <Text style={{width: '10%', paddingHorizontal: 10, paddingVertical:3, fontSize: 7, }}>{`${d["total"]}`}</Text>
         </View>
         ))}
         </View>
+        <View style={{paddingHorizontal: 20,      flex: 1,    flexDirection: 'column', // Alinea los hijos verticalmente
+    alignItems: 'flex-end'}}>
         <View style={{justifyContent: 'flex-end', height: '80%',   marginBottom: 5,       display: "flex",
         flexDirection: "row", 
-        alignItems: "space-between",}}><Text style={styles.finales}>Total: {total}</Text><Text style={styles.finales}>Lineas: {datos.length}</Text><Text style={styles.finales}>Items: {items} </Text></View>
+        alignItems: "space-between",}}><Text style={styles.finales}>Total: {total.toFixed(2)}</Text><Text style={styles.finales}>Lineas: {datos.length}</Text><Text style={styles.finales}>Items: {items} </Text></View>
                 <View style={{justifyContent: 'flex-end', marginBottom: 30,         display: "flex",
         flexDirection: "row",
         alignItems: "space-between",}}>
         <Text style={styles.nota}><Text style={{}}>Nota:</Text> <Text style={{width: '30%', fontSize: 10}}>{nota}</Text></Text>
+        </View>
         </View>
         </View>
     </Page>
