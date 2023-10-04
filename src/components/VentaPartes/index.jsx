@@ -62,6 +62,8 @@ export const VentaProductos = () => {
     const [product, setProduct] = useState('');
     const [dataClient, setDataClient] = useState([]);
     const [dataProducts, setDataProducts] = useState([]);
+    const [corDesx, setCorDesx] = useState(false);
+    
     const [rif, setRif] = useState('');
     const [precioMayor, setPrecioMayor] = useState('');
     const [precioOferta, setPrecioOferta] = useState('');
@@ -132,6 +134,10 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     
 
 
+    useEffect(() => {
+      if(corDesx === true) {traerCor()}
+      setCorDesx(false)
+    }, [shoppingCart])
     useEffect(() => {
       if (sended.length == cantidadCor) {
         shoppingCart.map((m, i) => {
@@ -269,9 +275,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         }).then(async (response) => {
           if (response.ok){
           let data  = await response.json()
-
           data = data.data
-         setPdfName(data)
+          setPdfName(data)
+          if(corDesx === false) {
+            crearCor()
+          }
+
           }
         });
         // Manejar la respuesta de la solicitud, si es necesario
@@ -399,7 +408,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
 
     const getSimpleClients = async (search) => {
-      console.log(search)
       const response = await fetch(`${backendUrl()}/excel/clients`, {
         method:'POST',
         headers: {
@@ -556,15 +564,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
   
     
   const crearCor = async () => {
-    let data = {cor: newCorr + 1}
     let creation = await fetch(`${backendUrl()}/pdf/create`, {
       method: 'POST',
-      body: JSON.stringify(data),
     headers: new Headers({ 'Content-type': 'application/json'})
     })     
     if (creation.ok) {
       let status = await creation
-      traerCor()
       return status
     } else {
       throw new Error('Error al crear el correlativo');
@@ -963,6 +968,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       json['total'] = json['total'].toFixed(2)
       setpreShoppingCart(prevList => [...prevList, json])
       setSelectedProduct(null)
+      setProduct(null)
       setPrecioOferta('')
       setexistencia(0)
       setPrecioMenor('')
@@ -1032,7 +1038,7 @@ const MySwal = withReactContent(Swal)
               if (correoCliente === true) {
                 att.push(sC["Correo Electrónico"])
               }
-              att.push("pedidos@toyoxpress.com")
+              att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
               await att.map(async correo => {
@@ -1154,6 +1160,7 @@ const MySwal = withReactContent(Swal)
         <div className="col-sm-2 d-flex align-items-center justify-content-center">Nro de Parte:</div>
         <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={partes} components={components} menuIsOpen={menu1} isClearable={true} value={selectedProduct} onChange={(e) => {
           if (e === null) {
+            console.log("entre a e=null")
             setSelectedProduct(null)
           } else {
           console.log(e)
@@ -1161,7 +1168,6 @@ const MySwal = withReactContent(Swal)
           }
         setProduct(e.value) }} placeholder='Introduce el número de parte' onInputChange={(e) => {
           if (e.length >= 5) {
-            console.log('entre');
           getSimpleProducts(e)
           } else {
             setPartes([])
@@ -1260,11 +1266,15 @@ const MySwal = withReactContent(Swal)
  
     <div className="col-4 d-flex justify-content-center align-items-center"> <div className="btn btn-primary" onClick={() => {handleButtonClick()}} disabled={loading}>Inventario</div></div>
     <div className="col-4 d-flex justify-content-center align-items-center" onClick={async () => {
-      crearCor()
+      if (corDesx === false) {
+        crearCor()
+        setCorDesx(true)
+        shoppingCart.map((m, i) => {
+          updateStock(i, 'desc')
+        })
+      }
       hora = horaActual()
-      shoppingCart.map((m, i) => {
-        updateStock(i, 'desc')
-      })
+
     }}>
       <PDFDownloadLink document={<MyDocument datosCliente={sC} datos={shoppingCart} total={total} items={items} nota={nota} correlativo={Corr} hora={horaActual()} User={usuario}/>} fileName='Pedido.pdf'>
         <div className="toyox" >Descargar</div>
@@ -1277,7 +1287,6 @@ const MySwal = withReactContent(Swal)
       if (!pdfName) {
         hora = horaActual()
         generarPDF()
-        crearCor()
       } else {
         generadorEmail(Corr)
       }
