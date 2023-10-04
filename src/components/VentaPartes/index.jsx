@@ -1032,7 +1032,7 @@ const MySwal = withReactContent(Swal)
               if (correoCliente === true) {
                 att.push(sC["Correo Electrónico"])
               }
-              att.push("pedidos@toyoxpress.com")
+              att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
               await att.map(async correo => {
