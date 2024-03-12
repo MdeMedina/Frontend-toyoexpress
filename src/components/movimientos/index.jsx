@@ -687,7 +687,7 @@ function subDays(fecha, dias){
 }
 function formatearFecha(fechaString) {
   const fecha = new Date(fechaString);
-  
+  fecha.setDate(fecha.getDate() + 1);
   const dia = fecha.getDate().toString().padStart(2, '0');
   const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
   const año = fecha.getFullYear().toString().slice(-2);
