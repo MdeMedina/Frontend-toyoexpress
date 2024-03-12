@@ -1064,7 +1064,7 @@ resulting.map((m, i) => {
   concepto: m.concepto,
   status: statusSetterPdf(m),
   aprobacion: m.vale,
-  fecha: m.fecha,
+  fecha: formatearFecha(m.fecha),
   ingreso: m.monto > 0 ? m.monto : 0.00,
   egreso: m.monto < 0 ? m.monto : 0.00
   }
@@ -1373,7 +1373,7 @@ return (
            concepto: m.concepto,
            status: statusSetterPdf(m),
            aprobacion: m.vale,
-           fecha: m.fecha,
+           fecha: formatearFecha(m.fecha),
            ingreso: m.monto > 0 ? m.monto : 0.00,
            egreso: m.monto < 0 ? m.monto : 0.00
            }
@@ -1394,7 +1394,7 @@ return (
              concepto: m.concepto,
              status: statusSetterPdf(m),
              aprobacion: m.vale,
-             fecha: m.fecha,
+             fecha: formatearFecha(m.fecha),
              ingreso: m.monto > 0 ? m.monto : 0.00,
              egreso: m.monto < 0 ? m.monto : 0.00
              }
@@ -1470,6 +1470,7 @@ return (
 
   {
     moves.map((m, i) => {
+      console.log(m)
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
        bsIdLabel = `exampleModalLabel-${i}`
@@ -1501,7 +1502,7 @@ return (
         <div className="col-5  d">
           <h6 className="col-12 titulo">Datos Generales</h6>
           <div className="col-12 subtitulo">Fecha de Creacion</div>
-        <div className="col-12 texto">{m.fecha}</div>
+        <div className="col-12 texto">{formatearFecha(m.fecha)}</div>
         {
           !m.vale ? false : <div><div className="col-12 subtitulo">Vale de Aprobacion</div><div className="col-12 texto">{m.vale}</div></div>
         }
