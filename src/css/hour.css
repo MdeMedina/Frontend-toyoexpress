@@ -19,3 +19,6 @@
   .getMoves{
     margin-left: 45%;
   }
+  .anterior {
+    overflow-x: scroll;
+}

@@ -52,7 +52,11 @@ const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
 const em = JSON.parse(localStorage.getItem("permissions")).editarMovimientos
 const [moves, setMoves] = useState([])
 const [editKey, setEditKey] = useState()
+const [montoCajaChica, setMontoCajaChica] = useState(0);
+const [montoTotal, setMontoTotal] = useState(0);
 const [room, setRoom] = useState()
+const [condicionBusqueda, setCondicionBusqueda] = useState({});
+const [pagina, setPagina] = useState(1);
 const [actMovimiento, setActMovimiento] = useState(false)
 const [ActCantidad, setActCantidad] = useState(cantidadM)
 const [users, setUsers] = useState([])
@@ -68,9 +72,10 @@ const [aproveN, setAproveN] = useState([])
 const [egresoShow, setEgresoShow] = React.useState(false);
 const [selectMove, setSelectMove] = useState('')
 const [startDate, setStartDate] = useState(subDays(new Date(), 30));
+const [endDate, setEndDate] = useState(new Date());
+const [fechas, setFechas] = useState({from: startDate, to: endDate})
 const [startUDate, setStartUDate] = useState(primerDia)
 const [minDate, setMinDate] = useState(primerDia)
-const [endDate, setEndDate] = useState(new Date());
 const [name, setName] = useState(null)
 const [concepto, setConcepto] = useState(null)
 const [identificador, setIdentificador] = useState('')
@@ -93,10 +98,25 @@ const [bolos, setBolos] = useState(0)
 const [cambio, setCambio] = useState(0)
 const [newConcepto, setNewConcepto] = useState('')
 const isAdmin = localStorage.getItem('role')
-const getMoves = async () => {
-  const response = await fetch(URL)
+const [totalMovimientos, setTotalMovimientos] = useState(0);
+
+
+
+const getMoves = async ( condition, pagina, cantidad, fechas) => {
+  const response = await fetch(URL, {
+    method:'POST',
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({condition, pagina, cantidad, fechas})
+  })
   let data = await response.json()
- setMoves(data)
+  console.log(data)
+ setMoves(data.movimientos)
+ setTotalMovimientos(data.total)
+ setMontoCajaChica(Number(data.cajaChica.toFixed(2)))
+ setMontoTotal(Number(data.saldo.toFixed(2)))
 }
 
 const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
@@ -114,6 +134,11 @@ const handlePrint = useReactToPrint({
     setMostrar(false)
   }
 })
+
+useEffect(() => {
+  setFechas({from: startDate, to: endDate});
+}, [startDate, endDate]);
+
 
 
 
@@ -219,6 +244,36 @@ function currencyFormatter({ currency, value}) {
   }) 
   return formatter.format(value)
 }
+
+const paginacion = (ciclo, total) => {
+  const cantidad = Math.ceil(total / ciclo);
+  console.log(cantidad)
+  return (
+    <div className="anterior col-9 d-flex align-items-center">
+      <Pagination size="sm" className='mb-0'>
+        {Array.from(Array(cantidad).keys()).map((number) => {
+          const active = pagina === number + 1 ? true : false;
+          return (
+            <Pagination.Item
+              key={number + 1}
+              active={active}
+              onClick={() => paginar(number + 1, active)}
+            >
+              {number + 1}
+            </Pagination.Item>
+          );
+        })}
+      </Pagination>
+    </div>
+  );
+};
+
+const paginar = (page, ignorar) => {
+  if (ignorar) return false;
+  setPagina(page);
+  getMoves(condicionBusqueda, page, vPage, fechas);
+};
+
 const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle, otro ) => {
   let name = localStorage.getItem("name");
   let obj = {
@@ -268,7 +323,7 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       body: JSON.stringify(obj),
     })
       .then(r => r.json()).then(r => {
-        setMoves(r.moves)
+        getMoves(condicionBusqueda, 1, vPage, fechas)
         if (r.status === 200) {
           Swal.fire({
             icon: "success",
@@ -457,6 +512,12 @@ const gettingUsers = async() => {
 }) 
 }
 
+useEffect(() => {
+  getMoves(condicionBusqueda, 1, vPage, fechas)
+  setPagina(1);
+}, [condicionBusqueda, vPage, fechas]);
+
+
 const handleVPage = (e) => {
 
   setCurrentPage(0)
@@ -466,13 +527,14 @@ const handleVPage = (e) => {
 }
 
 const handleCuentaValue = (e) => {
+  let values = e.map(item => item.value)
 if (!e.length) {
-  setCuenta(null)
+  setCondicionBusqueda(prev => ({...prev, cuenta: ''}))
 }else {
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
-  setCuenta(e)
+  setCondicionBusqueda(prev => ({...prev, cuenta: values}))
 }
 }
 const handlePdfCuentaValue = (e) => {
@@ -486,26 +548,27 @@ const handleTMoveValue = (e) => {
     setCurrentPage(0)
       setEstaba(1)
       setMeEncuentro(1)
-      setId(e.value)
+      setCondicionBusqueda(prev => ({...prev, identificador: e.value}))
   }
 const handleNameValue = (e) => {
+  let values = e.map(item => item.value)
   if (!e.length) {
-    setName(null)
+    setCondicionBusqueda(prev => ({...prev, name: ''}))
   }else {
     setCurrentPage(0)
     setEstaba(1)
     setMeEncuentro(1)
-    setName(e)
+    setCondicionBusqueda(prev => ({...prev, name: values}))
   }
   }
   const handleConceptoValue = (e) => {
     if (!e.length) {
-      setConcepto(null)
+      setCondicionBusqueda(prev => ({...prev, concepto: ''}))
     }else {
       setCurrentPage(0)
       setEstaba(1)
       setMeEncuentro(1)
-      setConcepto(e)
+      setCondicionBusqueda(prev => ({...prev, concepto: e}))
     }
     }
   const handlePdfNameValue = (e) => {
@@ -517,23 +580,24 @@ const handleNameValue = (e) => {
     }
     }
   const handlePayValue = (e) => {
+    let values = e.map(item => item.value)
     if (!e.length) {
-      setPago(null)
+      setCondicionBusqueda(prev => ({...prev, pago: null}))
     }else {
       setCurrentPage(0)
       setEstaba(1)
       setMeEncuentro(1)
-      setPago(e)
+      setCondicionBusqueda(prev => ({...prev, pago: values}))
     }
     }
     const handleAproveValue = (e) => {
       if (!e.length) {
-        setNroAprobacion(null)
+        setCondicionBusqueda(prev => ({...prev, vale: ''}))
       }else {
         setCurrentPage(0)
         setEstaba(1)
         setMeEncuentro(1)
-        setNroAprobacion(e)
+        setCondicionBusqueda(prev => ({...prev, vale: e}))
       }
       }
 
@@ -546,9 +610,9 @@ const handleNameValue = (e) => {
     ]
 let nombres = []
 let tPagos = [
-  {value: 'Bs', label: 'Bs'},
-  {value: 'Zelle', label: 'Zelle'},
-  {value: 'Efectivo', label: 'Efectivo'}
+  {value: 'bs', label: 'Bs'},
+  {value: 'zelle', label: 'Zelle'},
+  {value: 'efectivo', label: 'Efectivo'}
 ]
 
 const aproveSetter2 = (move) => {
@@ -592,6 +656,19 @@ const statusSetterPdf = (move) => {
  }
 }
 
+const getMovesPDF = async ( condition, fechas) => {
+  const response = await fetch(`${URL}/PDF`, {
+    method:'POST',
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({condition, fechas})
+  })
+  let data = await response.json()
+ return {moves: data.movimientos, saldoInicio: data.fechaInicio, saldoFin: data.fechaFin}
+}
+
 
 const statusBoxSetter = (move) => {
   if (!move.vale) {
@@ -608,6 +685,17 @@ function subDays(fecha, dias){
   fecha.setDate(fecha.getDate() - dias);
   return fecha;
 }
+function formatearFecha(fechaString) {
+  const fecha = new Date(fechaString);
+  
+  const dia = fecha.getDate().toString().padStart(2, '0');
+  const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+  const año = fecha.getFullYear().toString().slice(-2);
+
+  return `${dia}/${mes}/${año}`;
+}
+
+
 function filterRange(arr, a, b) {
   // agregamos paréntesis en torno a la expresión para mayor legibilidad
 
@@ -651,111 +739,28 @@ const formatDate = (date) => {
   return formatDateHoy(init)
 }
 
-const mountingTotalCC = () => {
-  let betaResults = moves
-  let results = []
-  if (cuenta) {
-    alphaResults = []
-    cuenta.map((c) => {
-      betaResults.map((dato) => {
-        if (c.value === dato.cuenta) {
-          alphaResults.push(dato)
-        }
-      })
-      })
-      betaResults = alphaResults
-  }
-  betaResults.map((move) => {
-    cuentas.map((cuenta) => {
-      if (move.cuenta == cuenta.label && cuenta.saldo == false){
-        results.push(move)
-      }
-    })
-  })
 
-  let total = 0;
-  let tempMonto;
-
-  results.map((r) => {
-    tempMonto = parseFloat(r.monto)
-    if (r.identificador.charAt(0) === 'E') {
-      if (tempMonto > 0) {
-      tempMonto = tempMonto * -1 
-      }
-    }
-
-    
-    
-
-
-    if (r.disabled == false) {
-    total = (total + tempMonto).toFixed(2)
-    total = parseFloat(total)
-    }
-  })
-
-
-
-if (total > 0) {
-  return <label className='ingreso-label '>{total}$</label>
-} else if (total < 0) {
-  return <label className='egreso-label '>{total}$</label>
-} else {
-  return <label className=''>{total}$</label>
-}
-}
 
 const mountingTotal = () => {
-    let betaResults = moves
-    let results = []
-    if (cuenta) {
-      alphaResults = []
-      cuenta.map((c) => {
-        betaResults.map((dato) => {
-          if (c.value === dato.cuenta) {
-            alphaResults.push(dato)
-          }
-        })
-        })
-        betaResults = alphaResults
-    }
-    betaResults.map((move) => {
-      cuentas.map((cuenta) => {
-        if (move.cuenta == cuenta.label && cuenta.saldo == true){
-          results.push(move)
-        }
-      })
-    })
 
-    let total = 0;
-    let tempMonto;
- 
-    results.map((r) => {
-      tempMonto = parseFloat(r.monto)
-      if (r.identificador.charAt(0) === 'E') {
-        if (tempMonto > 0) {
-        tempMonto = tempMonto * -1 
-        }
-      }
-
-      
-      
-
-
-      if (r.disabled == false) {
-      total = (total + tempMonto).toFixed(2)
-      total = parseFloat(total)
-      }
-    })
-
-
-
-  if (total > 0) {
-    return <label className='ingreso-label '>{total}$</label>
-  } else if (total < 0) {
-    return <label className='egreso-label'>{total}$</label>
+  if (montoTotal > 0) {
+    return <label className='ingreso-label '>{montoTotal}$</label>
+  } else if (montoTotal < 0) {
+    return <label className='egreso-label'>{montoTotal}$</label>
   } else {
-    return <label className=''>{total}$</label>
+    return <label className=''>{montoTotal}$</label>
+  }
+}
+
+
+const mountingTotalCC = () => {
+
+  if (montoCajaChica > 0) {
+    return <label className='ingreso-label '>{montoCajaChica}$</label>
+  } else if (montoCajaChica < 0) {
+    return <label className='egreso-label'>{montoCajaChica}$</label>
+  } else {
+    return <label className=''>{montoCajaChica}$</label>
   }
 }
 
@@ -790,7 +795,8 @@ await fetch(`${backendUrl()}/moves/updateStatus`, {
       })
     }
   }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(socket.emit("join_room", move.messageId)).then(socket.emit("send_aprove", { email, message, messageId }))
-getMoves()
+getMoves(condicionBusqueda, 1, vPage, fechas)
+setPagina(1);
 
 }   
 
@@ -799,12 +805,15 @@ getMoves()
 
 
 useEffect(()=> {
-  getMoves()
+  getMoves(condicionBusqueda, 1, vPage, fechas)
+  setPagina(1);
   gettingUsers() 
-  socket.on('move', getMoves)
+  socket.on('move', () => {getMoves(condicionBusqueda, 1, vPage, fechas)     
+    setPagina(1)})
 
   return () => {
-    socket.off('move', getMoves)
+    socket.off('move', () => {getMoves(condicionBusqueda, 1, vPage, fechas)     
+      setPagina(1)})
   }
 }, [])
 const setterMonto = (e) => {
@@ -822,7 +831,7 @@ const setterStatus = (e) => {
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
-  setSearchStatus(e.target.value)
+  setCondicionBusqueda(prev => ({...prev, status: e.target.value}))
 }
 
 const stDateSetter = (date) => {
@@ -845,261 +854,6 @@ const endDateSetter = (date) => {
   setMeEncuentro(1)
   setEndDate(date)
 }
-
-let alphaResults = [];
-let betaResults = []
-let results = [];
-let totalOriginal = 0;
-let inicio = new Date(startDate)
-if (!vm) {
-  inicio = new Date(startUDate)
-}
-let final = new Date(endDate)
-if (!monto && !cuenta && !pago && !name && !Id && !searchStatus && !nroAprobacion && !concepto) {
-  betaResults = moves
-
-  betaResults = betaResults.filter( (dato) => {
-
-    return !dato.disabled
-  })
-
-  betaResults= filterRange(betaResults, inicio, final)
-  if (vm === false) {
-    betaResults = betaResults.filter((dato) => {
-      return dato.name.includes(localStorage.getItem('name'))
-    })
-  }
-
-
-if (sortId === 1) {
-  betaResults = betaResults.sort((a, b) => {
-    const arrId1 = a.identificador.split('-')
-    const arrId2 = b.identificador.split('-')
-    return ( parseInt(arrId2[1]) - parseInt(arrId1[1]))}
-   )
-  }else if (sortId === 2) {
-    betaResults = betaResults.sort((a, b) => {
-      const arrId1 = a.identificador.split('-')
-      const arrId2 = b.identificador.split('-')
-      return ( parseInt(arrId1[1]) - parseInt(arrId2[1]) )}
-     )
-  } else if (sortFecha === 1) {
-   betaResults = betaResults.sort((a, b) => {
-    const arrfecha1 =  a.fecha.split('/')
-    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
-    const arrfecha2 =  b.fecha.split('/')
-    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-    return fechaReal2 -fechaReal1 
-  })
-  } else if (sortFecha === 2) {
-       betaResults = betaResults.sort((a, b) => {
-    const arrfecha1 =  a.fecha.split('/')
-    const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
-    const arrfecha2 =  b.fecha.split('/')
-    const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-    return fechaReal1 -fechaReal2 
-  })
-  } else if (sortStatus === 1) {
-    betaResults = betaResults.sort((a, b) => {
-      if (a.vale && !b.vale) {
-        return 1
-      } else if (a.vale && b.vale) {
-        return 0
-      } else if (!a.vale && b.vale) {
-        return -1
-      } else if (!a.vale && !b.vale){
-        return 0
-      }
-    })
-  } else if (sortStatus === 2) {
-    betaResults = betaResults.sort((a, b) => {
-      if (!a.vale && b.vale) {
-        return 1
-      } else if (!a.vale && !b.vale) {
-        return 0
-      } else if (a.vale && !b.vale) {
-        return -1
-      } else if (a.vale && b.vale){
-        return 0
-      }
-    })
-  }
-
-  results = betaResults
-  betaResults.map((m, i) => {
-    if (m.identificador.charAt(0) === 'E') {
-      totalOriginal -= parseFloat(m.monto)
-      }else if (m.identificador.charAt(0) === 'I') {
-       totalOriginal += parseFloat(m.monto)
-      }
-  })
-} else {
-  betaResults = moves
-  console.log(betaResults)
-    if (vm === false) {
-    betaResults = betaResults.filter((dato) => {
-      return dato.name.includes(localStorage.getItem('name'))
-    })
-  }
-  if (Id) {
-    betaResults = betaResults.filter((dato) => {
-      return dato.identificador.includes(Id)
-    })
-  }
-
-    if (nroAprobacion) {
-    betaResults = betaResults.filter((dato) => {
-      return dato.vale.includes(nroAprobacion)
-    })
-  }
-
-
-
-  if (pago) {
-    alphaResults = []
-    pago.map((c) => {
-      betaResults.map((dato) => {
-        const ident = (move) => {
-          return move.identificador = dato.identificador
-        }
-        if (c.value == 'Bs' && dato.dollars > 0) {
-
-          if (alphaResults.indexOf(dato) === -1){
-          alphaResults.push(dato)
-          }
-        } 
-
-         if (c.value == 'Efectivo' && dato.efectivo > 0) {
-          if (alphaResults.indexOf(dato) === -1 ){
-            alphaResults.push(dato)
-            }
-        } 
-
-         if (c.value == 'Zelle' && dato.zelle > 0) {
-          if (alphaResults.indexOf(dato) === -1){
-            alphaResults.push(dato)
-            }
-        }      })
-    })
-    betaResults = alphaResults
-  }
-    if (name) {
-      alphaResults = []
-      name.map((c) => {
-        betaResults.map((dato) => {
-          if (c.value === dato.name) {
-            alphaResults.push(dato)
-          }
-        })
-      })
-      betaResults = alphaResults
-  }
-
-  if (concepto) {
-    betaResults = betaResults.filter((dato) => {
-      let string = dato.concepto.toLowerCase()
-      return string.includes(concepto.toLowerCase())
-    })
-}
-  betaResults = betaResults.filter( (dato) => {
-
-    return !dato.disabled
-  })
-
-  if (cuenta) {
-    alphaResults = []
-    cuenta.map((c) => {
-      betaResults.map((dato) => {
-        if (c.value === dato.cuenta) {
-          alphaResults.push(dato)
-        }
-      })
-      })
-      betaResults = alphaResults
-  }
-
-
-  if (searchStatus === 'Aprove') {
-    betaResults = betaResults.filter( (dato) => {
-      return dato.vale 
-    })
-   }else if (searchStatus === 'Unverified') {
-        betaResults = betaResults.filter( (dato) => {
-      return !dato.vale
-    })
-   }
-
-
-   if (sortId === 1) {
-    betaResults = betaResults.sort((a, b) => {
-      const arrId1 = a.identificador.split('-')
-      const arrId2 = b.identificador.split('-')
-      return ( parseInt(arrId2[1]) - parseInt(arrId1[1]))}
-     )
-    }else if (sortId === 2) {
-      betaResults = betaResults.sort((a, b) => {
-        const arrId1 = a.identificador.split('-')
-        const arrId2 = b.identificador.split('-')
-        return ( parseInt(arrId1[1]) - parseInt(arrId2[1]) )}
-       )
-    } else if (sortFecha === 1) {
-     betaResults = betaResults.sort((a, b) => {
-      const arrfecha1 =  a.fecha.split('/')
-      const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
-      const arrfecha2 =  b.fecha.split('/')
-      const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-      return fechaReal2 -fechaReal1 
-    })
-    } else if (sortFecha === 2) {
-         betaResults = betaResults.sort((a, b) => {
-      const arrfecha1 =  a.fecha.split('/')
-      const fechaReal1 = new Date(arrfecha1[2], parseInt(arrfecha1[1] - 1), arrfecha1[0])
-      const arrfecha2 =  b.fecha.split('/')
-      const fechaReal2 = new Date(arrfecha2[2], parseInt(arrfecha2[1] - 1), arrfecha2[0])
-      return fechaReal1 -fechaReal2 
-    })
-    } else if (sortStatus === 1) {
-      betaResults = betaResults.sort((a, b) => {
-        if (a.vale && !b.vale) {
-          return 1
-        } else if (a.vale && b.vale) {
-          return 0
-        } else if (!a.vale && b.vale) {
-          return -1
-        } else if (!a.vale && !b.vale){
-          return 0
-        }
-      })
-    } else if (sortStatus === 2) {
-      betaResults = betaResults.sort((a, b) => {
-        if (!a.vale && b.vale) {
-          return 1
-        } else if (!a.vale && !b.vale) {
-          return 0
-        } else if (a.vale && !b.vale) {
-          return -1
-        } else if (a.vale && b.vale){
-          return 0
-        }
-      })
-    }
-    betaResults= filterRange(betaResults, inicio, final)
-  results = betaResults
-  betaResults.map((m, i) => {
-    if (m.identificador.charAt(0) === 'E') {
-      totalOriginal -= parseFloat(m.monto)
-      }else if (m.identificador.charAt(0) === 'I') {
-       totalOriginal += parseFloat(m.monto)
-      }
-  })
-}
-const filteredResults = () => {
-  console.log(currentPage, currentPage + vPage)
-  let resultados = results.slice(currentPage, currentPage + vPage)
-  return resultados
-}
-
-
 
 
 
@@ -1274,45 +1028,6 @@ const prevPage = () => {
 let bsId;
 let bsTarget;
 let pages
-let itemPagination =[];
-
-const makePages = () => {
-  pages = Math.ceil(results.length / vPage)
-  const offset = 2 // El número de páginas que se mostrarán en el paginador
-  const start = Math.max(1, meEncuentro - offset) // índice de la primera página a mostrar
-  const end = Math.min(start + offset * 2, pages)  // El número de la última página en el rango
-
-
-
-  for (let i = start; i <= end; i++) {
-    if (meEncuentro == i) {
-      itemPagination.push(<Pagination.Item active onClick={(e) => {
-
-        if (isNaN(e.target.text)) {
-          setEstaba(meEncuentro)
-
-        }else {
-        setEstaba(meEncuentro)
-        setMeEncuentro(e.target.text)
-}
-      }}>{i}</Pagination.Item>)
-    } else {
-      itemPagination.push(<Pagination.Item onClick={(e) => {
-        if (isNaN(e.target.text)) {
-          setEstaba(meEncuentro)
-        }else {
-        setEstaba(meEncuentro)
-        setMeEncuentro(e.target.text)
-}
-      }}>{i}</Pagination.Item>)
-    }
-
-  }
-
-
-  return itemPagination
-}
-
 let total = 0;
 let pdfTotal = 0;
 let totalI = 0;
@@ -1447,7 +1162,7 @@ return (
       <label htmlFor="">Caja Chica:</label>
       </div>
       <div className="col-md-4 col-xs-6 d-flex align-items-center justify-content-start">
-      {mountingTotalCC(totalOriginal) }
+      {mountingTotalCC()}
       </div>
       {vm ? (
       <>
@@ -1455,7 +1170,7 @@ return (
       <label htmlFor="">Saldo Total:</label>
       </div>
       <div className="col-md-3 col-xs-6 d-flex align-items-center justify-content-start">
-      {mountingTotal(totalOriginal) }
+      {mountingTotal()}
       </div>
       </>
       ) : false}
@@ -1560,7 +1275,7 @@ return (
       <label htmlFor="">Caja Chica:</label>
       </div>
       <div className="col-md-4 col-xs-6 ">
-      {mountingTotalCC(totalOriginal) }
+      <label className='ingreso-label '>{montoCajaChica}$</label>
       </div>
       {vm ? (
       <>
@@ -1568,7 +1283,7 @@ return (
       <label htmlFor="">Saldo Total:</label>
       </div>
       <div className="col-md-3 col-xs-6 ">
-      {mountingTotal(totalOriginal) }
+      <label className='ingreso-label '>{montoTotal}$</label>
       </div>
       </>
       ) : false}
@@ -1581,7 +1296,8 @@ return (
 </div>
 </div>
 <div className="col-11 bg-light t-mod row">
-  <div className="col-4 d-flex align-items-center">
+<div className="col-12 row" >
+  <div className="col-1 d-flex align-items-center">
 <select onChange={(e) => {
   const {value} = e.target
   handleVPage(parseInt(value))
@@ -1604,8 +1320,10 @@ return (
 
 
 </select>
+
 </div>
-<div className="col-8 d-flex align-items-center justify-content-end">
+{paginacion(vPage, totalMovimientos)}
+<div className="col-2 d-flex align-items-center justify-content-end">
   <button type="button" class="toyox" onClick={() => {
     MySwal.fire({
       title: 'Escoja la fecha para la impresion',
@@ -1626,23 +1344,64 @@ return (
       let doc
       let input1 = document.getElementById('swal-input1').value
       let input2 = document.getElementById('swal-input2').value
-      function generarPDF() {
+     async function generarPDF() {
         doc = new jsPDF();
         input1 = document.getElementById('swal-input1').value;
         input2 = document.getElementById('swal-input2').value;
         console.log(pdC, pdN);
+        let table = []
+        let valoresU = pdN.map((v) => {
+          return v.value
+        })
+        let valoresC = pdC.map((v) => {
+          return v.value
+        })
         let iSald;
         let fSald;
+        let movis
         if (vm) {
-        const {initFinalSald, finalSald} = filteredResultsPDF(input1, input2, pdC, pdN)
-        iSald = initFinalSald
-        fSald = finalSald
+        let {moves, saldoInicio, saldoFin} = await getMovesPDF({name: valoresU, cuenta: valoresC}, {from: input1, to:input2})
+        movis = moves
+        iSald = saldoInicio.total
+        fSald = saldoFin.total
+        table.push({ingreso: "Saldo Inicial:", egreso: `$${iSald}`})
+        movis.map((m, i) => {
+           const bodys = {
+           identificador: m.identificador, 
+           username: m.name, 
+           cuenta: m.cuenta,
+           concepto: m.concepto,
+           status: statusSetterPdf(m),
+           aprobacion: m.vale,
+           fecha: m.fecha,
+           ingreso: m.monto > 0 ? m.monto : 0.00,
+           egreso: m.monto < 0 ? m.monto : 0.00
+           }
+           table.push (bodys)
+         })
+         table.push({ingreso: "Saldo Final:", egreso: `$${fSald}`})
         }else {
-          const {initFinalSald, finalSald} = filteredResultsPDFCC(input1, input2)
-          iSald = initFinalSald
-          fSald = finalSald
+          let {moves, saldoInicio, saldoFin} = await getMovesPDF({cuenta: ["CajaChica"]}, {from: input1, to:input2})
+          movis = moves
+          iSald = saldoInicio.cajaChica
+          fSald = saldoFin.cajaChica
+          table.push({ingreso: "Saldo Inicial:", egreso: `$${iSald}`})
+          movis.map((m, i) => {
+             const bodys = {
+             identificador: m.identificador, 
+             username: m.name, 
+             cuenta: m.cuenta,
+             concepto: m.concepto,
+             status: statusSetterPdf(m),
+             aprobacion: m.vale,
+             fecha: m.fecha,
+             ingreso: m.monto > 0 ? m.monto : 0.00,
+             egreso: m.monto < 0 ? m.monto : 0.00
+             }
+             table.push (bodys)
+           })
+           table.push({ingreso: "Saldo Final:", egreso: `$${fSald}`})
         }
-        filtPDF(input1, input2, pdC, pdN);
       
         doc.setFontSize(18);
         doc.text('Reporte: Ingresos y Egresos', 64, 6);
@@ -1674,10 +1433,10 @@ return (
         pdN = null;
       }
   generarPDF()      
-    window.location.reload()
   }
     })
   }}>Imprimir</button>
+  </div>
   </div>
   <hr className="e-change"/>
   <div className="tab-c col-12">
@@ -1710,7 +1469,7 @@ return (
     <tbody>
 
   {
-    filteredResults().map((m, i) => {
+    moves.map((m, i) => {
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
        bsIdLabel = `exampleModalLabel-${i}`
@@ -1800,7 +1559,7 @@ return (
                 <td className='concepto-table'>{m.concepto}</td>
                 <td >{statusSetter(m)}</td>
                 <td >{!m.vale ? "No aprobado" : m.vale}</td>
-                <td >{m.fecha}</td>
+                <td >{formatearFecha(m.fecha)}</td>
                 <td>
                   <div className='row'>
                 <div className="col-4">
@@ -1833,18 +1592,6 @@ return (
   </table>
   </div>
   <div className="col-12 d-flex justify-content-end">
-<Pagination>
-
-{  
-currentPage > 0 ? <Pagination.Prev onClick={prevPage}/> : false
-}
-{
-  makePages()
-}
-  {
-    results.length > currentPage + vPage ?  <Pagination.Next onClick={nextPage}/> : false
-  }
-  </Pagination>
   </div>
 
 

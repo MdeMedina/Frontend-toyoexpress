@@ -392,7 +392,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
     };
 
-    const getSimpleProducts = async (search) => {
+    const getSimpleProducts = async (search, pagina) => {
       console.log(search)
       const response = await fetch(`${backendUrl()}/excel/products`, {
         method:'POST',
@@ -400,21 +400,21 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({Código: search})
+        body: JSON.stringify({Código: search, pagina})
       })
       let data = await response.json()
       data = data.excel
      setDataProducts(data)
     }
 
-    const getSimpleClients = async (search) => {
+    const getSimpleClients = async (search, pagina) => {
       const response = await fetch(`${backendUrl()}/excel/clients`, {
         method:'POST',
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({Nombre: search})
+        body: JSON.stringify({Nombre: search, pagina})
       })
       let data = await response.json()
       data = data.excel
@@ -1148,7 +1148,7 @@ const MySwal = withReactContent(Swal)
        }
 }} placeholder='Introduce el nombre del cliente' onInputChange={(e) => {
           if (e.length >= 4) {
-          getSimpleClients(e)
+          getSimpleClients({Nombre: e}, 1)
           } else {
             setClientes([])
           }
@@ -1168,7 +1168,7 @@ const MySwal = withReactContent(Swal)
           }
         setProduct(e.value) }} placeholder='Introduce el número de parte' onInputChange={(e) => {
           if (e.length >= 5) {
-          getSimpleProducts(e)
+          getSimpleProducts({Código: e}, 1)
           } else {
             setPartes([])
           }
