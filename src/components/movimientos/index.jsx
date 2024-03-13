@@ -323,14 +323,13 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       body: JSON.stringify(obj),
     })
       .then(r => r.json()).then(r => {
-        getMoves(condicionBusqueda, 1, vPage, fechas)
         if (r.status === 200) {
           Swal.fire({
             icon: "success",
             title: "Movimiento Creado con exito",
             showConfirmButton: false,
             timer: 1100
-          })
+          }).then(setPagina(1)).then(getMoves(condicionBusqueda, 1, vPage, fechas))
         } else {
           Swal.fire({
             icon: "error",
@@ -400,14 +399,13 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       },
       body: JSON.stringify(obj),
     }).then(r => r.json()).then(r => {
-      setMoves(r.moves)
       if (r.status === 200) {
         Swal.fire({
           icon: "success",
           title: "Movimiento Actualizado con exito",
           showConfirmButton: false,
           timer: 1100
-        })
+        }).then(setPagina(1)).then(getMoves(condicionBusqueda, 1, vPage, fechas))
       } else {
         Swal.fire({
           icon: "error",
@@ -417,7 +415,7 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
           timer: 1100
         })
       }
-    }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
+    }).then().then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(setActShow(false)).then(setActMovimiento(false));
 
   }
 
@@ -453,14 +451,13 @@ const removeMove = async (identificador) => {
     body: JSON.stringify(identificador),
   headers: new Headers({ 'Content-type': 'application/json'})
 }).then(r => r.json()).then(r => {
-  setMoves(r.moves)
   if (r.status === 200) {
     Swal.fire({
       icon: "success",
       title: "Movimiento Eliminado con exito",
       showConfirmButton: false,
       timer: 1100
-    })
+    }).then(setPagina(1)).then(getMoves(condicionBusqueda, 1, vPage, fechas))
   } else {
     Swal.fire({
       icon: "error",
@@ -1470,7 +1467,6 @@ return (
 
   {
     moves.map((m, i) => {
-      console.log(m)
        bsTarget = `#exampleModal-${i}`
        bsId = `exampleModal-${i}`
        bsIdLabel = `exampleModalLabel-${i}`

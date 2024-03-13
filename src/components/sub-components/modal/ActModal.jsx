@@ -12,11 +12,14 @@ import {cuentas, moveI} from '../../../lib/data/SelectOptions'
 function ActModal(props) {
 
   const arreglarFecha = (fecha) => {
-    let f = fecha.split('/')
-    f = new Date(f[2],  parseInt(f[1] - 1), parseInt(f[0]) )
+    let f = fecha
+    f = new Date(fecha)
+    f.setDate(f.getDate() + 1);
     console.log(f)
     return f
   }
+
+  
 
   const changingDollars = (dollars, change) => {
     let balls = dollars * change
