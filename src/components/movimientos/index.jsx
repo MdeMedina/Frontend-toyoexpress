@@ -1460,7 +1460,7 @@ return (
 <thead>
         <tr>
             <th onClick={() => {
-              sortId._id === 1 ? setSortId({_id: -1}) : sortId._id === 1 ? setSortId({_id: 1}) : sortId._id === 0 ? setSortId({_id: 1}) : setSortId({_id: 1})
+              sortId._id === 1 ? setSortId({_id: -1}) : sortId._id === -1 ? setSortId({_id: 1}) : sortId === 0 ? setSortId({_id: -1}) : setSortId({_id: -1})
               setSortFecha(0)
             }} ><div className='d-flex'>  Identificador{sortId._id === -1 ? <box-icon name='chevron-down'></box-icon> : sortId._id === 1  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>} </div></th>
             <th>Usuario</th>
@@ -1469,7 +1469,7 @@ return (
             <th><div className='d-flex'>Status </div></th>
             <th>Nro de aprobacion</th>
             <th onClick={() => {
-              sortFecha.fecha === 1 ? setSortFecha({fecha: -1}) : sortFecha.fecha === -1 ? setSortFecha({fecha: 1}) : sortFecha.fecha === 0 ? setSortFecha({fecha: 1}) : setSortFecha({fecha: 1})
+              sortFecha.fecha === 1 ? setSortFecha({fecha: -1}) : sortFecha.fecha === -1 ? setSortFecha({fecha: 1}) : sortFecha === 0 ? setSortFecha({fecha: -1}) : setSortFecha({fecha: -1})
               setSortId(0)
             }}><div className='d-flex'>Fecha {sortFecha.fecha === -1 ? <box-icon name='chevron-down'></box-icon> : sortFecha.fecha === 1  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>}</div></th>
             <th>Acciones</th>
