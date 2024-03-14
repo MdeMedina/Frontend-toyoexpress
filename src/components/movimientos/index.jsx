@@ -102,14 +102,17 @@ const [totalMovimientos, setTotalMovimientos] = useState(0);
 
 
 
-const getMoves = async ( condition, pagina, cantidad, fechas) => {
+const getMoves = async ( condition, pagina, cantidad, fechas, sort) => {
+  if (!sort) {
+    sort = {_id: -1}
+  }
   const response = await fetch(URL, {
     method:'POST',
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({condition, pagina, cantidad, fechas})
+    body: JSON.stringify({condition, pagina, cantidad, fechas, sort})
   })
   let data = await response.json()
   console.log(data)
@@ -229,6 +232,15 @@ headers: new Headers({ 'Content-type': 'application/json'})
 }).then(localStorage.setItem('cantidadM', ActCantidad))
 }
 
+useEffect(() => {
+  if (!sortId._id){
+    getMoves(condicionBusqueda, pagina, vPage, fechas, sortFecha);
+  } else {
+    getMoves(condicionBusqueda, pagina, vPage, fechas, sortId);
+  }
+}, [sortId, sortFecha]);
+
+
 
 useEffect(() => {
   if (mostrar) {
@@ -271,7 +283,14 @@ const paginacion = (ciclo, total) => {
 const paginar = (page, ignorar) => {
   if (ignorar) return false;
   setPagina(page);
-  getMoves(condicionBusqueda, page, vPage, fechas);
+  if (!sortId._id && !sortFecha.fecha) {  
+    getMoves(condicionBusqueda, page, vPage, fechas);
+  } else if (!sortId._id) {
+    getMoves(condicionBusqueda, page, vPage, fechas, sortFecha);
+  } else {
+    getMoves(condicionBusqueda, page, vPage, fechas, sortId);
+  }
+
 };
 
 const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollars, efectivo, zelle, otro ) => {
@@ -1441,24 +1460,18 @@ return (
 <thead>
         <tr>
             <th onClick={() => {
-              sortId === 1 ? setSortId(2) : sortId === 2 ? setSortId(1) : sortId === 0 ? setSortId(1) : setSortId(1)
+              sortId._id === 1 ? setSortId({_id: -1}) : sortId._id === 1 ? setSortId({_id: 1}) : sortId._id === 0 ? setSortId({_id: 1}) : setSortId({_id: 1})
               setSortFecha(0)
-              setSortStatus(0)
-            }} ><div className='d-flex'>  Identificador{sortId === 1 ? <box-icon name='chevron-down'></box-icon> : sortId === 2  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>} </div></th>
+            }} ><div className='d-flex'>  Identificador{sortId._id === -1 ? <box-icon name='chevron-down'></box-icon> : sortId._id === 1  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>} </div></th>
             <th>Usuario</th>
             <th>Cuenta</th>
             <th>Concepto</th>
-            <th onClick={() => {
-              sortStatus === 1 ? setSortStatus(2) : sortStatus === 2 ? setSortStatus(1) : sortStatus === 0 ? setSortStatus(1) : setSortStatus(1)
-              setSortFecha(0)
-              setSortId(0)
-            }}><div className='d-flex'>Status {sortStatus === 1 ? <box-icon name='chevron-down'></box-icon> : sortStatus === 2  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>}</div></th>
+            <th><div className='d-flex'>Status </div></th>
             <th>Nro de aprobacion</th>
             <th onClick={() => {
-              sortFecha === 1 ? setSortFecha(2) : sortFecha === 2 ? setSortFecha(1) : sortFecha === 0 ? setSortFecha(1) : setSortFecha(1)
+              sortFecha.fecha === 1 ? setSortFecha({fecha: -1}) : sortFecha.fecha === -1 ? setSortFecha({fecha: 1}) : sortFecha.fecha === 0 ? setSortFecha({fecha: 1}) : setSortFecha({fecha: 1})
               setSortId(0)
-              setSortStatus(0)
-            }}><div className='d-flex'>Fecha {sortFecha === 1 ? <box-icon name='chevron-down'></box-icon> : sortFecha === 2  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>}</div></th>
+            }}><div className='d-flex'>Fecha {sortFecha.fecha === -1 ? <box-icon name='chevron-down'></box-icon> : sortFecha.fecha === 1  ?  <box-icon name='chevron-up'></box-icon> : <box-icon name='chevron-down' color='#b1b0b0' ></box-icon>}</div></th>
             <th>Acciones</th>
             <th className='monto-table'>Monto</th>
         </tr>
