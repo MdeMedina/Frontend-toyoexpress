@@ -53,10 +53,10 @@ const styles = StyleSheet.create({
   },
 
  encabezado: {
-    width: '25%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
+    width: '15%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
  },
  encabezadoDesc: {
-  width: '35%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
+  width: '55%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
 },
 
 
@@ -73,7 +73,7 @@ nota: {
   width: '100%', paddingHorizontal: 10, paddingVertical:3, fontSize: 12, display: 'flex', justifyContent: 'center'
 },
  celdaDesc: {
-  width: '35%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6
+  width: '55%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6
 },
 });
 
@@ -100,16 +100,16 @@ const Inventario = ({datosCliente, datos}) =>
     width: '15%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500
  }}>Código</Text>
             <Text style={styles.encabezadoDesc}>Descripción</Text>
-            <Text style={{width: '25%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500}}>Marca</Text>
-            <Text style={styles.encabezado}>Precio</Text>
+            <Text style={{width: '15%', padding: 10, borderBottomWidth: 1, fontSize: 9, fontWeight: 500,textAlign: 'right'}}>Marca</Text>
+            <Text style={{...styles.encabezado, textAlign: 'right'}}>Precio</Text>
 
           </View>
         {datos.map(d => (
         <View style={{ flexDirection: 'row' }}>
                       <Text style={{ width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6}}>{d["Código"]}</Text>
                       <Text style={styles.celdaDesc}>{d["Nombre Corto"]}</Text>
-                      <Text style={{ width: '25%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6}}>{d["Modelo"]}</Text>
-                      <Text style={{width: '25%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6, display:'flex', justifyContent: 'flex-end'}}>{d["Precio Minimo"]}$</Text>
+                      <Text style={{ width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6, textAlign: 'right' }}>{d["Modelo"]}</Text>
+<Text style={{ width: '15%', paddingHorizontal: 10, paddingVertical:3, fontSize: 6, textAlign: 'right' }}>{d["Precio Minimo"].toFixed(2)}</Text>
         </View>
         ))}
         </View>

@@ -499,32 +499,37 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     writeFile(workbook, 'modeloCliente.xlsx');
     }
   
-
     const excelInventario = (data) => {
-      let arr = data
+      let arr = data;
       let nExcel = [];
-      arr.map((m) => {
-        if (m["Existencia Actual"] > 0) {
+      
+      arr.forEach((m) => {
+        if (m["Existencia Actual"] > 0 && !isNaN(parseFloat(m["Precio Minimo"]))) {
           let obj = {
             Código: m.Código,
-            "Descripcion": m["Nombre Corto"],
+            "Descripción": m["Nombre Corto"],
             Marca: m.Modelo,
-            "Precio": `${m["Precio Minimo"].toFixed(2)}$`,
-  
+            Precio: parseFloat(m["Precio Minimo"]).toFixed(2), // Ajustar el nombre del campo si es necesario
           };
-        nExcel.push(obj);}
+          nExcel.push(obj);
+        } else if (isNaN(m["Precio Minimo"])) {
+          console.log('error en el precio, no es un numero', m["Precio Minimo"] )
+        }
       });
+    
       // Convertir a hoja de Excel
-    const worksheet = utils.json_to_sheet(nExcel);
-   
-    // Crear libro de Excel y agregar hoja
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, 'Hoja1');
-  
-    // Escribir archivo de Excel
-    writeFile(workbook, 'Inventario.xlsx');
+      const worksheet = utils.json_to_sheet(nExcel);
+    
+      // Modificar el formato de la columna de precios
+      worksheet['!cols'] = [{ width: 10 }, { width: 30 }, { width: 20 }, { width: 15, numFmt: '#,##0.00' }];
+    
+      // Crear libro de Excel y agregar hoja
+      const workbook = utils.book_new();
+      utils.book_append_sheet(workbook, worksheet, 'Hoja1');
+    
+      // Escribir archivo de Excel
+      writeFile(workbook, 'Inventario.xlsx');
     }
-  
   const traerCor = async () => {
     let cor = await fetch(`${backendUrl()}/pdf/`)
     let data = await cor.json()
