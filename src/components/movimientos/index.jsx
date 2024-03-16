@@ -104,7 +104,7 @@ const [totalMovimientos, setTotalMovimientos] = useState(0);
 
 const getMoves = async ( condition, pagina, cantidad, fechas, sort) => {
   if (!sort) {
-    sort = {_id: -1}
+    sort = {_id: 1}
   }
   const response = await fetch(URL, {
     method:'POST',
@@ -811,7 +811,15 @@ await fetch(`${backendUrl()}/moves/updateStatus`, {
       })
     }
   }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(socket.emit("join_room", move.messageId)).then(socket.emit("send_aprove", { email, message, messageId }))
-getMoves(condicionBusqueda, 1, vPage, fechas)
+ let sort
+  if (!sortId._id && !sortFecha.fecha){
+    getMoves(condicionBusqueda, 1, vPage, fechas)
+  } else if (!sortId._id) {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortFecha)
+  } else {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortId)
+  }
+
 setPagina(1);
 
 }   
