@@ -49,6 +49,7 @@ function Moves({socket}) {
 const vm = JSON.parse(localStorage.getItem("permissions")).verOtrosMovimientos
 const am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos
 const dm = JSON.parse(localStorage.getItem("permissions")).eliminarMovimientos
+const mf = JSON.parse(localStorage.getItem("permissions")).modificarFechas
 const em = JSON.parse(localStorage.getItem("permissions")).editarMovimientos
 const [moves, setMoves] = useState([])
 const [editKey, setEditKey] = useState()
@@ -71,7 +72,7 @@ const [pago, setPago] = useState(null)
 const [aproveN, setAproveN] = useState([])
 const [egresoShow, setEgresoShow] = React.useState(false);
 const [selectMove, setSelectMove] = useState('')
-const [startDate, setStartDate] = useState(subDays(new Date(), 30));
+const [startDate, setStartDate] = useState(mf? subDays(new Date(), 30) : new Date(new Date().setDate(1)));
 const [endDate, setEndDate] = useState(new Date());
 const [fechas, setFechas] = useState({from: startDate, to: endDate})
 const [startUDate, setStartUDate] = useState(primerDia)
@@ -97,7 +98,7 @@ const [Fecha, setFecha] = useState()
 const [bolos, setBolos] = useState(0)
 const [cambio, setCambio] = useState(0)
 const [newConcepto, setNewConcepto] = useState('')
-const isAdmin = localStorage.getItem('role')
+const nm = localStorage.getItem('name')
 const [totalMovimientos, setTotalMovimientos] = useState(0);
 
 
@@ -112,7 +113,7 @@ const getMoves = async ( condition, pagina, cantidad, fechas, sort) => {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({condition, pagina, cantidad, fechas, sort})
+    body: JSON.stringify({condition, pagina, cantidad, fechas, sort, vm, nm})
   })
   let data = await response.json()
   console.log(data)
