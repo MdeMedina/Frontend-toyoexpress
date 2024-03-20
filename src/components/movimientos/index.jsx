@@ -860,6 +860,7 @@ const setterStatus = (e) => {
 }
 
 const stDateSetter = (date) => {
+  console.log(date)
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
@@ -1225,8 +1226,8 @@ return (
       </div> : <div className="col-6">
         Fecha de inicio:
   <DatePicker
-        selected={startUDate}
-        onChange={(date) => stDateUSetter(date)}
+        selected={startDate}
+        onChange={(date) => stDateSetter(date)}
         dateFormat="dd/MM/yyyy"
         maxDate={addDays(new Date(), 0)}
         minDate={minDate}
@@ -1259,11 +1260,11 @@ return (
         onChange={(date) => endDateSetter(date)}
         dateFormat="dd/MM/yyyy"
         selectsEnd
-        startDate={startUDate}
+        startDate={startDate}
         customInput={<ExampleCustomInput />}
         endDate={endDate}
         maxDate={addDays(new Date(), 0)}
-        minDate={startUDate}
+        minDate={startDate}
         wrapperClassName='d-flex justify-content-center'
         className='yesAdmin'
       />     
