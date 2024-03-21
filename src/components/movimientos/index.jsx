@@ -140,7 +140,11 @@ const handlePrint = useReactToPrint({
 })
 
 useEffect(() => {
-  setFechas({from: startDate, to: endDate});
+  let inicio = new Date(startDate)
+  let final = new Date(endDate)
+  final = final.setDate(final.getDate()-1)
+  final= new Date(final)
+  setFechas({from: inicio, to: final});
 }, [startDate, endDate]);
 
 
@@ -530,7 +534,13 @@ const gettingUsers = async() => {
 }
 
 useEffect(() => {
-  getMoves(condicionBusqueda, 1, vPage, fechas)
+  if (!sortId._id && !sortFecha.fecha) {  
+    getMoves(condicionBusqueda, 1, vPage, fechas);
+  } else if (!sortId._id) {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortFecha);
+  } else {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortId);
+  }
   setPagina(1);
 }, [condicionBusqueda, vPage, fechas]);
 
@@ -830,14 +840,32 @@ setPagina(1);
 
 
 useEffect(()=> {
-  getMoves(condicionBusqueda, 1, vPage, fechas)
+  if (!sortId._id && !sortFecha.fecha){
+    getMoves(condicionBusqueda, 1, vPage, fechas)
+  } else if (!sortId._id) {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortFecha)
+  } else {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortId)
+  }
   setPagina(1);
   gettingUsers() 
-  socket.on('move', () => {getMoves(condicionBusqueda, 1, vPage, fechas)     
+  socket.on('move', () => {  if (!sortId._id && !sortFecha.fecha){
+    getMoves(condicionBusqueda, 1, vPage, fechas)
+  } else if (!sortId._id) {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortFecha)
+  } else {
+    getMoves(condicionBusqueda, 1, vPage, fechas, sortId)
+  } 
     setPagina(1)})
 
   return () => {
-    socket.off('move', () => {getMoves(condicionBusqueda, 1, vPage, fechas)     
+    socket.off('move', () => {  if (!sortId._id && !sortFecha.fecha){
+      getMoves(condicionBusqueda, 1, vPage, fechas)
+    } else if (!sortId._id) {
+      getMoves(condicionBusqueda, 1, vPage, fechas, sortFecha)
+    } else {
+      getMoves(condicionBusqueda, 1, vPage, fechas, sortId)
+    }    
       setPagina(1)})
   }
 }, [])
@@ -860,7 +888,6 @@ const setterStatus = (e) => {
 }
 
 const stDateSetter = (date) => {
-  console.log(date)
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
