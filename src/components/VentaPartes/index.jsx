@@ -1258,7 +1258,7 @@ const MySwal = withReactContent(Swal)
       <td class="tg-0pky"></td>
       <td class="tg-0pky"></td>
       <td class="tg-0pky"></td>
-      <td class="tg-0pky"><h6>Total: {total}$</h6></td>
+      <td class="tg-0pky"><h6>Total: {total.toFixed(2)}$</h6></td>
 </tr>: false}
 </tbody>
 </table>
