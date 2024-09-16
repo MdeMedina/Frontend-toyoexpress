@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
         marginRight: "auto",
       },
   column: {
-    width: "50%",
+    width: "75%",
     marginLeft: 5,
     marginRight: 20,
     boxSizing: "border-box",
@@ -100,7 +100,7 @@ const MyDocument = ({datosCliente, datos, total, items, nota, correlativo, hora,
     <View style={styles.container}>
         <View style={styles.column}>
         <View style={{marginBottom: 10}}>
-        <Text>Pedido {correlativo}</Text>
+        <Text>Pedido {correlativo} {datosCliente["Nombre"]}</Text>
         </View>
         <View style={{ display: 'flex',
     justifyContent: 'flex-start',}}>
