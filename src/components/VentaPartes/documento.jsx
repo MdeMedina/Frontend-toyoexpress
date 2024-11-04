@@ -105,9 +105,9 @@ const MyDocument = ({datosCliente, datos, total, items, nota, correlativo, hora,
         <View style={{ display: 'flex',
     justifyContent: 'flex-start',}}>
           <Text style={styles.cliente}> Razón Social: {datosCliente["Nombre"]}</Text>
-          <Text style={styles.cliente}> Rif: {datosCliente["Código"]}</Text>
-          <Text style={styles.cliente}> Teléfono: {datosCliente["Teléfonos"]}</Text>
- {datosCliente["Correo Electrónico"] ?  <Text style={styles.cliente}> Correo Electrónico: {datosCliente["Correo Electrónico"]}</Text> : false} 
+          <Text style={styles.cliente}> Rif: {datosCliente["Rif"]}</Text>
+          <Text style={styles.cliente}> Teléfono: {datosCliente["Telefonos"]}</Text>
+ {datosCliente["Correo Electronico"] ?  <Text style={styles.cliente}> Correo Electrónico: {datosCliente["Correo Electronico"]}</Text> : false} 
         </View>
         </View>
         <View style={styles.columnImage}>

@@ -41,6 +41,8 @@ export const VentaProductos = () => {
     const [cargaClientes, setCargaClientes] = useState()
     const [statusCliente, setStatusCliente] = useState(null)
     const [statusProducto, setStatusProducto] = useState(null) 
+    const [sending, setSending] = useState(false);
+    
     const [cargaProductos, setCargaProductos] = useState()
     const [menu1, setMenu1] = useState(false);
     const [menu2, setMenu2] = useState(false);
@@ -48,12 +50,20 @@ export const VentaProductos = () => {
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [archivoClientes, setarchivoClientes] = useState('');
     const [archivoProductos, setarchivoProductos] = useState('');
+    const [sendFecha, setSendFecha] = useState('');
+    const [logCarga, setLogCarga] = useState({index: 0, longitud: 0});
     const [completeProducts, setCompleteProducts] = useState([]);
+    const [loadingProducts, setLoadingProducts] = useState(false);
     const [loading, setLoading] = useState(false);
     const [pdfName, setPdfName] = useState('')
     const [cantidad, setcantidad] = useState(1);
+    const [logs, setLogs] = useState([]);
+    
     const [Corr, setCorr] = useState('');
     const [newCorr, setNewCorr] = useState(0);
+    const [actualSended, setactualSended] = useState(0);
+    const [productDivided, setproductDivided] = useState(0);
+    const [totalProducts, setTotalProducts] = useState(0);
     const [cliente, setCliente] = useState('');
     const [sC, setSC] = useState('');
     const [sP, setSP] = useState('');
@@ -68,6 +78,8 @@ export const VentaProductos = () => {
     const [precioMayor, setPrecioMayor] = useState('');
     const [precioOferta, setPrecioOferta] = useState('');
     const [existencia, setexistencia] = useState(0);
+    const [totalUpdated, setTotalUpdated] = useState(false);
+    
     const [precioMenor, setPrecioMenor] = useState('');
     const [código, setCódigo] = useState('');
     const [nombreCorto, setNombreCorto] = useState('');
@@ -76,6 +88,8 @@ export const VentaProductos = () => {
     const [items, setItems] = useState('');
     const [marca, setMarca] = useState('');
     const [referencia, setReferencia] = useState('');
+    const [cargaWoo, setCargaWoo] = useState(false);
+    
     const [preShoppingCart, setpreShoppingCart] = useState([])
     const [shoppingCart, setShoppingCart] = useState([])
     const [searchResults, setSearchResults] = useState([]);
@@ -83,15 +97,64 @@ export const VentaProductos = () => {
     const [correoMsn, setCorreoMsn] = useState('')
     const [fecha, setFecha] = useState('')
     const [sended, setSended] = useState([])
+    const [mostrarSended, setMostrarSended] = useState([])
     const [cantidadCor, setCantidadCor] = useState(0);
+
     let usuario = localStorage.getItem("name")
     console.log(usuario)
 
 
-    
+useEffect(() => {
+  if (totalUpdated) {updateFecha(sendFecha)}
+  }, [totalUpdated]);
+
+  useEffect(() => {
+    console.log(sendFecha)
+    }, [sendFecha]);
+
+
+let eventSource
+useEffect(() => {
+  eventSource = new EventSource('https://backend-toyoxpress-804095e4695a.herokuapp.com/events');
+  
+eventSource.onopen= (event) => {
+  console.log('Conected to backend SSE', event);
+};
+eventSource.onmessage = async (event) => {
+
+  let data = JSON.parse(event.data);
+  console.log(data);
+
+  // Ejecutar tu función
+  setactualSended(data.index);
+ console.log(data.index*50 >= data.maximo, data.index, data.maximo)
+  // Verificar si ya se procesaron todos los productos
+  if (data.index*50 >= data.maximo) {
+    setactualSended(0)
+    setTotalUpdated(true)
+    setLoadingProducts(false);
+    MySwal.fire({
+      icon: 'success',
+      title: '¡Todos los productos han sido cargados en WordPress!',
+    });
+  }
+
+
+};
+
+eventSource.onerror = (event) => {
+  // Comprobar si el evento contiene detalles sobre el error específico
+console.log(event)
+};
+}, []);
+
+
+
+
 
 const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const updateProducts = async (data) => {
+      setLoadingProducts(true)
       let update = await fetch(`${backendUrl()}/excel/updateProducts`, {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -99,13 +162,29 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })     
        if (update.ok) {
         let status = await update.status
-        updateFecha()
         return status
 
       } else {
         throw new Error('Error al actualizar los productos');
       }
-      
+
+
+    } 
+    const newUpdateProducts = async (data) => {
+      console.log("Entre en newProducts")
+      console.log("Datos: ", data)
+      let update = await fetch(`https://backend-toyoxpress-804095e4695a.herokuapp.com/products`, {
+        method: 'POST',
+        body: JSON.stringify({data, length: data.length}),
+      headers: new Headers({ 'Content-type': 'application/json'})
+      })     
+       if (update.ok) {
+        let status = await update.status
+        return status
+
+      } else {
+        throw new Error('Error al actualizar los productos');
+      }
     } 
     function horaActual() {
       // Crea un objeto Date para la hora actual en UTC
@@ -165,7 +244,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           title:'El pedido se ha enviado correctamente!',
           html: <>
           <ul>
-            {sended.map(c => {
+            {mostrarSended.map(c => {
               console.log(c)
               return (<li>{`${c.correo}`} {c.stat ? <box-icon name='check-circle' color='#217121' size='18px'></box-icon> : <box-icon name='x-circle' color='#a01113' size='18px'></box-icon>}</li>)
             })}
@@ -185,16 +264,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     useEffect(() => {
-      console.log('primer useEffect')
       getFecha()
     }, [])
 
     const getFecha = async () => {
       const response = await fetch(`${backendUrl()}/excel/fecha`)
       let data = await response.json()
-      console.log('fecha', data)
-      data = data.fecha
+      let logs = data.fechas
+      data = data.fechas[0].fecha
+      
       setFecha(data)
+      setLogs(logs)
     };
 
     function formatDate(timestamp) {
@@ -214,10 +294,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       return formattedDate;
     }
 
-    const updateFecha = async () => {
+    const updateFecha = async (nombre) => {
       let now = formatDate(Date.now())
       let data = [{
         fecha: now,
+        nombre: nombre
       }]
       let update = await fetch(`${backendUrl()}/excel/actFecha`, {
         method: 'PUT',
@@ -310,6 +391,25 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
     
 
+
+    
+    async function handleSendOrder  () {
+
+      const dataClient = {
+        client: sC,
+        cart: shoppingCart,
+        corr: Corr
+      }
+
+      console.log(dataClient)
+      await fetch(`${backendUrl()}/orders`, {
+        method: 'POST',
+        body: JSON.stringify({dataClient}),
+      headers: new Headers({ 'Content-type': 'application/json'})
+      })
+
+    }
+    
     async function handleSendMail  (numero, email, msn) {
       const mailOptions = {
         filename: pdfName,
@@ -317,10 +417,15 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         nota: msn, 
         corr: numero
       }
+
+      const dataClient = {
+        client: sC,
+        cart: shoppingCart
+      }
       let res = false
       await fetch(`${backendUrl()}/upload/sendMail`, {
         method: 'POST',
-        body: JSON.stringify(mailOptions),
+        body: JSON.stringify({mailOptions}),
       headers: new Headers({ 'Content-type': 'application/json'})
       }).then((response) => {
         if(response.ok) {
@@ -472,19 +577,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let nExcel = [];
 
           let obj = {
-            "Código": "",
             "Nombre": "",
-            "Persona Contacto": "",
-            "Teléfonos": "",
-            "Correo Electrónico": "",
-            "Limite Credito": "",
-            "Dias Credito": "",
-            "Credito Disponible": "",
-            "Precio de Venta": "",
-            "Ultima Venta a Crédito": "",
-            "Vendedores Nombre": "",
-            "Vendedores Código": "",
-  
+            Rif: "",
+            "Telefonos": "",
+            "Correo Electronico": "",
+            "Vendedor": "",
+            "Tipo de Precio": "",
+            "Ug Est Nombre": "",
+            "Ug Ciu Nombre": "",
+            "Ug Mun Nombre": "",
+            "Direccion": "",
+            "Vendedores Código": ""
           };
         nExcel.push(obj);
 
@@ -533,9 +636,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
   const traerCor = async () => {
     let cor = await fetch(`${backendUrl()}/pdf/`)
     let data = await cor.json()
-    data = data[data.length-1].cor
+    
     setNewCorr(data)
-    let prop = data + 1
+    let prop = data.cor
     console.log(prop >= 9)
     if (prop < 9) {
       console.log('entre en menor a 9');
@@ -562,6 +665,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
   useEffect(() => {
     traerCor();
   }, []);
+
+
   
 
 
@@ -573,12 +678,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       method: 'POST',
     headers: new Headers({ 'Content-type': 'application/json'})
     })     
-    if (creation.ok) {
-      let status = await creation
-      return status
-    } else {
-      throw new Error('Error al crear el correlativo');
-    }
+    console.log(creation.json())
 
   }
 
@@ -744,6 +844,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
       if (cargaProductos) {
          file2 = event2.target.files[0];
+         setSendFecha(event2.target.files[0].name)
          dato2 = 'productos'
       }
   
@@ -765,54 +866,50 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           let arrErr = [];
           jsonData.map((m) => {
             if (correcto === true) {
-              let a = m.hasOwnProperty("Codigo");
-              let b = m.hasOwnProperty("Nombre");
-              let c = m.hasOwnProperty("Persona Contacto");
+              let a = m.hasOwnProperty("Nombre");
+              let b = m.hasOwnProperty("Rif");
               let d = m.hasOwnProperty("Telefonos");
               let f = m.hasOwnProperty("Correo Electronico");
-              let g = m.hasOwnProperty("Limite Credito");
-              let h = m.hasOwnProperty("Dias Credito");
-              let i = m.hasOwnProperty("Credito Disponible");
-              let j = m.hasOwnProperty("Precio de Venta");
-              let l = m.hasOwnProperty("Ultima Venta a Credito");
-              let n = m.hasOwnProperty("Vendedores Codigo")
-              let o = m.hasOwnProperty("Vendedores Nombre")
-              if (!a || !b || !c || !d  || !f || !g || !h || !i || !j  || !l  || !n || !o) {
+              let g = m.hasOwnProperty("Vendedor");
+              let h = m.hasOwnProperty("Tipo de Precio");
+              let i = m.hasOwnProperty("Ug Est Nombre");
+              let j = m.hasOwnProperty("Ug Ciu Nombre");
+              let n = m.hasOwnProperty("Ug Mun Nombre")
+              let o = m.hasOwnProperty("Direccion")
+              let p = m.hasOwnProperty("Vendedores Codigo")
+              if (!a || !b || !d  || !f || !g || !h || !i || !j  || !n || !o || !p) {
                 if (!a){
-                  arrErr.push('No se encuentra el apartado de "Código" en el excel!')
-                }
-                if (!b){
                   arrErr.push('No se encuentra el apartado de "Nombre" en el excel!')
                 }
-                if (!c){
-                  arrErr.push('No se encuentra el apartado de "Persona Contacto" en el excel!')
+                if (!b){
+                  arrErr.push('No se encuentra el apartado de "Rif" en el excel!')
                 }
                 if (!d){
                   arrErr.push('No se encuentra el apartado de "Teléfonos" en el excel!')
                 }
                 if (!f){
-                  arrErr.push('No se encuentra el apartado de "Correo Electrónico" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Correo Electronico" en el excel!')
                 }
                 if (!g){
-                  arrErr.push('No se encuentra el apartado de "Limite Credito" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Vendedor" en el excel!')
                 }
                 if (!h){
-                  arrErr.push('No se encuentra el apartado de "Dias Credito" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Tipo de Precio" en el excel!')
                 }
                 if (!i){
-                  arrErr.push('No se encuentra el apartado de "Credito Disponible" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Ug Est Nombre" en el excel!')
                 }
                 if (!j){
-                  arrErr.push('No se encuentra el apartado de "Precio de Venta" en el excel!')
-                }
-                if (!l){
-                  arrErr.push('No se encuentra el apartado de "Ultima Venta a Crédito" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Ug Ciu Nombre" en el excel!')
                 }
                 if (!n){
-                  arrErr.push('No se encuentra el apartado de "Vendedores Código" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Ug Mun Nombre" en el excel!')
                 }
                 if (!o){
-                  arrErr.push('No se encuentra el apartado de "Vendedores Nombre" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Direccion" en el excel!')
+                }
+                if (!p){
+                  arrErr.push('No se encuentra el apartado de "Vendedores Código" en el excel!')
                 }
                 correcto = false;
               }
@@ -821,18 +918,17 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           if (correcto) {
             const newArr = jsonData.map(obj => {
               return {
-                Código: obj.Codigo,
+                Rif: obj.Rif,
                 "Nombre": obj["Nombre"],
-                "Persona Contacto": obj["Persona Contacto"],
-                "Teléfonos": obj["Telefonos"],
-                "Correo Electrónico": obj["Correo Electronico"],
-                "Limite Credito": obj["Limite Credito"],
-                "Dias Credito": obj["Dias Credito"],
-                "Credito Disponible": obj["Credito Disponible"],
-                "Precio de Venta": obj["Precio de Venta"],
-                "Ultima Venta a Crédito": obj["Ultima Venta a Credito"],
+                "Vendedor": obj["Vendedor"],
+                "Telefonos": obj["Telefonos"],
+                "Correo Electronico": obj["Correo Electronico"],
+                "Tipo de Precio": obj["Tipo de Precio"],
+                "Estado": obj["Ug Est Nombre"],
+                "Ciudad": obj["Ug Ciu Nombre"],
+                "Municipio": obj["Ug Mun Nombre"],
+                "Direccion": obj["Direccion"],
                 "Vendedores Código": obj["Vendedores Codigo"],
-                "Vendedores Nombre": obj["Vendedores Nombre"],
               };
             });
             let status = await updateClients(newArr);
@@ -909,7 +1005,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
             const newArr = jsonData.map(obj => {
               return {
                 "Código": obj["Codigo"],
-                "Nombre Corto": obj["Nombre Corto"],
+                "Nombre Corto": obj["Nombre"],
                 Referencia: obj.Referencia,
                 Marca: obj.Marca,
                 Modelo: obj.Modelo,
@@ -919,7 +1015,22 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 "Precio Minimo": obj["Precio Minimo"],
               };
             });
+            const newArrUp = jsonData.map(obj => {
+              return {
+                "Código": obj["Codigo"],
+                "Nombre Corto": obj["Nombre"],
+                Marca: obj.Marca,
+                "Existencia Actual": obj["Existencia Actual"],
+                "Precio Oferta": obj["Precio Oferta"],
+                "Precio Mayor": obj["Precio Mayor"],
+                "Precio Minimo": obj["Precio Minimo"],
+                precio2: obj.Precio2
+              };
+            });
+            console.log("newarrup: ",newArrUp)
             let status = await updateProducts(newArr);
+            setTotalProducts(newArrUp.length)
+             await newUpdateProducts(newArrUp);
             setStatusProducto(status)
           } else {
             MySwal.fire({
@@ -964,9 +1075,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let json = sP
       console.log(sC)
       json['cantidad'] = n
-      sC["Precio de Venta"].trimEnd() == 'Precio Por Defecto' || sC["Precio de Venta"].trimEnd() == 'Precio Minimo' ? 
-      json['precio'] = sP['Precio Minimo'] : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
-      json['precio'] = sP['Precio Mayor'] : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
+      sC["Tipo de Precio"].trimEnd() == 'Precio Por Defecto' || sC["Tipo de Precio"].trimEnd() == 'Precio Minimo' ? 
+      json['precio'] = sP['Precio Minimo'] : sC["Tipo de Precio"].trimEnd() == 'Precio Mayor' ? 
+      json['precio'] = sP['Precio Mayor'] : sC["Tipo de Precio"].trimEnd() == 'Precio Oferta' ? 
       json['precio'] = sP['Precio Oferta'] : console.log(sP)
       json['precio'] = json['precio'].toFixed(2)
       json['total'] = n * json['precio']
@@ -1018,7 +1129,7 @@ const MySwal = withReactContent(Swal)
           html: <>
           <p><h5>¿Cuales son los destinatarios?</h5></p>
           <div className="row my-3">
-           <div className="col-8 d-flex justify-content-center"><label htmlFor="correoCliente" className='labelCorreo'>{sC["Correo Electrónico"]}</label></div>
+           <div className="col-8 d-flex justify-content-center"><label htmlFor="correoCliente" className='labelCorreo'>{sC["Correo Electronico"]}</label></div>
            <div className="col-4 d-flex justify-content-center"><input type="checkbox"  id="correoCliente" defaultChecked /></div>
           </div>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
@@ -1041,14 +1152,21 @@ const MySwal = withReactContent(Swal)
               }) 
             } else {
               if (correoCliente === true) {
-                att.push(sC["Correo Electrónico"])
+                att.push(sC["Correo Electronico"])
               }
+              let correosMostrar = att;
+
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
+              await handleSendOrder()
+            
               await att.map(async correo => {
                 let json = {correo, stat: await handleSendMail(numero, correo, msn)}
                 setSended(prevList => [...prevList, json])
+                if (correo != "pedidostoyoxpress@gmail.com" && correo != "toyoxpressca@gmail.com") {
+                  setMostrarSended(prevList => [...prevList, json])
+                }
               })
             }
           }
@@ -1135,7 +1253,25 @@ const MySwal = withReactContent(Swal)
       setCargaProductos(null)
       setarchivoProductos(null)
     }}><img src={ltx} alt="" className='img-ltx'/></div><div className="d-flex justify-content-center"><img src={excec} alt="" className='excecP'/></div><div className="col-12 mt-1">{archivoProductos}</div></div></div> : false}
-    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Procesar</div></div>    <div className="col-12 d-flex justify-content-center">Ultima actualizacion: {fecha}</div></div> 
+    <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Procesar</div></div>  {loadingProducts == true ? <div className="col-12 d-flex justify-content-center">Cargando productos a wordpress: ({(actualSended)*50}/{totalProducts})</div>: false }  <div className="col-12 d-flex justify-content-center"><p>
+  <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+    Actualizaciones Recientes
+  </button>
+</p>
+</div>
+<div >
+  <div class="collapse collapse-horizontal" id="collapseWidthExample">
+    <div class="card card-body row" >
+      {logs.map((log) => {
+        return (
+          <div className="d-flex justify-content-center col-12" key={log._id}>
+            {log.nombre} {log.fecha} 
+          </div>
+        )
+      })}
+    </div>
+  </div>
+</div></div> 
 
     </div>} 
   <div className="d-flex justify-content-center row mt-3 ">
@@ -1238,9 +1374,9 @@ const MySwal = withReactContent(Swal)
       <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Código}</div></td>
       <td class="tg-0pky"><div className='d-flex justify-content-center'>{m['Nombre Corto']}</div></td>
     {
-      sC["Precio de Venta"].trimEnd() == 'Precio Por Defecto' || sC["Precio de Venta"].trimEnd() == 'Precio Minimo' ? 
-      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Minimo"]}</div></td> : sC["Precio de Venta"].trimEnd() == 'Precio Mayor' ? 
-      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Mayor"]}</div></td> : sC["Precio de Venta"].trimEnd() == 'Precio Oferta' ? 
+      sC["Tipo de Precio"].trimEnd() == 'Precio Por Defecto' || sC["Tipo de Precio"].trimEnd() == 'Precio Minimo' ? 
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Minimo"]}</div></td> : sC["Tipo de Precio"].trimEnd() == 'Precio Mayor' ? 
+      <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Mayor"]}</div></td> : sC["Tipo de Precio"].trimEnd() == 'Precio Oferta' ? 
       <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Oferta"]}</div></td> : console.log(sC)}
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Modelo}</div></td>
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Referencia}</div></td>
