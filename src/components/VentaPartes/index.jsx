@@ -1019,7 +1019,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
             const newArrUp = jsonData.map(obj => {
               return {
                 "Código": obj["Codigo"],
-                "Nombre Corto": obj["Nombre"],
+                "Nombre Corto": obj["Nombre"] + " " + obj["Codigo"],
                 Marca: obj.Marca,
                 "Existencia Actual": obj["Existencia Actual"],
                 "Precio Oferta": obj["Precio Oferta"],
