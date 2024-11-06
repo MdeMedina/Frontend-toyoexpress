@@ -115,7 +115,7 @@ useEffect(() => {
 
 let eventSource
 useEffect(() => {
-  eventSource = new EventSource('https://backend-toyoxpress-804095e4695a.herokuapp.com/events');
+  eventSource = new EventSource('http://backend.toyoxpress.com/events');
   
 eventSource.onopen= (event) => {
   console.log('Conected to backend SSE', event);
@@ -173,7 +173,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const newUpdateProducts = async (data) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
-      let update = await fetch(`https://backend-toyoxpress-804095e4695a.herokuapp.com/products`, {
+      let update = await fetch(`http://backend.toyoxpress.com/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length}),
       headers: new Headers({ 'Content-type': 'application/json'})
@@ -968,9 +968,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
               let g = m.hasOwnProperty("Precio Oferta");
               let h = m.hasOwnProperty("Precio Mayor");
               let i = m.hasOwnProperty("Precio Minimo");
-              let j = m.hasOwnProperty("Precio2");
     
-              if (!a || !b || !c || !d || !e || !f || !g || !h || !i || !j ) {
+              if (!a || !b || !c || !d || !e || !f || !g || !h || !i ) {
                 if (!a){
                   arrErr.push('No se encuentra el apartado de "Código" en el excel!')
                 }
@@ -997,10 +996,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 }
                 if (!i){
                   arrErr.push('No se encuentra el apartado de "Precio Minimo" en el excel!')
-                }
-
-                if (!j){
-                  arrErr.push('No se encuentra el apartado de "Precio2" en el excel!')
                 }
                 correcto = false;
               }
@@ -1029,7 +1024,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 "Precio Oferta": obj["Precio Oferta"],
                 "Precio Mayor": obj["Precio Mayor"],
                 "Precio Minimo": obj["Precio Minimo"],
-                precio2: obj.Precio2
+                precio2: obj["Precio Oferta"]
               };
             });
             console.log("newarrup: ",newArrUp)
