@@ -1124,10 +1124,6 @@ const MySwal = withReactContent(Swal)
 
           html: <>
           <p><h5>¿Cuales son los destinatarios?</h5></p>
-          <div className="row my-3">
-           <div className="col-8 d-flex justify-content-center"><label htmlFor="correoCliente" className='labelCorreo'>{sC["Correo Electronico"]}</label></div>
-           <div className="col-4 d-flex justify-content-center"><input type="checkbox"  id="correoCliente" defaultChecked /></div>
-          </div>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
@@ -1141,22 +1137,11 @@ const MySwal = withReactContent(Swal)
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
             let correoCliente = document.getElementById('correoCliente').checked
-            if (!att[0] && !correoCliente) {
-              Swal.fire({
-                icon: 'error',
-                title: 'No ha insertado ningun correo al que enviar el archivo!',
-              }) 
-            } else {
-              if (correoCliente === true) {
-                att.push(sC["Correo Electronico"])
-              }
               let correosMostrar = att;
-
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
               await handleSendOrder()
-            
               await att.map(async correo => {
                 let json = {correo, stat: await handleSendMail(numero, correo, msn)}
                 setSended(prevList => [...prevList, json])
@@ -1164,7 +1149,6 @@ const MySwal = withReactContent(Swal)
                   setMostrarSended(prevList => [...prevList, json])
                 }
               })
-            }
           }
         });
       }
