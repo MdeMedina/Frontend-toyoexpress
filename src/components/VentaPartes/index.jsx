@@ -1136,7 +1136,6 @@ const MySwal = withReactContent(Swal)
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
-            let correoCliente = document.getElementById('correoCliente').checked
               let correosMostrar = att;
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
