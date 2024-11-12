@@ -16,7 +16,7 @@ import excec from '../img/sheets.png'
 import ltx from '../img/letra-x.png'
 import { io } from 'socket.io-client';
 
-const socket = io("https://backend-toyoxpress-804095e4695a.herokuapp.com/");
+const socket = io("http://backend.toyoxpress.com/");
 
 
 const components = {
@@ -180,7 +180,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const newUpdateProducts = async (data) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
-      let update = await fetch(`https://backend-toyoxpress-804095e4695a.herokuapp.com/products`, {
+      let update = await fetch(`http://backend.toyoxpress.com/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length}),
       headers: new Headers({ 'Content-type': 'application/json'})
