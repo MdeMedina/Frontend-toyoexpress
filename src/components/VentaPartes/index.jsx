@@ -14,13 +14,55 @@ import MultiAttachmentInput from './multi';
 import { json } from 'react-router-dom';
 import excec from '../img/sheets.png'
 import ltx from '../img/letra-x.png'
+import { io } from 'socket.io-client';
 
+const socket = io("https://backend-toyoxpress-804095e4695a.herokuapp.com/");
 
 
 const components = {
   DropdownIndicator: 'hola'
 };
 export const VentaProductos = () => {
+  useEffect(() => {
+    // Unirse automáticamente a la sala "correlativo" al montar el componente
+    socket.emit("join_room", "correlativo");
+    socket.emit("join_room", "logs");
+
+    // Escuchar el evento 'update_correlativo' para actualizar el correlativo
+    socket.on("update_correlativo", (newCorrelativo) => {
+        traerCor();
+    });
+
+    socket.on("recibir_logs", (log) => {
+      let data = JSON.parse(log);
+      console.log(data);
+
+  // Ejecutar tu función
+     setactualSended(data.index);
+      console.log(data.index*50 >= data.maximo, data.index, data.maximo)
+  // Verificar si ya se procesaron todos los productos
+      if (data.index*50 >= data.maximo) {
+    setactualSended(0)
+    setTotalUpdated(true)
+    setLoadingProducts(false);
+    MySwal.fire({
+      icon: 'success',
+      title: '¡Todos los productos han sido cargados en WordPress!',
+    });
+  }
+
+
+    })
+
+    // Limpiar la conexión al desmontar el componente
+    return () => {
+        socket.off("update_correlativo");
+        socket.off("recibir_logs");
+        socket.disconnect();
+    };
+}, []);
+
+
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const navDiv = document.querySelector(".navDiv");
@@ -113,41 +155,6 @@ useEffect(() => {
     }, [sendFecha]);
 
 
-let eventSource
-useEffect(() => {
-  eventSource = new EventSource('http://backend.toyoxpress.com/events');
-  
-eventSource.onopen= (event) => {
-  console.log('Conected to backend SSE', event);
-};
-eventSource.onmessage = async (event) => {
-
-  let data = JSON.parse(event.data);
-  console.log(data);
-
-  // Ejecutar tu función
-  setactualSended(data.index);
- console.log(data.index*50 >= data.maximo, data.index, data.maximo)
-  // Verificar si ya se procesaron todos los productos
-  if (data.index*50 >= data.maximo) {
-    setactualSended(0)
-    setTotalUpdated(true)
-    setLoadingProducts(false);
-    MySwal.fire({
-      icon: 'success',
-      title: '¡Todos los productos han sido cargados en WordPress!',
-    });
-  }
-
-
-};
-
-eventSource.onerror = (event) => {
-  // Comprobar si el evento contiene detalles sobre el error específico
-console.log(event)
-};
-}, []);
-
 
 
 
@@ -173,7 +180,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const newUpdateProducts = async (data) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
-      let update = await fetch(`http://backend.toyoxpress.com/products`, {
+      let update = await fetch(`https://backend-toyoxpress-804095e4695a.herokuapp.com/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length}),
       headers: new Headers({ 'Content-type': 'application/json'})
@@ -659,6 +666,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       console.log('entre en menor a 999999');
       setCorr(`${prop}`);
     }
+    console.log(prop)
 
   }
 
@@ -677,9 +685,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     let creation = await fetch(`${backendUrl()}/pdf/create`, {
       method: 'POST',
     headers: new Headers({ 'Content-type': 'application/json'})
-    })     
-    console.log(creation.json())
-
+    })
+    socket.emit("send_correlativo", creation.json());
   }
 
   const entregarInventario = (data) => {
@@ -1128,10 +1135,6 @@ const MySwal = withReactContent(Swal)
 
           html: <>
           <p><h5>¿Cuales son los destinatarios?</h5></p>
-          <div className="row my-3">
-           <div className="col-8 d-flex justify-content-center"><label htmlFor="correoCliente" className='labelCorreo'>{sC["Correo Electronico"]}</label></div>
-           <div className="col-4 d-flex justify-content-center"><input type="checkbox"  id="correoCliente" defaultChecked /></div>
-          </div>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
@@ -1144,18 +1147,6 @@ const MySwal = withReactContent(Swal)
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
-            let correoCliente = document.getElementById('correoCliente').checked
-            if (!att[0] && !correoCliente) {
-              Swal.fire({
-                icon: 'error',
-                title: 'No ha insertado ningun correo al que enviar el archivo!',
-              }) 
-            } else {
-              if (correoCliente === true) {
-                att.push(sC["Correo Electronico"])
-              }
-              let correosMostrar = att;
-
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
@@ -1168,7 +1159,6 @@ const MySwal = withReactContent(Swal)
                   setMostrarSended(prevList => [...prevList, json])
                 }
               })
-            }
           }
         });
       }
