@@ -1004,6 +1004,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 if (!i){
                   arrErr.push('No se encuentra el apartado de "Precio Minimo" en el excel!')
                 }
+
                 correcto = false;
               }
             }
@@ -1061,11 +1062,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
     };
     
-
-    
-
-  
-  
 
     const eliminarProducto = (value) => {
       console.log("entre", value)
@@ -1151,7 +1147,6 @@ const MySwal = withReactContent(Swal)
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
               await handleSendOrder()
-            
               await att.map(async correo => {
                 let json = {correo, stat: await handleSendMail(numero, correo, msn)}
                 setSended(prevList => [...prevList, json])
