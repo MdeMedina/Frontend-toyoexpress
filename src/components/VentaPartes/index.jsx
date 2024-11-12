@@ -14,13 +14,55 @@ import MultiAttachmentInput from './multi';
 import { json } from 'react-router-dom';
 import excec from '../img/sheets.png'
 import ltx from '../img/letra-x.png'
+import { io } from 'socket.io-client';
 
+const socket = io("http://backend.toyoxpress.com/");
 
 
 const components = {
   DropdownIndicator: 'hola'
 };
 export const VentaProductos = () => {
+  useEffect(() => {
+    // Unirse automáticamente a la sala "correlativo" al montar el componente
+    socket.emit("join_room", "correlativo");
+    socket.emit("join_room", "logs");
+
+    // Escuchar el evento 'update_correlativo' para actualizar el correlativo
+    socket.on("update_correlativo", (newCorrelativo) => {
+        traerCor();
+    });
+
+    socket.on("recibir_logs", (log) => {
+      let data = JSON.parse(log);
+      console.log(data);
+
+  // Ejecutar tu función
+     setactualSended(data.index);
+      console.log(data.index*50 >= data.maximo, data.index, data.maximo)
+  // Verificar si ya se procesaron todos los productos
+      if (data.index*50 >= data.maximo) {
+    setactualSended(0)
+    setTotalUpdated(true)
+    setLoadingProducts(false);
+    MySwal.fire({
+      icon: 'success',
+      title: '¡Todos los productos han sido cargados en WordPress!',
+    });
+  }
+
+
+    })
+
+    // Limpiar la conexión al desmontar el componente
+    return () => {
+        socket.off("update_correlativo");
+        socket.off("recibir_logs");
+        socket.disconnect();
+    };
+}, []);
+
+
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const navDiv = document.querySelector(".navDiv");
@@ -112,41 +154,6 @@ useEffect(() => {
     console.log(sendFecha)
     }, [sendFecha]);
 
-
-let eventSource
-useEffect(() => {
-  eventSource = new EventSource('http://backend.toyoxpress.com/events');
-  
-eventSource.onopen= (event) => {
-  console.log('Conected to backend SSE', event);
-};
-eventSource.onmessage = async (event) => {
-
-  let data = JSON.parse(event.data);
-  console.log(data);
-
-  // Ejecutar tu función
-  setactualSended(data.index);
- console.log(data.index*50 >= data.maximo, data.index, data.maximo)
-  // Verificar si ya se procesaron todos los productos
-  if (data.index*50 >= data.maximo) {
-    setactualSended(0)
-    setTotalUpdated(true)
-    setLoadingProducts(false);
-    MySwal.fire({
-      icon: 'success',
-      title: '¡Todos los productos han sido cargados en WordPress!',
-    });
-  }
-
-
-};
-
-eventSource.onerror = (event) => {
-  // Comprobar si el evento contiene detalles sobre el error específico
-console.log(event)
-};
-}, []);
 
 
 
@@ -659,6 +666,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       console.log('entre en menor a 999999');
       setCorr(`${prop}`);
     }
+    console.log(prop)
 
   }
 
@@ -677,9 +685,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     let creation = await fetch(`${backendUrl()}/pdf/create`, {
       method: 'POST',
     headers: new Headers({ 'Content-type': 'application/json'})
-    })     
-    console.log(creation.json())
-
+    })
+    socket.emit("send_correlativo", creation.json());
   }
 
   const entregarInventario = (data) => {
@@ -1136,7 +1143,6 @@ const MySwal = withReactContent(Swal)
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
-              let correosMostrar = att;
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
