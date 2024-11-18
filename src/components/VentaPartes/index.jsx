@@ -26,7 +26,7 @@ export const VentaProductos = () => {
 
   function downloadLogs() {
     // Realizar la solicitud de descarga
-    fetch('https://backend-toyoxpress-804095e4695a.herokuapp.com/download-logs')
+    fetch('http://backend.toyoxpress.com/download-logs')
       .then((response) => {
         if (response.ok) {
           return response.blob(); // Convertir la respuesta en un Blob
