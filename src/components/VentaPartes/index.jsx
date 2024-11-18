@@ -96,7 +96,6 @@ export const VentaProductos = () => {
     // Limpiar la conexión al desmontar el componente
     return () => {
         socket.off("update_correlativo");
-        socket.off("recibir_logs");
         socket.disconnect();
     };
 }, []);
