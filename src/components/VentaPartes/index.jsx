@@ -75,7 +75,7 @@ export const VentaProductos = () => {
     // Verificar si ya se procesaron todos los productos
         if (data.index*50 >= data.maximo) {
       setactualSended(0)
-      setTotalUpdated(true)
+      setTotalUpdated(data.nombre)
       setLoadingProducts(false);
       MySwal.fire({
         icon: 'success',
@@ -158,7 +158,7 @@ export const VentaProductos = () => {
     const [precioMayor, setPrecioMayor] = useState('');
     const [precioOferta, setPrecioOferta] = useState('');
     const [existencia, setexistencia] = useState(0);
-    const [totalUpdated, setTotalUpdated] = useState(false);
+    const [totalUpdated, setTotalUpdated] = useState("");
     const [failedUpdate, setFailedUpdate] = useState(false);
     const [precioMenor, setPrecioMenor] = useState('');
     const [código, setCódigo] = useState('');
@@ -190,10 +190,10 @@ useEffect(() => {
 }, [sendFecha]);
 
 useEffect(() => {
-  if (totalUpdated) {updateFecha(sendFecha, 'Ok')}
+  if (totalUpdated) {updateFecha(totalUpdated, 'Ok')}
   }, [totalUpdated]);
   useEffect(() => {
-    if (failedUpdate) {updateFecha(sendFecha, 'Fallido')}
+    if (failedUpdate) {updateFecha(totalUpdated, 'Fallido')}
     }, [failedUpdate]);
 
   useEffect(() => {
@@ -223,12 +223,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     } 
-    const newUpdateProducts = async (data) => {
+    const newUpdateProducts = async (data, nombre) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
       let update = await fetch(`http://backend.toyoxpress.com/products`, {
         method: 'POST',
-        body: JSON.stringify({data, length: data.length}),
+        body: JSON.stringify({data, length: data.length, nombre}),
       headers: new Headers({ 'Content-type': 'application/json'})
       })     
        if (update.ok) {
@@ -1085,7 +1085,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
             console.log("newarrup: ",newArrUp)
             let status = await updateProducts(newArr);
             setTotalProducts(newArrUp.length)
-             await newUpdateProducts(newArrUp);
+             await newUpdateProducts(newArrUp, archivoProductos);
             setStatusProducto(status)
           } else {
             MySwal.fire({
