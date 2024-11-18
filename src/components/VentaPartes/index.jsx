@@ -23,41 +23,79 @@ const components = {
   DropdownIndicator: 'hola'
 };
 export const VentaProductos = () => {
+
+  function downloadLogs() {
+    // Realizar la solicitud de descarga
+    fetch('http://backend.toyoxpress.com/download-logs')
+      .then((response) => {
+        if (response.ok) {
+          return response.blob(); // Convertir la respuesta en un Blob
+        }
+        throw new Error('Error al descargar el archivo');
+      })
+      .then((blob) => {
+        // Crear una URL de descarga para el Blob
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'logs.txt'; // Nombre con el que se descargará el archivo
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error('Error en la descarga:', error);
+      });
+  }  
   useEffect(() => {
     // Unirse automáticamente a la sala "correlativo" al montar el componente
     socket.emit("join_room", "correlativo");
     socket.emit("join_room", "logs");
+    socket.emit("join_room", "UF");
 
     // Escuchar el evento 'update_correlativo' para actualizar el correlativo
     socket.on("update_correlativo", (newCorrelativo) => {
         traerCor();
     });
 
+    socket.on("recibir_fecha", (newCorrelativo) => {
+      getFecha();
+  });
+
     socket.on("recibir_logs", (log) => {
       let data = JSON.parse(log);
-      console.log(data);
-
-  // Ejecutar tu función
-     setactualSended(data.index);
-      console.log(data.index*50 >= data.maximo, data.index, data.maximo)
-  // Verificar si ya se procesaron todos los productos
-      if (data.index*50 >= data.maximo) {
-    setactualSended(0)
-    setTotalUpdated(true)
-    setLoadingProducts(false);
-    MySwal.fire({
-      icon: 'success',
-      title: '¡Todos los productos han sido cargados en WordPress!',
-    });
-  }
-
+      if (data.estado) {
+        console.log(data);
+        setLoadingProducts(true)
+    // Ejecutar tu función
+    setTotalProducts(data.maximo)
+       setactualSended(data.index);
+        console.log(data.index*50 >= data.maximo, data.index, data.maximo)
+    // Verificar si ya se procesaron todos los productos
+        if (data.index*50 >= data.maximo) {
+      setactualSended(0)
+      setTotalUpdated(true)
+      setLoadingProducts(false);
+      MySwal.fire({
+        icon: 'success',
+        title: '¡Todos los productos han sido cargados en WordPress!',
+      });
+    }
+      } else {
+        setFailedUpdate(true)
+        setLoadingProducts(false);
+        MySwal.fire({
+          icon: 'Error',
+          title: '¡Algo a ocurrido y no se a podido actualizar los productos!',
+        });
+      }
 
     })
 
     // Limpiar la conexión al desmontar el componente
     return () => {
         socket.off("update_correlativo");
-        socket.off("recibir_logs");
         socket.disconnect();
     };
 }, []);
@@ -121,7 +159,7 @@ export const VentaProductos = () => {
     const [precioOferta, setPrecioOferta] = useState('');
     const [existencia, setexistencia] = useState(0);
     const [totalUpdated, setTotalUpdated] = useState(false);
-    
+    const [failedUpdate, setFailedUpdate] = useState(false);
     const [precioMenor, setPrecioMenor] = useState('');
     const [código, setCódigo] = useState('');
     const [nombreCorto, setNombreCorto] = useState('');
@@ -145,10 +183,18 @@ export const VentaProductos = () => {
     let usuario = localStorage.getItem("name")
     console.log(usuario)
 
+useEffect(() => {
+  console.log("SendFecha:",sendFecha );
+
+
+}, [sendFecha]);
 
 useEffect(() => {
-  if (totalUpdated) {updateFecha(sendFecha)}
+  if (totalUpdated) {updateFecha(sendFecha, 'Ok')}
   }, [totalUpdated]);
+  useEffect(() => {
+    if (failedUpdate) {updateFecha(sendFecha, 'Fallido')}
+    }, [failedUpdate]);
 
   useEffect(() => {
     console.log(sendFecha)
@@ -301,11 +347,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       return formattedDate;
     }
 
-    const updateFecha = async (nombre) => {
+    const updateFecha = async (nombre, estado) => {
       let now = formatDate(Date.now())
       let data = [{
         fecha: now,
-        nombre: nombre
+        nombre: nombre,
+        estado: estado
       }]
       let update = await fetch(`${backendUrl()}/excel/actFecha`, {
         method: 'PUT',
@@ -1238,10 +1285,15 @@ const MySwal = withReactContent(Swal)
       setCargaProductos(null)
       setarchivoProductos(null)
     }}><img src={ltx} alt="" className='img-ltx'/></div><div className="d-flex justify-content-center"><img src={excec} alt="" className='excecP'/></div><div className="col-12 mt-1">{archivoProductos}</div></div></div> : false}
+
     <div className="col-11"><div className="toyox my-3" onClick={preHandleFile}>Procesar</div></div>  {loadingProducts == true ? <div className="col-12 d-flex justify-content-center">Cargando productos a wordpress: ({(actualSended)*50}/{totalProducts})</div>: false }  <div className="col-12 d-flex justify-content-center"><p>
   <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
     Actualizaciones Recientes
   </button>
+</p>
+</div>
+<div className="col-12 d-flex justify-content-center"><p> 
+  <button onClick={downloadLogs}>Descargar Logs</button>
 </p>
 </div>
 <div >
@@ -1250,7 +1302,7 @@ const MySwal = withReactContent(Swal)
       {logs.map((log) => {
         return (
           <div className="d-flex justify-content-center col-12" key={log._id}>
-            {log.nombre} {log.fecha} 
+            {log.nombre} {log.fecha} {log.estado}
           </div>
         )
       })}
