@@ -16,7 +16,7 @@ import excec from '../img/sheets.png'
 import ltx from '../img/letra-x.png'
 import { io } from 'socket.io-client';
 
-const socket = io("https://backend-toyoxpress-804095e4695a.herokuapp.com/");
+const socket = io("http://backend.toyoxpress.com/");
 
 
 const components = {
@@ -227,7 +227,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     const newUpdateProducts = async (data) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
-      let update = await fetch(`https://backend-toyoxpress-804095e4695a.herokuapp.com/products`, {
+      let update = await fetch(`http://backend.toyoxpress.com/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length}),
       headers: new Headers({ 'Content-type': 'application/json'})
@@ -1052,6 +1052,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 if (!i){
                   arrErr.push('No se encuentra el apartado de "Precio Minimo" en el excel!')
                 }
+
                 correcto = false;
               }
             }
@@ -1109,11 +1110,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       }
     };
     
-
-    
-
-  
-  
 
     const eliminarProducto = (value) => {
       console.log("entre", value)
@@ -1199,7 +1195,6 @@ const MySwal = withReactContent(Swal)
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
               await handleSendOrder()
-            
               await att.map(async correo => {
                 let json = {correo, stat: await handleSendMail(numero, correo, msn)}
                 setSended(prevList => [...prevList, json])
