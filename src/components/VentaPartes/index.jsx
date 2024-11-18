@@ -83,7 +83,7 @@ export const VentaProductos = () => {
       });
     }
       } else {
-        setFailedUpdate(true)
+        setFailedUpdate(data.nombre)
         setLoadingProducts(false);
         MySwal.fire({
           icon: 'Error',
@@ -159,7 +159,7 @@ export const VentaProductos = () => {
     const [precioOferta, setPrecioOferta] = useState('');
     const [existencia, setexistencia] = useState(0);
     const [totalUpdated, setTotalUpdated] = useState("");
-    const [failedUpdate, setFailedUpdate] = useState(false);
+    const [failedUpdate, setFailedUpdate] = useState("");
     const [precioMenor, setPrecioMenor] = useState('');
     const [código, setCódigo] = useState('');
     const [nombreCorto, setNombreCorto] = useState('');
@@ -193,7 +193,7 @@ useEffect(() => {
   if (totalUpdated) {updateFecha(totalUpdated, 'Ok')}
   }, [totalUpdated]);
   useEffect(() => {
-    if (failedUpdate) {updateFecha(totalUpdated, 'Fallido')}
+    if (failedUpdate) {updateFecha(failedUpdate, 'Fallido')}
     }, [failedUpdate]);
 
   useEffect(() => {
