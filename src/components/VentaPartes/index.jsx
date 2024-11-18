@@ -82,7 +82,7 @@ export const VentaProductos = () => {
         title: '¡Todos los productos han sido cargados en WordPress!',
       });
     }
-      } else {
+      } else if (!failedUpdate) {
         setFailedUpdate(data.nombre)
         setLoadingProducts(false);
         MySwal.fire({
