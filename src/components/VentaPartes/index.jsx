@@ -59,6 +59,13 @@ export const VentaProductos = () => {
         traerCor();
     });
 
+    setInterval(() => {
+      if (socket.connected) {
+        socket.emit('keepAlive');
+        console.log('Keep-alive enviado');
+      }
+    }, 60000); // 30 segundos
+
     socket.on("recibir_fecha", (newCorrelativo) => {
       getFecha();
   });
