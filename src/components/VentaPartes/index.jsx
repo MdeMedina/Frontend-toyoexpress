@@ -469,7 +469,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         filename: pdfName,
         email: email,
         nota: msn, 
-        corr: numero
+        corr: numero,
+        nCliente: sC.Nombre
       }
 
       const dataClient = {
