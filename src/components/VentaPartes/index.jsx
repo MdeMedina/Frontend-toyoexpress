@@ -53,7 +53,15 @@ export const VentaProductos = () => {
     socket.emit("join_room", "correlativo");
     socket.emit("join_room", "logs");
     socket.emit("join_room", "UF");
-
+    console.log("Antes del intervalo")
+    setInterval(() => {
+      console.log(socket)
+      if (socket.connected) {
+        console.log("intentando emitir")
+        socket.emit('keepAlive');
+        console.log('Keep-alive enviado');
+      }
+    }, 60000); // 30 segundos
     // Escuchar el evento 'update_correlativo' para actualizar el correlativo
     socket.on("update_correlativo", (newCorrelativo) => {
         traerCor();
@@ -469,7 +477,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         filename: pdfName,
         email: email,
         nota: msn, 
-        corr: numero
+        corr: numero,
+        nCliente: sC.Nombre
       }
 
       const dataClient = {
