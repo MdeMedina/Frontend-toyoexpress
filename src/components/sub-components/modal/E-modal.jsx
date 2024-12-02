@@ -18,6 +18,7 @@ function EModal(props) {
   const {settingMounts} = props
   const [startDate, setStartDate] = useState(new Date());
 const [endDate, setEndDate] = useState(new Date());
+  const [isDisabled, setIsDisabled] = useState(false);
   const [conversion, setConversion] = useState(false)
   const [selectMove, setSelectMove] = useState()
   const [newMonto, setNewMonto] = useState('')
@@ -42,6 +43,32 @@ const [endDate, setEndDate] = useState(new Date());
       setBolos(balls)
     }
   }
+
+    const handleClick = () => {
+    if (isDisabled) return;
+
+    setIsDisabled(true); // Deshabilitar el botón
+    props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle, otro);
+    setEfectivo(0);
+    setZelle(0);
+    setDollars(0);
+    setNewMonto(0);
+    setTotal(0);
+    setOtro(0);
+
+    // Opcional: volver a habilitar después de completar la acción
+    setTimeout(() => setIsDisabled(false), 2000); // Reemplaza "2000" con el tiempo necesario
+  };
+  const changingDollars = (dollars, change) => {
+    let balls = dollars * change
+    if (isNaN(balls) || balls === Infinity) {
+      setBolivares(0)
+    }else {
+      setBolivares(balls)
+      setBolos(balls)
+    }
+  }
+
 
   const inputDisabled = (dolares) => {
     const e = document.getElementById('createChange')
@@ -285,15 +312,7 @@ const [endDate, setEndDate] = useState(new Date());
           <Button variant="secondary" onClick={props.onHide}>
             Cerrar
           </Button>
-          <Button variant="primary" onClick={() => {
-            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle, otro)
-            setEfectivo(0)
-            setZelle(0)
-            setDollars(0)
-            setNewMonto(0)
-            setTotal(0)
-            setOtro(0)
-          }}>
+          <Button variant="primary" onClick={handleClick} disabled={isDisabled}>
             Crear
           </Button>
         </Modal.Footer>
