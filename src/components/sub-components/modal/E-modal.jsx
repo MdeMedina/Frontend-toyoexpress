@@ -34,17 +34,8 @@ const [endDate, setEndDate] = useState(new Date());
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
   const [newConcepto, setNewConcepto] = useState('')
-  const changingDollars = (dollars, change) => {
-    let balls = dollars * change
-    if (isNaN(balls) || balls === Infinity) {
-      setBolivares(0)
-    }else {
-      setBolivares(balls)
-      setBolos(balls)
-    }
-  }
-
-    const handleClick = () => {
+  
+const handleClick = () => {
     if (isDisabled) return;
 
     setIsDisabled(true); // Deshabilitar el botón
@@ -59,6 +50,7 @@ const [endDate, setEndDate] = useState(new Date());
     // Opcional: volver a habilitar después de completar la acción
     setTimeout(() => setIsDisabled(false), 2000); // Reemplaza "2000" con el tiempo necesario
   };
+  
   const changingDollars = (dollars, change) => {
     let balls = dollars * change
     if (isNaN(balls) || balls === Infinity) {
