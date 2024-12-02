@@ -455,12 +455,13 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     
-    async function handleSendOrder  () {
+    async function handleSendOrder  (emails) {
 
       const dataClient = {
         client: sC,
         cart: shoppingCart,
-        corr: Corr
+        corr: Corr,
+        emails
       }
 
       console.log(dataClient)
@@ -1178,9 +1179,10 @@ const MySwal = withReactContent(Swal)
 
     const selectEmail = (numero) => {
       let att = [];
+      let atd = []
       const handleAttachments = (newAttachments) => {
         console.log(newAttachments);
-        att = newAttachments
+        atd = newAttachments
       };
          MySwal.fire({
           icon: 'info',
@@ -1199,10 +1201,10 @@ const MySwal = withReactContent(Swal)
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
+            await handleSendOrder(atd)
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
-              await handleSendOrder()
               await att.map(async correo => {
                 let json = {correo, stat: await handleSendMail(numero, correo, msn)}
                 setSended(prevList => [...prevList, json])
