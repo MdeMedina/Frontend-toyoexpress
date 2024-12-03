@@ -462,12 +462,13 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     
-    async function handleSendOrder  () {
-
+    
+    async function handleSendOrder  (emails) {
       const dataClient = {
         client: sC,
         cart: shoppingCart,
-        corr: Corr
+        corr: Corr,
+        emails
       }
 
       console.log(dataClient)
@@ -478,7 +479,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
 
     }
-    
     async function handleSendMail  (numero, email, msn) {
       const mailOptions = {
         filename: pdfName,
@@ -1185,18 +1185,16 @@ const MySwal = withReactContent(Swal)
 
     const selectEmail = (numero) => {
       let att = [];
+      let atd = []
       const handleAttachments = (newAttachments) => {
         console.log(newAttachments);
-        att = newAttachments
+        atd = newAttachments
       };
          MySwal.fire({
           icon: 'info',
 
           html: <>
           <p><h5>¿Cuales son los destinatarios?</h5></p>
-           <div className="row my-3">
-           <div className="col-12 d-flex justify-content-center"><p className='labelCorreo'>Correo: {sC["Correo Electrónico"]}</p></div>
-          </div>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
@@ -1209,10 +1207,10 @@ const MySwal = withReactContent(Swal)
 
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
+            await handleSendOrder(atd)
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
               setCantidadCor(att.length)
-              await handleSendOrder()
               await att.map(async correo => {
                 let json = {correo, stat: await handleSendMail(numero, correo, msn)}
                 setSended(prevList => [...prevList, json])
