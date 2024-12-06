@@ -1196,6 +1196,7 @@ const MySwal = withReactContent(Swal)
 
           html: <>
           <p><h5>¿Cuales son los destinatarios?</h5></p>
+          <p><h6>Correo: {sC["Correo Electronico"]}</h6></p>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
