@@ -16,6 +16,7 @@ import {cuentas, moveI} from '../../../lib/data/SelectOptions'
 function EModal(props) {
   const mf = JSON.parse(localStorage.getItem("permissions")).modificarFechas
   const {settingMounts} = props
+  const [isDisabled, setIsDisabled] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
 const [endDate, setEndDate] = useState(new Date());
   const [conversion, setConversion] = useState(false)
@@ -33,6 +34,22 @@ const [endDate, setEndDate] = useState(new Date());
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
   const [newConcepto, setNewConcepto] = useState('')
+
+  const handleClick = () => {
+    if (isDisabled) return;
+
+    setIsDisabled(true); // Deshabilitar el botón
+    props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle, otro);
+    setEfectivo(0);
+    setZelle(0);
+    setDollars(0);
+    setNewMonto(0);
+    setTotal(0);
+    setOtro(0);
+
+    // Opcional: volver a habilitar después de completar la acción
+    setTimeout(() => setIsDisabled(false), 2000); // Reemplaza "2000" con el tiempo necesario
+  };
   const changingDollars = (dollars, change) => {
     let balls = dollars * change
     if (isNaN(balls) || balls === Infinity) {
@@ -285,15 +302,7 @@ const [endDate, setEndDate] = useState(new Date());
           <Button variant="secondary" onClick={props.onHide}>
             Cerrar
           </Button>
-          <Button variant="primary" onClick={() => {
-            props.settingMounts(selectMove, newCuenta, newConcepto, bolos, cambio, newMonto, hoy, dollars, efectivo, zelle, otro)
-            setEfectivo(0)
-            setZelle(0)
-            setDollars(0)
-            setNewMonto(0)
-            setTotal(0)
-            setOtro(0)
-          }}>
+          <Button variant="primary" onClick={handleClick} disabled={isDisabled}>
             Crear
           </Button>
         </Modal.Footer>
