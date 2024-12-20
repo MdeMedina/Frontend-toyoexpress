@@ -16,7 +16,7 @@ import excec from '../img/sheets.png'
 import ltx from '../img/letra-x.png'
 import { io } from 'socket.io-client';
 
-const socket = io("http://192.168.68.123:5000");
+const socket = io("http://backend.toyoxpress.com/");
 
 
 const components = {
