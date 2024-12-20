@@ -16,9 +16,9 @@ import {cuentas, moveI} from '../../../lib/data/SelectOptions'
 function EModal(props) {
   const mf = JSON.parse(localStorage.getItem("permissions")).modificarFechas
   const {settingMounts} = props
+  const [isDisabled, setIsDisabled] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
 const [endDate, setEndDate] = useState(new Date());
-  const [isDisabled, setIsDisabled] = useState(false);
   const [conversion, setConversion] = useState(false)
   const [selectMove, setSelectMove] = useState()
   const [newMonto, setNewMonto] = useState('')
@@ -34,8 +34,8 @@ const [endDate, setEndDate] = useState(new Date());
   const [bolos, setBolos] = useState(0)
   const [cambio, setCambio] = useState(0)
   const [newConcepto, setNewConcepto] = useState('')
-  
-const handleClick = () => {
+
+  const handleClick = () => {
     if (isDisabled) return;
 
     setIsDisabled(true); // Deshabilitar el botón
@@ -50,7 +50,6 @@ const handleClick = () => {
     // Opcional: volver a habilitar después de completar la acción
     setTimeout(() => setIsDisabled(false), 2000); // Reemplaza "2000" con el tiempo necesario
   };
-  
   const changingDollars = (dollars, change) => {
     let balls = dollars * change
     if (isNaN(balls) || balls === Infinity) {
@@ -60,7 +59,6 @@ const handleClick = () => {
       setBolos(balls)
     }
   }
-
 
   const inputDisabled = (dolares) => {
     const e = document.getElementById('createChange')
