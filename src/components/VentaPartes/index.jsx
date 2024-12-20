@@ -198,6 +198,18 @@ export const VentaProductos = () => {
     const [sended, setSended] = useState([])
     const [mostrarSended, setMostrarSended] = useState([])
     const [cantidadCor, setCantidadCor] = useState(-1);
+    const [values, setValues] = useState([]); // Estado inicial con un valor mínimo de 1
+
+    const handleChangeInput = (index, newValue) => {
+      if (newValue === '' || parseInt(newValue) >= 1) {
+        setValues((prevValues) => {
+          const updatedValues = [...prevValues]; // Copiar el array actual
+          updatedValues[index] = newValue; // Actualizar solo el índice específico
+          return updatedValues; // Establecer el nuevo array como estado
+        });
+      }
+    };
+  
 
     let usuario = localStorage.getItem("name")
 
@@ -214,7 +226,9 @@ useEffect(() => {
 
 
 
-
+    const removeValue = (indexToRemove) => {
+      setValues((prevItems) => prevItems.filter((_, index) => index !== indexToRemove));
+    };
 
 
 const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
@@ -1204,7 +1218,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       setMarca('')
     }
 
-    
+    useEffect(() => {
+     let newValues = shoppingCart.map(s => {
+        return s.cantidad
+      })
+      setValues(newValues)
+    }, [shoppingCart, modificaSC])
 
     useEffect(() => {
       setShoppingCart(preShoppingCart.sort((a,b) => {
@@ -1295,8 +1314,30 @@ const MySwal = withReactContent(Swal)
           let value = Swal.getInput().value
           value = parseInt(value)
           if (result.isConfirmed && value && value <= existencia && value > 0) {
-            
-            addCart(value)
+            let repetido = false;
+            let index = 0;
+            let c_actual = 0;
+            shoppingCart.map((s, i) => {
+              if (s.Código === sP.Código){
+                repetido = true
+                index = i
+                c_actual = s.Cantidad
+              }
+            })
+            if (repetido){
+              Swal.fire({
+                icon: 'warning',
+                title: 'Este producto ya fue procesado',
+                showCancelButton: true
+              }).then(r=>{
+                if(r.isConfirmed){
+                  addCart(value)
+                  handleChangeInput(index, c_actual+parseInt(value))
+                }
+              })
+            } else {
+              addCart(value)
+            }
           } else if (!value){
             Swal.fire({
               icon: 'error',
@@ -1486,7 +1527,9 @@ const MySwal = withReactContent(Swal)
       <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Oferta"]}</div></td> : console.log(sC)}
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Modelo}</div></td>
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Referencia}</div></td>
-    <td class="tg-0pky" key={m.Código}> <div className="d-flex justify-content-center td-container"><input type="number" className='input-cantidad' defaultValue={parseInt(m.cantidad)} disabled={inputCant !== m.Código} ref={inputRef.current[m.Código]} onChange={() => {setMP(m)}}/>
+    <td class="tg-0pky" key={m.Código}> <div className="d-flex justify-content-center td-container"><input type="number"  min="1" className='input-cantidad' value={values[i]} disabled={inputCant !== m.Código} ref={inputRef.current[m.Código]} onChange={(e) => {setMP(m) 
+      handleChangeInput(i,parseInt(e.target.value))
+    }}/>
     {inputCant !== m.Código ?<div className="icono-edit" onClick={() => setInputCant(m.Código)}><box-icon name='edit' type='solid' color='#ACACAC' size='20px' ></box-icon></div>:<><div className="check-edit" onClick={() => {
       const inputValue = inputRef.current[m.Código].current.value
       console.log("inputRef: ",inputValue)
@@ -1494,10 +1537,11 @@ const MySwal = withReactContent(Swal)
       setInputCant(null)
     }}><box-icon name='check-square' type='solid' color='#13e001' size='25px' ></box-icon></div> <div className="check-edit" onClick={() => {
       setInputCant(null)
-      inputRef.current[m.Código].current.value = m.cantidad
+      handleChangeInput(i,parseInt(m.cantidad))
       }}><box-icon name='x-square' type='solid' color='#E00000' size='25px' ></box-icon></div></>}</div></td>
     <td class="tg-0pky "><div className='d-flex justify-content-center'><button className='toyox' onClick={(e) => {
       eliminarProducto(m.Código)
+      removeValue(i)
     }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button></div></td>
     </tr>
   )
