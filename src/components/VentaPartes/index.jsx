@@ -67,6 +67,13 @@ export const VentaProductos = () => {
         traerCor();
     });
 
+    setInterval(() => {
+      if (socket.connected) {
+        socket.emit('keepAlive');
+        console.log('Keep-alive enviado');
+      }
+    }, 60000); // 30 segundos
+
     socket.on("recibir_fecha", (newCorrelativo) => {
       getFecha();
   });
@@ -456,8 +463,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     
-    async function handleSendOrder  (emails) {
 
+    
+    async function handleSendOrder  (emails) {
       const dataClient = {
         client: sC,
         cart: shoppingCart,
@@ -473,7 +481,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
 
     }
-    
     async function handleSendMail  (numero, email, msn) {
       const mailOptions = {
         filename: pdfName,
