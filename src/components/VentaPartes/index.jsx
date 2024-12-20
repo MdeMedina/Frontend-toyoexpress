@@ -16,14 +16,14 @@ import excec from '../img/sheets.png'
 import ltx from '../img/letra-x.png'
 import { io } from 'socket.io-client';
 
-const socket = io("http://backend.toyoxpress.com/");
+const socket = io("http://192.168.68.123:5000");
 
 
 const components = {
   DropdownIndicator: 'hola'
 };
 export const VentaProductos = () => {
-
+  const inputRef = React.useRef([]);
   function downloadLogs() {
     // Realizar la solicitud de descarga
     fetch('http://backend.toyoxpress.com/download-logs')
@@ -88,7 +88,7 @@ export const VentaProductos = () => {
       MySwal.fire({
         icon: 'success',
         title: '¡Todos los productos han sido cargados en WordPress!',
-      });
+      });                                                                                                
     }
       } else if (!failedUpdate) {
         setFailedUpdate(data.nombre)
@@ -139,6 +139,8 @@ export const VentaProductos = () => {
     const [archivoClientes, setarchivoClientes] = useState('');
     const [archivoProductos, setarchivoProductos] = useState('');
     const [sendFecha, setSendFecha] = useState('');
+    const [modificaSC, setmodificaSC] = useState(0);
+    
     const [logCarga, setLogCarga] = useState({index: 0, longitud: 0});
     const [completeProducts, setCompleteProducts] = useState([]);
     const [loadingProducts, setLoadingProducts] = useState(false);
@@ -155,6 +157,7 @@ export const VentaProductos = () => {
     const [cliente, setCliente] = useState('');
     const [sC, setSC] = useState('');
     const [sP, setSP] = useState('');
+    const [mP, setMP] = useState('');
     const [clientes, setClientes] = useState([]);
     const [partes, setPartes] = useState([]);
     const [product, setProduct] = useState('');
@@ -163,6 +166,7 @@ export const VentaProductos = () => {
     const [corDesx, setCorDesx] = useState(false);
     
     const [rif, setRif] = useState('');
+    const [inputCant, setInputCant] = useState(true);
     const [precioMayor, setPrecioMayor] = useState('');
     const [precioOferta, setPrecioOferta] = useState('');
     const [existencia, setexistencia] = useState(0);
@@ -186,16 +190,9 @@ export const VentaProductos = () => {
     const [fecha, setFecha] = useState('')
     const [sended, setSended] = useState([])
     const [mostrarSended, setMostrarSended] = useState([])
-    const [cantidadCor, setCantidadCor] = useState(0);
+    const [cantidadCor, setCantidadCor] = useState(-1);
 
     let usuario = localStorage.getItem("name")
-    console.log(usuario)
-
-useEffect(() => {
-  console.log("SendFecha:",sendFecha );
-
-
-}, [sendFecha]);
 
 useEffect(() => {
   if (totalUpdated) {updateFecha(totalUpdated, 'Ok')}
@@ -431,6 +428,10 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         // Manejar errores, si los hay
       }
     }
+
+    const handleEditCant = (m, c) => {
+      addCart()
+    } 
     
 
     useEffect(() => {
@@ -1128,21 +1129,64 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         }
       })
       
+      delete inputRef.current[value]
       setpreShoppingCart(sp)
-
+      setmodificaSC((count) => count + 1);
     }
-    const addCart = (n) => {
-      let json = sP
+    const addCart = (n, g) => {
+      let json = g === true ? mP : sP
       console.log(sC)
       json['cantidad'] = n
-      sC["Tipo de Precio"].trimEnd() == 'Precio Por Defecto' || sC["Tipo de Precio"].trimEnd() == 'Precio Minimo' ? 
-      json['precio'] = sP['Precio Minimo'] : sC["Tipo de Precio"].trimEnd() == 'Precio Mayor' ? 
-      json['precio'] = sP['Precio Mayor'] : sC["Tipo de Precio"].trimEnd() == 'Precio Oferta' ? 
-      json['precio'] = sP['Precio Oferta'] : console.log(sP)
+      if (g === true){
+        sC["Tipo de Precio"].trimEnd() == 'Precio Por Defecto' || sC["Tipo de Precio"].trimEnd() == 'Precio Minimo' ? 
+        json['precio'] = mP['Precio Minimo'] : sC["Tipo de Precio"].trimEnd() == 'Precio Mayor' ? 
+        json['precio'] = mP['Precio Mayor'] : sC["Tipo de Precio"].trimEnd() == 'Precio Oferta' ? 
+        json['precio'] = mP['Precio Oferta'] : console.log(mP)
+      } else {
+        sC["Tipo de Precio"].trimEnd() == 'Precio Por Defecto' || sC["Tipo de Precio"].trimEnd() == 'Precio Minimo' ? 
+        json['precio'] = sP['Precio Minimo'] : sC["Tipo de Precio"].trimEnd() == 'Precio Mayor' ? 
+        json['precio'] = sP['Precio Mayor'] : sC["Tipo de Precio"].trimEnd() == 'Precio Oferta' ? 
+        json['precio'] = sP['Precio Oferta'] : console.log(sP)
+      }
       json['precio'] = json['precio'].toFixed(2)
       json['total'] = n * json['precio']
       json['total'] = json['total'].toFixed(2)
-      setpreShoppingCart(prevList => [...prevList, json])
+      let carrito = preShoppingCart
+      let resuelto = false;
+      if (!preShoppingCart[0]){
+        setpreShoppingCart(prevList => [...prevList, json])
+      } else {
+        if (!g){
+          for (let i in preShoppingCart){
+            if (preShoppingCart[i].Código == json.Código){
+              console.log("Carrito pre: ", carrito)
+              carrito[i].cantidad = parseInt(carrito[i].cantidad) + parseInt(json.cantidad)
+              carrito[i].total = (parseFloat(carrito[i].total) + parseFloat(json.total)).toFixed(2)
+              resuelto = true;
+              inputRef.current[json.Código].current.value = parseInt(inputRef.current[json.Código].current.value) + parseInt(json.cantidad)
+            } 
+            console.log("Carrito post: ", carrito)
+          }
+        } else {
+          for (let i in preShoppingCart){
+            if (preShoppingCart[i].Código == json.Código){
+              console.log("Carrito pre: ", carrito)
+              carrito[i].cantidad =  parseInt(json.cantidad)
+              carrito[i].total =  parseFloat(json.total).toFixed(2)
+              resuelto = true;
+            } 
+            console.log("Carrito post: ", carrito)
+          }
+        }
+
+        if (!resuelto){
+          setpreShoppingCart(prevList => [...prevList, json])
+          setmodificaSC((count) => count + 1);
+        } else {
+          setpreShoppingCart(carrito)
+          setmodificaSC((count) => count + 1);
+        }
+      }
       setSelectedProduct(null)
       setProduct(null)
       setPrecioOferta('')
@@ -1166,14 +1210,18 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
           return 0;
         }      
       }));
-      const precioTotal = preShoppingCart.reduce((acumulador, producto) => acumulador + producto.precio * producto.cantidad, 0)
-      setTotal(precioTotal)
+      let acumulador = 0;
+      preShoppingCart.map((producto) => {
+        console.log("producto estimado: ", producto)
+        acumulador += parseFloat(producto.cantidad) * parseFloat(producto.precio)
+      })
+      setTotal(acumulador)
       let i = 0
       preShoppingCart.map((m) => {
         i += parseInt(m["cantidad"]) 
         setItems(i)
       })
-    }, [preShoppingCart]);
+    }, [modificaSC, preShoppingCart]);
 
 const MySwal = withReactContent(Swal)
 
@@ -1189,6 +1237,7 @@ const MySwal = withReactContent(Swal)
 
           html: <>
           <p><h5>¿Cuales son los destinatarios?</h5></p>
+          <p><h6>Correo: {sC["Correo Electronico"]}</h6></p>
           <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
           <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
           <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
@@ -1417,6 +1466,8 @@ const MySwal = withReactContent(Swal)
 </thead>
 <tbody>
  {shoppingCart ? shoppingCart.map((m, i) => {
+  console.log("logueada del inputref:",inputRef)
+  inputRef.current[m.Código] = inputRef.current[m.Código] || React.createRef();
   return (
     <tr>
       <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Código}</div></td>
@@ -1428,7 +1479,16 @@ const MySwal = withReactContent(Swal)
       <td class="tg-0pky"><div className='d-flex justify-content-center'>{m["Precio Oferta"]}</div></td> : console.log(sC)}
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Modelo}</div></td>
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.Referencia}</div></td>
-    <td class="tg-0pky"><div className='d-flex justify-content-center'>{m.cantidad}</div></td>
+    <td class="tg-0pky" key={m.Código}> <div className="d-flex justify-content-center td-container"><input type="number" className='input-cantidad' defaultValue={parseInt(m.cantidad)} disabled={inputCant !== m.Código} ref={inputRef.current[m.Código]} onChange={() => {setMP(m)}}/>
+    {inputCant !== m.Código ?<div className="icono-edit" onClick={() => setInputCant(m.Código)}><box-icon name='edit' type='solid' color='#ACACAC' size='20px' ></box-icon></div>:<><div className="check-edit" onClick={() => {
+      const inputValue = inputRef.current[m.Código].current.value
+      console.log("inputRef: ",inputValue)
+      addCart(parseInt(inputValue), true)
+      setInputCant(null)
+    }}><box-icon name='check-square' type='solid' color='#13e001' size='25px' ></box-icon></div> <div className="check-edit" onClick={() => {
+      setInputCant(null)
+      inputRef.current[m.Código].current.value = m.cantidad
+      }}><box-icon name='x-square' type='solid' color='#E00000' size='25px' ></box-icon></div></>}</div></td>
     <td class="tg-0pky "><div className='d-flex justify-content-center'><button className='toyox' onClick={(e) => {
       eliminarProducto(m.Código)
     }}><box-icon name='trash' type='solid' color='#ffffff' size='20px'></box-icon></button></div></td>

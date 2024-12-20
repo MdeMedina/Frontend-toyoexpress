@@ -1300,13 +1300,13 @@ return (
       <div className="col-md-5 col-xs-12 row ">
         <h4 className='d-flex justify-content-center'>Status de movimiento</h4> 
       <div class="form-check col-md-4 col-xs-12 d-flex justify-content-start">
-  <input class="form-check-input" type="radio" name="flexRadioDefault" value={''} id="flexRadioDefault1" defaultChecked onChange={(e) => setterStatus(e)}/>
+  <input class="form-check-input" type="radio" name="flexRadioDefault" value={''} id="flexRadioDefault1"  onChange={(e) => setterStatus(e)}/>
   <label class="form-check-label" htmlFor="flexRadioDefault1">
     Todos
   </label>
 </div>
       <div class="form-check col-md-4 col-xs-12 d-flex justify-content-start">
-  <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" value={'Unverified'}  onChange={(e) => setterStatus(e)}/>
+  <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" value={'Unverified'} defaultChecked  onChange={(e) => setterStatus(e)}/>
   <label class="form-check-label" htmlFor="flexRadioDefault2">
     No verificados
   </label>
