@@ -5,6 +5,28 @@
     border-radius: 10px;
 }
 
+.input-cantidad {
+    width: 30px;
+    font-size: 12px;
+}
+
+/* Oculta completamente el ícono, eliminándolo del flujo del documento */
+.td-container .icono-edit {
+    display: none;
+  }
+  .icono-edit:hover {
+    cursor: pointer;
+  }
+  .check-edit:hover {
+    cursor: pointer;
+  }
+
+  
+  /* Muestra el ícono cuando el mouse está sobre el td */
+  .tg-0pky:hover .icono-edit {
+    display: inline-block; /* Muestra el ícono */
+  }
+
 .select-max {
     max-width: 150px;
 }
