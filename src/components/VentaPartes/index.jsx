@@ -171,7 +171,7 @@ export const VentaProductos = () => {
     const [dataClient, setDataClient] = useState([]);
     const [dataProducts, setDataProducts] = useState([]);
     const [corDesx, setCorDesx] = useState(false);
-    
+    const [ultimaVenta, setUltimaVenta] = useState(false);
     const [rif, setRif] = useState('');
     const [inputCant, setInputCant] = useState(true);
     const [precioMayor, setPrecioMayor] = useState('');
@@ -673,7 +673,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
             "Ug Ciu Nombre": "",
             "Ug Mun Nombre": "",
             "Direccion": "",
-            "Vendedores Código": ""
+            "Vendedores Código": "",
+            "Ultima Venta a Crédito": "",
           };
         nExcel.push(obj);
 
@@ -807,6 +808,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
      if (c.Nombre === cliente) {
       setSC(c)
       setRif(c.Código)
+      setUltimaVenta(c["Ultima Venta a Credito"])
      }
     })
    }
@@ -945,8 +947,15 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         const workbook = read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        let jsonData = utils.sheet_to_json(worksheet, { defval: '' });
+        let jsonData = utils.sheet_to_json(worksheet, { defval: '', cellDates: true, raw: false });
         jsonData = formatearPropiedades(jsonData)
+        jsonData = jsonData.map(row => {
+          if (typeof row["Ultima Venta a Credito"] === "number") {
+            let fechaBase = new Date(1900, 0, row["Ultima Venta a Credito"] - 1); // Ajuste por el bug de Excel
+            row["Ultima Venta a Credito"] = fechaBase.toLocaleDateString("es-ES");
+          }
+          return row;
+        });
         console.log(jsonData,"json")
           let correcto = true;
           let arrErr = [];
@@ -963,7 +972,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
               let n = m.hasOwnProperty("Ug Mun Nombre")
               let o = m.hasOwnProperty("Direccion")
               let p = m.hasOwnProperty("Vendedores Codigo")
-              if (!a || !b || !d  || !f || !g || !h || !i || !j  || !n || !o || !p) {
+              let q = m.hasOwnProperty("Ultima Venta a Credito")
+              if (!a || !b || !d  || !f || !g || !h || !i || !j  || !n || !o || !p || !q)  {
                 if (!a){
                   arrErr.push('No se encuentra el apartado de "Nombre" en el excel!')
                 }
@@ -997,6 +1007,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 if (!p){
                   arrErr.push('No se encuentra el apartado de "Vendedores Código" en el excel!')
                 }
+                if (!q){
+                  arrErr.push('No se encuentra el apartado de "Ultima Venta a Credito" en el excel!')
+                }
                 correcto = false;
               }
             }
@@ -1015,6 +1028,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 "Municipio": obj["Ug Mun Nombre"],
                 "Direccion": obj["Direccion"],
                 "Vendedores Código": obj["Vendedores Codigo"],
+                "Ultima Venta a Credito": obj["Ultima Venta a Credito"],
               };
             });
             let status = await updateClients(newArr);
@@ -1423,7 +1437,7 @@ const MySwal = withReactContent(Swal)
     <div className="row bg-light col-11 py-4">
         <div className="col-12 d-flex justify-content-center row mb-3 mx-0">
         <div className="col-sm-2 mx-1 d-flex align-items-center justify-content-center">Agregar Cliente:</div>
- <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={clientes} components={components} menuIsOpen={menu2} value={selectedClient} isClearable={true} onChange={(e) => {
+ <div className="col-sm-9 d-flex align-items-center justify-content-center mb-3"> <Select options={clientes} components={components} menuIsOpen={menu2} value={selectedClient} isClearable={true} onChange={(e) => {
   console.log(e)
        if (e === null) {
         setSelectedClient(null)
@@ -1439,7 +1453,9 @@ const MySwal = withReactContent(Swal)
             setClientes([])
           }
         }} className="selectpd px-2"  id='clientela'/>
+
         </div>
+        { selectedClient ? <div style={{ textAlign: "center" }}>Ultima Compra: {ultimaVenta}</div> : false}
         </div>
         <hr className='mt-2'/>
         <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">
