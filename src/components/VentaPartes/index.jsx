@@ -172,6 +172,7 @@ export const VentaProductos = () => {
     const [dataProducts, setDataProducts] = useState([]);
     const [corDesx, setCorDesx] = useState(false);
     const [ultimaVenta, setUltimaVenta] = useState(false);
+    const [vendedor, setVendedor] = useState(false);
     const [rif, setRif] = useState('');
     const [inputCant, setInputCant] = useState(true);
     const [precioMayor, setPrecioMayor] = useState('');
@@ -674,7 +675,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
             "Ug Mun Nombre": "",
             "Direccion": "",
             "Vendedores Código": "",
-            "Ultima Venta a Crédito": "",
+            "Ultima Venta Credito": "",
           };
         nExcel.push(obj);
 
@@ -808,7 +809,8 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
      if (c.Nombre === cliente) {
       setSC(c)
       setRif(c.Código)
-      setUltimaVenta(c["Ultima Venta a Credito"])
+      setUltimaVenta(c["Ultima Venta Credito"])
+      setVendedor(c["Vendedor"])
      }
     })
    }
@@ -950,9 +952,9 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         let jsonData = utils.sheet_to_json(worksheet, { defval: '', cellDates: true, raw: false });
         jsonData = formatearPropiedades(jsonData)
         jsonData = jsonData.map(row => {
-          if (typeof row["Ultima Venta a Credito"] === "number") {
-            let fechaBase = new Date(1900, 0, row["Ultima Venta a Credito"] - 1); // Ajuste por el bug de Excel
-            row["Ultima Venta a Credito"] = fechaBase.toLocaleDateString("es-ES");
+          if (typeof row["Ultima Venta Credito"] === "number") {
+            let fechaBase = new Date(1900, 0, row["Ultima Venta Credito"] - 1); // Ajuste por el bug de Excel
+            row["Ultima Venta Credito"] = fechaBase.toLocaleDateString("es-ES");
           }
           return row;
         });
@@ -972,7 +974,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
               let n = m.hasOwnProperty("Ug Mun Nombre")
               let o = m.hasOwnProperty("Direccion")
               let p = m.hasOwnProperty("Vendedores Codigo")
-              let q = m.hasOwnProperty("Ultima Venta a Credito")
+              let q = m.hasOwnProperty("Ultima Venta Credito")
               if (!a || !b || !d  || !f || !g || !h || !i || !j  || !n || !o || !p || !q)  {
                 if (!a){
                   arrErr.push('No se encuentra el apartado de "Nombre" en el excel!')
@@ -1008,7 +1010,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                   arrErr.push('No se encuentra el apartado de "Vendedores Código" en el excel!')
                 }
                 if (!q){
-                  arrErr.push('No se encuentra el apartado de "Ultima Venta a Credito" en el excel!')
+                  arrErr.push('No se encuentra el apartado de "Ultima Venta Credito" en el excel!')
                 }
                 correcto = false;
               }
@@ -1028,7 +1030,7 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
                 "Municipio": obj["Ug Mun Nombre"],
                 "Direccion": obj["Direccion"],
                 "Vendedores Código": obj["Vendedores Codigo"],
-                "Ultima Venta a Credito": obj["Ultima Venta a Credito"],
+                "Ultima Venta Credito": obj["Ultima Venta Credito"],
               };
             });
             let status = await updateClients(newArr);
@@ -1455,7 +1457,7 @@ const MySwal = withReactContent(Swal)
         }} className="selectpd px-2"  id='clientela'/>
 
         </div>
-        { selectedClient ? <div style={{ textAlign: "center" }}>Ultima Compra: {ultimaVenta}</div> : false}
+        { selectedClient ? <div style={{ textAlign: "center" }}>Ultima Compra: {ultimaVenta} <br /> Vendedor: {vendedor}</div> : false}
         </div>
         <hr className='mt-2'/>
         <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">

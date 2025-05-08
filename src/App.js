@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import Home from "./components/Home";
 import Appx from "./components/template/app";
 import { VentaProductos } from "./components/VentaPartes";
@@ -35,6 +35,20 @@ function App() {
     mu = permissions.modificarUsuarios;
     du = permissions.eliminarUsuarios;
   }
+
+  useEffect(() => {
+    fetch('/version.json', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(serverVersion => {
+        const localVersion = localStorage.getItem('app_version');
+  
+        if (!localVersion || localVersion !== String(serverVersion.version)) {
+          localStorage.setItem('app_version', serverVersion.version);
+          window.location.reload(true); // Forzar recarga sin cache
+        }
+      })
+      .catch(err => console.error('Error obteniendo versión:', err));
+  }, []);
 
   return (
     <Router>
