@@ -1409,39 +1409,55 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 const MySwal = withReactContent(Swal)
 
-    const selectEmail = (numero) => {
-      let att = [];
-      let atd = []
-      const handleAttachments = (newAttachments) => {
-        console.log(newAttachments);
-        atd = newAttachments
-      };
-         MySwal.fire({
-          icon: 'info',
+const selectEmail = (numero) => {
+  let att = [];
+  let atd = [];
 
-          html: <>
-          <p><h5>¿Cuales son los destinatarios?</h5></p>
-          <p><h6>Correo: {sC["Correo Electronico"]}</h6></p>
-          <MultiAttachmentInput onAttachmentsChange={handleAttachments}/>
-          <div className="col-12 d-flex justify-content-start"><label htmlFor="correoNota">Mensaje:</label></div>
-          <div className="col-12 d-flex justify-content-start"><input className='form-control' type="textbox" name="" id="correoNota" onChange={(e) => {
-            setCorreoMsn(e.target.value)
-           }}/></div>
-          
-          </>,
-          showCancelButton: true,
-        }).then(async (result) => {
-          if (result.isConfirmed ) {
-            let msn = document.getElementById('correoNota').value
-            mandarPedido(atd, msn)
-              att.push("pedidostoyoxpress@gmail.com")
-              att.push("toyoxpressca@gmail.com")
-              att.push("mamedina770@gmail.com")
-              setCantidadCor(att.length)
-          }
-        });
+  const handleAttachments = (newAttachments) => {
+    console.log(newAttachments);
+    atd = newAttachments;
+  };
+
+  MySwal.fire({
+    icon: 'info',
+    html: <>
+      <p><h5>¿Cuáles son los destinatarios?</h5></p>
+      <p><h6>Correo: {sC["Correo Electronico"] || 'No disponible'}</h6></p>
+      <MultiAttachmentInput onAttachmentsChange={handleAttachments} />
+      <div className="col-12 d-flex justify-content-start">
+        <label htmlFor="correoNota">Mensaje:</label>
+      </div>
+      <div className="col-12 d-flex justify-content-start">
+        <input className='form-control' type="textbox" id="correoNota" onChange={(e) => setCorreoMsn(e.target.value)} />
+      </div>
+    </>,
+    showCancelButton: true,
+    preConfirm: () => {
+      const nota = document.getElementById('correoNota').value;
+      const correoPrincipal = sC["Correo Electronico"];
+      const tieneCorreos = (correoPrincipal && correoPrincipal.trim() !== "") || (atd && atd.length > 0);
+
+      if (!tieneCorreos) {
+        MySwal.showValidationMessage('⚠️ Por favor, ingresa al menos un correo destinatario.');
+        return false; // previene el cierre
       }
-    
+
+      return { nota };
+    }
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const msn = result.value.nota;
+      if (sC["Correo Electronico"]) att.push(sC["Correo Electronico"]);
+      att.push(...atd);
+      att.push("pedidostoyoxpress@gmail.com");
+      att.push("toyoxpressca@gmail.com");
+      att.push("mamedina770@gmail.com");
+      setCantidadCor(att.length);
+      mandarPedido(att, msn);
+    }
+  });
+};
+
       useEffect(() => {
         if(selectedProduct && product) {
           setPartes([])
