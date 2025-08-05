@@ -7,15 +7,19 @@ import { useNavigate } from "react-router-dom";
 import { frontUrl } from "../../lib/data/server";
 function Home({ socket }) {
   const navigate = useNavigate();
-  const key = localStorage.getItem("key");
-  if (!key) {
-    window.location.href = `${frontUrl()}/login`;
-  }
+  const key = localStorage.getItem("token");
+  let hi = false
+  let cu =false
+  let vm = false
 
+  if (!key) {
+    window.location.href = `${frontUrl()}/logout`;
+  } else {
   const permissions = JSON.parse(localStorage.getItem("permissions"));
-  const hi = permissions.horasIngreso;
-  const cu = permissions.crearUsuarios;
-  const vm = permissions.verMovimientos;
+   hi = permissions.horasIngreso;
+   cu = permissions.crearUsuarios;
+   vm = permissions.verMovimientos;
+  }
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const navDiv = document.querySelector(".navDiv");

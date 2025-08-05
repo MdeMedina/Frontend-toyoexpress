@@ -11,6 +11,7 @@ const socket = io.connect(`${backendUrl()}`);
 
 function UpdateHour() {
   let hour;
+  const token = localStorage.getItem('token')
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const navDiv = document.querySelector(".navDiv");
@@ -24,10 +25,10 @@ function UpdateHour() {
     }
   }, []);
 
-  const key = localStorage.getItem("key");
+  const key = localStorage.getItem("token");
   if (!key) {
-    window.location.href = `${frontUrl()}/login`;
-  }
+    window.location.href = `${frontUrl()}/logout`;
+  } 
 
   const [apertura, setApertura] = useState("");
   const [cierre, setCierre] = useState("");
@@ -54,14 +55,19 @@ function UpdateHour() {
     const updatedDate = await fetch(`${backendUrl()}/dates/update`, {
       method: "PUT",
       body: JSON.stringify(hourData),
-      headers: new Headers({ "Content-type": "application/json" }),
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
     });
+
+    if (updatedDate.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+    } else if (updatedDate.status === 200) {
     hour = await updatedDate.json();
     hour = hour.response;
     Swal.fire({
       icon: "success",
       text: hour,
     });
+  }
   };
 
   const arepa = (e) => {
@@ -81,8 +87,16 @@ function UpdateHour() {
     getTime();
   }, []);
   const getTime = async () => {
-    await fetch(`${backendUrl()}/dates/`)
-      .then((r) => r.json())
+    await fetch(`${backendUrl()}/dates/`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    })
+    .then(res => {
+      if(res.status === 401) {
+        window.location.href =`${frontUrl()}/logout`
+        return false
+      }
+      return res.json()
+    })
       .then((r) => {
         setApertura(r.apertura);
         setCierre(r.cierre);

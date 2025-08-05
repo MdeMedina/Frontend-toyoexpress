@@ -4,14 +4,20 @@ import React, {useEffect, useState} from 'react';
 import Pako from 'pako';
 import { useParams } from 'react-router-dom';
 import Inventario from './inventario';
-import { backendUrl } from '../../lib/data/server';
+import { backendUrl, frontUrl } from '../../lib/data/server';
 import loading from "./loading.gif"
 
 const VistaInventario = () => {
     const [data, setdata] = useState();
-    
+    const token = localStorage.getItem('token')
     const getProducts = async () => {
-        const response = await fetch(`${backendUrl()}/excel/productsComplete`)
+        const response = await fetch(`${backendUrl()}/excel/productsComplete`, {
+          headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+        })
+        if (response.status === 401) {
+          window.location.href = `${frontUrl()}/login`
+          return false
+        }
         let data = await response.json()
         data = data.excel
         let arr = data

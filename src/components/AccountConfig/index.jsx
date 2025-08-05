@@ -12,9 +12,10 @@ import { gettingAccounts } from '../../lib/data/SelectOptions';
 
 export const AccountConfig = ({socket}) => {
 const ca = JSON.parse(localStorage.getItem('permissions')).configurarCuentas
-const key = localStorage.getItem('key')
+const token = localStorage.getItem('token')
+const key = localStorage.getItem("token");
 if (!key) {
-  window.location.href=`${frontUrl()}/login`;
+  window.location.href = `${frontUrl()}/logout`;
 }
 const navigate = useNavigate()
  const [accountName, setAccountName] = useState('')
@@ -30,10 +31,6 @@ const [vPage, setVPage] = useState(10)
 useEffect(() => {
   if (!ca) {
     navigate('/')
-  }
-
-  if (!key) {
-    navigate("/login")
   }
 
 }, [ca, key, navigate])
@@ -67,7 +64,19 @@ useEffect(() => {
   }
 
  const getAccounts = async () => {
- await fetch(`${backendUrl()}/cuentas`).then(res => res.json()).then(r => {
+ await fetch(`${backendUrl()}/cuentas`, {
+  method: "GET", // o POST, PUT, DELETE
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`, // 🔐 aquí va el token
+  },
+}).then(res => {
+  if(res.status === 401) {
+    window.location.href =`${frontUrl()}/logout`
+    return false
+  }
+  return res.json()
+}).then(r => {
     setCuentas(r)
     console.log(r)
     console.log(cuentas)
@@ -94,9 +103,13 @@ const actCuenta = async (u) => {
     await fetch(`${backendUrl()}/cuentas/actualizarCuenta`, {
       method: 'PUT',
       body: JSON.stringify(actData),
-    headers: new Headers({ 'Content-type': 'application/json'})
+    headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`, })
   }).then(r => {
     console.log(r)
+    if(r.status === 401) {
+      window.location.href =`${frontUrl()}/logout`
+      return false
+    }
     if(r.status === 200) {
     Swal.fire({
   icon: 'success',
@@ -147,8 +160,12 @@ const deleteCuenta = (u) => {
         await fetch(`${backendUrl()}/cuentas/eliminarCuenta`, {
           method: 'DELETE',
           body: JSON.stringify({_id: id}),
-        headers: new Headers({ 'Content-type': 'application/json'})
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`})
       }).then(r => {
+        if(r.status === 401) {
+          window.location.href =`${frontUrl()}/logout`
+          return false
+        }
         if (r.status === 200) {
         Swal.fire({
         icon: 'success',
@@ -171,9 +188,12 @@ const deleteCuenta = (u) => {
     fetch(`${backendUrl()}/cuentas/crearCuenta`, {
         method: 'POST',
         body: JSON.stringify(registerData),
-      headers: new Headers({ 'Content-type': 'application/json'})
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`})
     }).then(r => {
-        console.log(r)
+      if(r.status === 401) {
+        window.location.href =`${frontUrl()}/logout`
+        return false
+      }
         if(r.status === 201) {
         Swal.fire({
       icon: 'success',

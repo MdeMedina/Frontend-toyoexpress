@@ -4,12 +4,21 @@ import { Link } from "react-router-dom";
 import ModalComponent from "../modal/iframeModal";
 
 function Sidebar(props) {
-  let permissions = JSON.parse(localStorage.getItem("permissions"));
-  let cp = permissions.consultarPrecios;
-  let vm = permissions.verMovimientos;
-  let cu = permissions.crearUsuarios;
-  let sh = permissions.horasIngreso;
-  let ca = permissions.configurarCuentas;
+  const token = localStorage.getItem("token");
+  let cp = false;
+  let vm = false;
+  let cu = false;
+  let sh = false;
+  let ca = false;
+  if (token) {
+    let permissions = JSON.parse(localStorage.getItem("permissions"));
+    cp = permissions.consultarPrecios;
+    vm = permissions.verMovimientos;
+    cu = permissions.crearUsuarios;
+    sh = permissions.horasIngreso;
+    ca = permissions.configurarCuentas;
+  } 
+
   const [showModal, setShowModal] = useState(false);
 
   const handleCloseModal = () => setShowModal(false);
@@ -101,6 +110,14 @@ function Sidebar(props) {
                 </Link>
               </li>
               {listaFunction()}
+              <li className="caja-link ">
+                <Link to="/registros">
+                  <div className="icon">
+                    <box-icon name='file-pdf' type='solid' size="27px"></box-icon>
+                  </div>
+                  <span className="text nav-text">Pedidos Hechos</span>
+                </Link>
+              </li>
               {movesFunction()}
               {createFunction()}
               {hourFunction()}

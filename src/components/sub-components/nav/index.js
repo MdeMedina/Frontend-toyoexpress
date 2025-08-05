@@ -18,8 +18,13 @@ import { PassModal } from "../modal/passModal";
 import { faL } from "@fortawesome/free-solid-svg-icons";
 
 function Navg({ socket }) {
-  let obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
-  let am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos;
+  const token = localStorage.getItem('token')
+  let obH = false;
+  let am = false;
+  if (token) {
+    obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
+    am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos;
+  }
   const navigate = useNavigate();
   const [apertura, setApertura] = useState();
   const [moves, setMoves] = useState([]);
@@ -36,17 +41,6 @@ function Navg({ socket }) {
   const [aproveN, setAproveN] = useState([]);
   const [notification, setNotification] = useState([]);
 
-  useEffect(() => {
-    function handleVisibilityChange() {
-      if (!document.hidden) {
-        getInactive();
-      }
-    }
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
   const media = window.innerWidth;
 
   const settingPassword = (password, newPassword) => {
@@ -65,7 +59,13 @@ function Navg({ socket }) {
       await fetch(`${backendUrl()}/users/actpass`, {
         method: "POST",
         body: JSON.stringify(updateData),
-        headers: new Headers({ "Content-type": "application/json" }),
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      }).then(res => {
+        if(res.status === 401) {
+          window.location.href =`${frontUrl()}/logout`
+          return false
+        }
+        return res.json()
       }).then(
         Swal.fire({
           icon: "success",
@@ -94,7 +94,12 @@ function Navg({ socket }) {
     } else {
       hoy_cierre = `${formatDateHoyEn(new Date())}T${cierre}`; // 2022-10-25T20:00
     }
-    const promResult = await fetch(`${backendUrl()}/users/hour`);
+    const promResult = await fetch(`${backendUrl()}/users/hour`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    });
+    if (promResult.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+    }
     const jsq = await promResult.json();
     let horaActual = await jsq.horaActual;
     horaActual = horaActual.split("-");
@@ -126,28 +131,7 @@ function Navg({ socket }) {
     }
   };
 
-  const getInactive = async () => {
-    let updateData = { email: localStorage.getItem("email") };
-    await fetch(`${backendUrl()}/users/inactive`, {
-      method: "POST",
-      body: JSON.stringify(updateData),
-      headers: new Headers({ "Content-type": "application/json" }),
-    })
-      .then((res) => res.json())
-      .then(async (res) => {
-        const promResult = await fetch(`${backendUrl()}/users/hour`);
-        const jsq = await promResult.json();
-        let horaActual = await jsq.horaActual;
-        horaActual = horaActual.split("-");
-        horaActual = `${horaActual[0]}-${horaActual[1]}-${horaActual[2]}`;
-        let hora = res.hour;
-        let actual = new Date(horaActual);
-        let tiempo = new Date(actual) - new Date(hora);
-        if (tiempo >= 3600000) {
-          navigate("/logout");
-        }
-      });
-  };
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -158,37 +142,25 @@ function Navg({ socket }) {
     return () => clearInterval(interval);
   }, []);
 
-  const actInactive = async () => {
-    let updateData = {
-      email: localStorage.getItem("email"),
-    };
-    await fetch(`${backendUrl()}/users/actInactive`, {
-      method: "PUT",
-      body: JSON.stringify(updateData),
-      headers: new Headers({ "Content-type": "application/json" }),
-    });
-  };
 
-  useEffect(() => {
-    getInactive();
-    document.onclick = function () {
-      actInactive();
-    };
-    window.setInterval(function () {
-      getInactive();
-    }, 3600000);
-  }, []);
-  let intervalo;
 
   const getNote = async () => {
-    await fetch(`${backendUrl()}/users/`)
+    await fetch(`${backendUrl()}/users/`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    })
       .then((res) => res.json())
       .then((res) => res.users)
       .then((res) =>
         res.filter((dato) => {
           return dato.email.includes(localStorage.getItem("email"));
         })
-      )
+      ).then(res => {
+        if(res.status === 401) {
+          window.location.href =`${frontUrl()}/logout`
+          return false
+        }
+        return res.json()
+      })
       .then((res) => res[0].notificaciones)
       .then((res) => setNote(res));
   };
@@ -198,7 +170,13 @@ function Navg({ socket }) {
     await fetch(`${backendUrl()}/users/actNotificaciones`, {
       method: "PUT",
       body: JSON.stringify(updateData),
-      headers: new Headers({ "Content-type": "application/json" }),
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    }).then(res => {
+      if(res.status === 401) {
+        window.location.href =`${frontUrl()}/logout`
+        return false
+      }
+      return res.json()
     }).then(getNote());
   };
 
@@ -222,7 +200,9 @@ function Navg({ socket }) {
     );
   }, [moves]);
   const getMoves = async () => {
-    const response = await fetch(`${backendUrl()}/moves`);
+    const response = await fetch(`${backendUrl()}/moves`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    });
     let data = await response.json();
     await setMoves(data);
   };
@@ -234,7 +214,13 @@ function Navg({ socket }) {
   }, []);
 
   const getTime = async () => {
-    let promResult = await fetch(`${backendUrl()}/dates/`);
+    let promResult = await fetch(`${backendUrl()}/dates/`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    });
+    if (promResult.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+      return false;
+    }
     let json = await promResult.json();
     setApertura(json.apertura);
     setCierre(json.cierre);

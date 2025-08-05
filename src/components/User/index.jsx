@@ -9,11 +9,11 @@ import Swal from 'sweetalert2'
 function User({socket}) {
   const modUsuarios = JSON.parse(localStorage.getItem('permissions')).modificarUsuarios
   const delUsuarios = JSON.parse(localStorage.getItem('permissions')).eliminarUsuarios
-    const key = localStorage.getItem("key");
+    const token = localStorage.getItem("token");
+    const key = localStorage.getItem("token");
     if (!key) {
-      window.location.href=`${frontUrl()}/login`;
-    }
-    
+      window.location.href = `${frontUrl()}/logout`;
+    } 
     useEffect(() => {
       const sidebar = document.getElementById("sidebar");
       const navDiv = document.querySelector(".navDiv");
@@ -73,7 +73,15 @@ const handleVPage = (e) => {
   setVPage(e.value)
 }
   const gettingUsers = () => {
-    fetch(`${backendUrl()}/users`).then(res => res.json()).then(({users}) => {
+    fetch(`${backendUrl()}/users`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    }).then(res => {
+            if(res.status === 401) {
+              window.location.href =`${frontUrl()}/logout`
+              return false
+            }
+            return res.json()
+          }).then(({users}) => {
       setUsers(users)
 
   })
@@ -88,12 +96,18 @@ const handleVPage = (e) => {
     }
   }
 
-  const removeUser = async () => {
+  const removeUser = async (id) => {
     await fetch(`${backendUrl()}/users/deleteUser`, {
       method: 'DELETE',
-      body: JSON.stringify(deletingUser),
-    headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(res => res.json()).then(r => setUsers(r)).then(Swal.fire({
+      body: JSON.stringify(id),
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+  }).then(res => {
+          if(res.status === 401) {
+            window.location.href =`${frontUrl()}/logout`
+            return false
+          }
+          return res.json()
+        }).then(r => setUsers(r)).then(Swal.fire({
     icon: 'success',
     title: 'Usuario Eliminado con exito',
   }))
@@ -119,7 +133,7 @@ const handleVPage = (e) => {
           denyButtonText: `Eliminar`,
         }).then(result => {if (result.isDenied){
           setDeletingUser({ _id: u._id})
-          removeUser()
+          removeUser({ _id: u._id})
         }})
         }
       })
@@ -209,8 +223,14 @@ const handleVPage = (e) => {
     fetch(`${backendUrl()}/users/register`, {
         method: 'POST',
         body: JSON.stringify(registerData),
-      headers: new Headers({ 'Content-type': 'application/json'})
-    }).then(res => res.json()).then(r => setUsers(r)).then(  Swal.fire({
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    }).then(res => {
+            if(res.status === 401) {
+              window.location.href =`${frontUrl()}/logout`
+              return false
+            }
+            return res.json()
+          }).then(r => setUsers(r)).then(  Swal.fire({
       icon: "success",
       title: "Usuario Creado con exito",
       showConfirmButton: false,
@@ -263,8 +283,14 @@ const handleVPage = (e) => {
     await fetch(`${backendUrl()}/users/updateUser`, {
       method: 'PUT',
       body: JSON.stringify(actData),
-    headers: new Headers({ 'Content-type': 'application/json'})
-  }).then(res => res.json()).then(r => {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+  }).then(res => {
+          if(res.status === 401) {
+            window.location.href =`${frontUrl()}/logout`
+            return false
+          }
+          return res.json()
+        }).then(r => {
     setUsers(r)
   }).then(Swal.fire({
     icon: 'success',

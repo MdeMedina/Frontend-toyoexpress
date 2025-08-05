@@ -2,6 +2,7 @@ import React, {useEffect} from "react";
 import Home from "./components/Home";
 import Appx from "./components/template/app";
 import { VentaProductos } from "./components/VentaPartes";
+import { useIdleTimer } from 'react-idle-timer';
 import User from "./components/User";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
@@ -11,9 +12,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./css/home.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import io from "socket.io-client";
-import { backendUrl } from "./lib/data/server";
+import { backendUrl, frontUrl } from "./lib/data/server";
 import { AccountConfig } from "./components/AccountConfig";
 import VistaInventario from "./components/VentaPartes/vistaInventario";
+import Pedidos from "./components/Pedidos";
 const socket = io.connect(`${backendUrl()}`);
 function App() {
   let permissions = JSON.parse(localStorage.getItem("permissions"));
@@ -36,6 +38,18 @@ function App() {
     du = permissions.eliminarUsuarios;
   }
 
+  const handleOnIdle = () => {
+    console.log('Usuario inactivo, cerrando sesión...');
+    localStorage.clear(); // o solo localStorage.removeItem('token');
+    window.location.href =`${frontUrl()}/logout` // Redirigir a la página de logout
+  };
+
+  useIdleTimer({
+    timeout: 60 * 60 * 1000, // 2 minutos
+    onIdle: handleOnIdle,
+    debounce: 500,
+  });
+
   useEffect(() => {
     fetch('/version.json', { cache: 'no-store' })
       .then(res => res.json())
@@ -57,6 +71,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/pdf" element={<VistaInventario />} />
         <Route path="/" element={<Appx socket={socket} />}>
+        <Route path="/registros" element={<Pedidos />} />
           <Route path="/update" element={<UpdateHour />} />
           <Route path="/products" element={<VentaProductos />} />
           <Route

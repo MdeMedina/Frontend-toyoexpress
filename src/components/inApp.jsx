@@ -6,8 +6,13 @@ import UpdateHour from "./Hour";
 import Moves from "./movimientos";
 import { AccountConfig } from "./AccountConfig";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { frontUrl } from '../lib/data/server';
 
 function InApp ({socket, vm, am, dm, mu, du}) {
+  const key = localStorage.getItem("token");
+   if (!key) {
+      window.location.href = `${frontUrl()}/logout`;
+    } 
   return (
     <>
     <Router>

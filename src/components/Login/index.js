@@ -10,14 +10,7 @@ function Login() {
   let user;
   let pass;
 
-  const actInactive = async (email) => {
-    let updateData = { email };
-    await fetch(`${backendUrl()}/users/actInactive`, {
-      method: "PUT",
-      body: JSON.stringify(updateData),
-      headers: new Headers({ "Content-type": "application/json" }),
-    });
-  };
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -31,7 +24,7 @@ function Login() {
     const loginRes = await fetch(`${backendUrl()}/users/login`, {
       method: "POST",
       body: JSON.stringify(loginData),
-      headers: new Headers({ "Content-type": "application/json" }),
+      headers: new Headers({ 'Content-type': 'application/json'}),
     });
     const loginJson = await loginRes.json();
     const loginStatus = await loginRes.status;
@@ -42,8 +35,7 @@ function Login() {
       });
     } else if (loginStatus === 200) {
       permissions = loginJson.permissions;
-      actInactive(loginJson.email);
-      localStorage.setItem("key", loginJson.key);
+      localStorage.setItem("token", loginJson.key);
       localStorage.setItem("HourAlert", !permissions.obviarIngreso);
       localStorage.setItem("name", loginJson.name);
       localStorage.setItem("email", loginJson.email);

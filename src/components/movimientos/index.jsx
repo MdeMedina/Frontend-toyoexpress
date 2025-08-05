@@ -25,7 +25,12 @@ import { cuentas } from '../../lib/data/SelectOptions'
 function Moves({socket}) {
   const media = window.innerWidth
   let cantidadM = localStorage.getItem('cantidadM')
+  const key = localStorage.getItem("token");
+  if (!key) {
+    window.location.href = `${frontUrl()}/logout`;
+  } 
   const hoy = `${formatDateHoy(new Date())}`
+  const token = localStorage.getItem('token')
   const navigate = useNavigate()
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
@@ -112,9 +117,14 @@ const getMoves = async ( condition, pagina, cantidad, fechas, sort) => {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
     },
-    body: JSON.stringify({condition, pagina, cantidad, fechas, sort, vm, nm})
+    body: JSON.stringify({condition, pagina, cantidad, fechas, sort, vm, nm}),
   })
+  if (response.status === 401) {
+    window.location.href = `${frontUrl()}/login`
+    return false
+  }
   let data = await response.json()
   console.log(data)
  setMoves(data.movimientos)
@@ -213,7 +223,14 @@ const actDNote = async () => {
   await fetch(`${backendUrl()}/users/actNotificaciones`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
-  headers: new Headers({ 'Content-type': 'application/json'})
+    headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+  
+  })
+  .then(res => {
+    if(res.status === 401) {
+      window.location.href =`${frontUrl()}/logout`
+      return false
+    }
   })
 } 
 
@@ -233,7 +250,12 @@ const actmoveCantidad = async () => {
   }
   await fetch(`${backendUrl()}/users/actualizarCantidad`, { method: 'PUT',
   body: JSON.stringify(actData),
-headers: new Headers({ 'Content-type': 'application/json'})
+  headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+}).then(res => {
+  if(res.status === 401) {
+    window.location.href =`${frontUrl()}/logout`
+    return false
+  }
 }).then(localStorage.setItem('cantidadM', ActCantidad))
 }
 
@@ -343,10 +365,16 @@ const movimiento = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(obj),
-    })
-      .then(r => r.json()).then(r => {
+    }).then(res => {
+      if(res.status === 401) {
+        window.location.href =`${frontUrl()}/logout`
+        return false
+      }
+      return res.json()
+    }).then(r => {
         if (r.status === 200) {
           Swal.fire({
             icon: "success",
@@ -420,9 +448,16 @@ const updateMove = async (id, cuenta, concepto, bs, change, monto, fecha, dollar
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(obj),
-    }).then(r => r.json()).then(r => {
+    }).then(res => {
+      if(res.status === 401) {
+        window.location.href =`${frontUrl()}/logout`
+        return false
+      }
+      return res.json()
+    }).then(r => {
       if (r.status === 200) {
         Swal.fire({
           icon: "success",
@@ -473,8 +508,14 @@ const removeMove = async (identificador) => {
   await fetch(`${backendUrl()}/moves/deleteMoves`, {
     method: 'PUT',
     body: JSON.stringify(identificador),
-  headers: new Headers({ 'Content-type': 'application/json'})
-}).then(r => r.json()).then(r => {
+  headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`})
+}).then(res => {
+  if(res.status === 401) {
+    window.location.href =`${frontUrl()}/logout`
+    return false
+  }
+  return res.json()
+}).then(r => {
   if (r.status === 200) {
     Swal.fire({
       icon: "success",
@@ -528,7 +569,15 @@ useEffect(() => {
 }, [estaba, meEncuentro])
 const URL = `${backendUrl()}/moves`
 const gettingUsers = async() => {
-  await fetch(`${backendUrl()}/users`).then(res => res.json()).then((users) => {
+  await fetch(`${backendUrl()}/users`, {
+    headers: {"Authorization": `Bearer ${token}`}
+  }).then(res => {
+    if(res.status === 401) {
+      window.location.href =`${frontUrl()}/logout`
+      return false
+    }
+    return res.json()
+  }).then((users) => {
     setUsers(users.users)
 }) 
 }
@@ -689,9 +738,14 @@ const getMovesPDF = async ( condition, fechas) => {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify({condition, fechas})
   })
+  if (response.status === 401) {
+    window.location.href = `${frontUrl()}/login` 
+    return false
+  }
   let data = await response.json()
  return {moves: data.movimientos, saldoInicio: data.fechaInicio, saldoFin: data.fechaFin}
 }
@@ -807,8 +861,12 @@ const updateStatus = async (move) => {
 await fetch(`${backendUrl()}/moves/updateStatus`, {
     method: 'PUT',
     body: JSON.stringify(updateData),
-  headers: new Headers({ 'Content-type': 'application/json'})
+  headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`})
   }).then(r => {
+    if (r.status === 401) {
+      window.location.href =`${frontUrl()}/logout`
+      return false
+    }
 
     if (r.status === 403) {
       Swal.fire({

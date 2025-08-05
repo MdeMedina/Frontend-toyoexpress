@@ -23,7 +23,14 @@ const components = {
   DropdownIndicator: 'hola'
 };
 export const VentaProductos = () => {
+  const vendName = localStorage.getItem("name")
   const inputRef = React.useRef([]);
+  const token = localStorage.getItem('token')
+  const key = localStorage.getItem("token");
+
+  if (!key) {
+    window.location.href = `${frontUrl()}/logout`;
+  } 
   function downloadLogs() {
     // Realizar la solicitud de descarga
     fetch('http://backend.toyoxpress.com/download-logs')
@@ -137,7 +144,7 @@ export const VentaProductos = () => {
     const [statusCliente, setStatusCliente] = useState(null)
     const [statusProducto, setStatusProducto] = useState(null) 
     const [sending, setSending] = useState(false);
-    
+    const [corrToCreate, setCorrToCreate] = useState(0);
     const [cargaProductos, setCargaProductos] = useState()
     const [menu1, setMenu1] = useState(false);
     const [menu2, setMenu2] = useState(false);
@@ -147,7 +154,7 @@ export const VentaProductos = () => {
     const [archivoProductos, setarchivoProductos] = useState('');
     const [sendFecha, setSendFecha] = useState('');
     const [modificaSC, setmodificaSC] = useState(0);
-    
+    const [reservasActuales, setReservasActuales] = useState([]);
     const [logCarga, setLogCarga] = useState({index: 0, longitud: 0});
     const [completeProducts, setCompleteProducts] = useState([]);
     const [loadingProducts, setLoadingProducts] = useState(false);
@@ -157,9 +164,7 @@ export const VentaProductos = () => {
     const [logs, setLogs] = useState([]);
     
     const [Corr, setCorr] = useState('');
-    const [newCorr, setNewCorr] = useState(0);
     const [actualSended, setactualSended] = useState(0);
-    const [productDivided, setproductDivided] = useState(0);
     const [totalProducts, setTotalProducts] = useState(0);
     const [cliente, setCliente] = useState('');
     const [sC, setSC] = useState('');
@@ -238,8 +243,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let update = await fetch(`${backendUrl()}/excel/updateProducts`, {
         method: 'PUT',
         body: JSON.stringify(data),
-      headers: new Headers({ 'Content-type': 'application/json'})
-      })     
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      })
+      if (update.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }    
        if (update.ok) {
         let status = await update.status
         return status
@@ -256,8 +264,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let update = await fetch(`http://backend.toyoxpress.com/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length, nombre}),
-      headers: new Headers({ 'Content-type': 'application/json'})
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
       })     
+      if (update.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }
        if (update.ok) {
         let status = await update.status
         return status
@@ -315,8 +326,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let update = await fetch(`${backendUrl()}/excel/stock`, {
         method: 'PUT',
         body: JSON.stringify(data),
-      headers: new Headers({ 'Content-type': 'application/json'})
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
       })     
+      if (update.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }
        if (update.ok) {
         if (i == shoppingCart.length - 1 && dd === 'correo') {
         MySwal.fire({
@@ -348,7 +362,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }, [])
 
     const getFecha = async () => {
-      const response = await fetch(`${backendUrl()}/excel/fecha`)
+      const response = await fetch(`${backendUrl()}/excel/fecha`, {
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      })
+      if (response.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }
       let data = await response.json()
       let logs = data.fechas
       data = data.fechas[0].fecha
@@ -384,8 +403,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let update = await fetch(`${backendUrl()}/excel/actFecha`, {
         method: 'PUT',
         body: JSON.stringify(data),
-      headers: new Headers({ 'Content-type': 'application/json'})
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
       })     
+      if (update.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }
       let newData = await update.json()
       newData = newData.fecha[0].fecha
       setFecha(newData)
@@ -434,7 +456,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         await fetch(`${backendUrl()}/upload/`, {
           method: 'POST',
           body: formData,
+          headers: new Headers({ "Authorization": `Bearer ${token}`}),
         }).then(async (response) => {
+          if (response.status === 401) {
+            window.location.href = `${frontUrl()}/logout`;
+            return false
+          }
           if (response.ok){
           let data  = await response.json()
           data = data.data
@@ -492,8 +519,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       await fetch(`${backendUrl()}/orders`, {
         method: 'POST',
         body: JSON.stringify({dataClient}),
-      headers: new Headers({ 'Content-type': 'application/json'})
-      })
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      }).then(res => {
+              if(res.status === 401) {
+                window.location.href =`${frontUrl()}/logout`
+              }
+            })
 
     }
     async function handleSendMail  (numero, email, msn) {
@@ -513,8 +544,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       await fetch(`${backendUrl()}/upload/sendMail`, {
         method: 'POST',
         body: JSON.stringify({mailOptions}),
-      headers: new Headers({ 'Content-type': 'application/json'})
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
       }).then((response) => {
+        if (response.status === 401) {
+          window.location.href = `${frontUrl()}/logout`;
+          return false
+        }
         if(response.ok) {
           res = true
         } else {res = false}
@@ -530,8 +565,11 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       let update = await fetch(`${backendUrl()}/excel/updateClients`, {
         method: 'PUT',
         body: JSON.stringify(data),
-      headers: new Headers({ 'Content-type': 'application/json'})
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
       })
+      if (update.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }
       if (update.ok) {
         let status = await update.status
         return status
@@ -544,7 +582,12 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     const getClient = async () => {
-      const response = await fetch(`${backendUrl()}/excel/clients`)
+      const response = await fetch(`${backendUrl()}/excel/clients`, {
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      })
+      if (response.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+      }
       let data = await response.json()
       data=data.excel
       console.log(cv)
@@ -566,7 +609,13 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     }
     const getProducts = async () => {
       setLoading(true)
-    await fetch(`${backendUrl()}/excel/productsComplete`).then(async (response) => {
+    await fetch(`${backendUrl()}/excel/productsComplete`, {
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    }).then(async (response) => {
+      if (response.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+        return false
+      }
         let data = await response.json()
         data = data.excel
         Swal.close()
@@ -584,6 +633,33 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       })
     };
 
+    const verificarReserva = async (code) => {
+      const response = await fetch(`${backendUrl()}/reservas`, {
+        method:'POST',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({code, user: usuario})
+      })
+      return response.json()
+    }
+  
+    
+    const crearReserva = async (code, cantidad) => {
+      const response = await fetch(`${backendUrl()}/reservas/crear`, {
+        method:'POST',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({code, cantidad, user: usuario})
+      })
+      return response.json()
+    }
+
     const getSimpleProducts = async (search, pagina) => {
       console.log(search)
       const response = await fetch(`${backendUrl()}/excel/products`, {
@@ -591,10 +667,16 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({Código: search, pagina})
       })
+      if (response.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+        return false
+      }
       let data = await response.json()
+      
       data = data.excel
      setDataProducts(data)
     }
@@ -605,9 +687,14 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({Nombre: search, pagina})
       })
+      if (response.status === 401) {
+        window.location.href = `${frontUrl()}/logout`;
+        return false
+      }
       let data = await response.json()
       data = data.excel
       if (vc) {
@@ -721,12 +808,20 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       // Escribir archivo de Excel
       writeFile(workbook, 'Inventario.xlsx');
     }
+    const generarPedido = async () => {
+
+    }
   const traerCor = async () => {
-    let cor = await fetch(`${backendUrl()}/pdf/`)
+    let cor = await fetch(`${backendUrl()}/pdf/`, {
+      method: 'POST',  
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+    })
+    if (cor.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+    }
     let data = await cor.json()
-    
-    setNewCorr(data)
-    let prop = data.cor
+    setCorrToCreate(data.data[0].cor)
+    let prop = data.data[0].cor
     console.log(prop >= 9)
     if (prop < 9) {
       console.log('entre en menor a 9');
@@ -748,7 +843,6 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       setCorr(`${prop}`);
     }
     console.log(prop)
-
   }
 
   useEffect(() => {
@@ -764,9 +858,15 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     
   const crearCor = async () => {
     let creation = await fetch(`${backendUrl()}/pdf/create`, {
-      method: 'POST',
-    headers: new Headers({ 'Content-type': 'application/json'})
+      method: 'POST',       
+      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      body: JSON.stringify({cor: corrToCreate, cliente: sC.Nombre, vendedor: vendName, products: shoppingCart, total}),
     })
+    if (creation.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+      return false
+    }
+    traerCor()
     socket.emit("send_correlativo", creation.json());
   }
 
@@ -823,15 +923,25 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
     setPartes(arr)
    }
 
-   const searchProduct = () => {
-    dataProducts.map((c) => {
+   const searchProduct = async () => {
+    dataProducts.map(async (c) => {
      if (c.Código === product) {
+      const reserva = await verificarReserva(c.Código)
+      console.log(reserva)
+      let cantidadReservada = 0
+      if (reserva[0]) {
+        cantidadReservada = reserva.reduce((acc, curr) => acc + curr.cantidad, 0);
+        let reservas = reserva.map((r) => {
+          return r._id
+        })
+        setReservasActuales(reservas)
+      }
       console.log('entre en codigo de sp')
       setSP(c)
       setPrecioMayor(c["Precio Mayor"])
       setPrecioMenor(c["Precio Minimo"])
       setPrecioOferta(c["Precio Oferta"])
-      setexistencia(c["Existencia Actual"])
+      setexistencia(c["Existencia Actual"] - cantidadReservada)
       setCódigo(c.Código)
       setReferencia(c.Referencia)
       setNombreCorto(c["Nombre Corto"])
@@ -1170,6 +1280,38 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
       setpreShoppingCart(sp)
       setmodificaSC((count) => count + 1);
     }
+
+    const mandarPedido = async (emails, nCorreo) => {
+      let data = {
+        cliente: sC,
+        productos: shoppingCart,
+        total: total,
+        items: items,
+        notaPedido: nota,
+        notaCorreo: nCorreo,
+        hora: horaActual(),
+        vendedor: usuario,
+        emails
+      }
+      console.log(data)
+
+      await fetch(`${backendUrl()}/registros`, {
+        method: 'POST',
+        body: JSON.stringify({data}),
+        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      }).then(res => {
+              if(res.status === 401) {
+                window.location.href =`${frontUrl()}/logout`
+              } else if (res.status === 200) {
+                MySwal.fire({
+                  icon: 'success',
+                  title:'El pedido se ha enviado correctamente!',
+                }).then(() => {
+                  window.location= '/products'
+                }) }
+            })
+    }
+
     const addCart = (n, g) => {
       let json = g === true ? mP : sP
       console.log(sC)
@@ -1289,20 +1431,13 @@ const MySwal = withReactContent(Swal)
           </>,
           showCancelButton: true,
         }).then(async (result) => {
-
           if (result.isConfirmed ) {
             let msn = document.getElementById('correoNota').value
-            await handleSendOrder(atd)
+            mandarPedido(atd, msn)
               att.push("pedidostoyoxpress@gmail.com")
               att.push("toyoxpressca@gmail.com")
+              att.push("mamedina770@gmail.com")
               setCantidadCor(att.length)
-              await att.map(async correo => {
-                let json = {correo, stat: await handleSendMail(numero, correo, msn)}
-                setSended(prevList => [...prevList, json])
-                if (correo != "pedidostoyoxpress@gmail.com" && correo != "toyoxpressca@gmail.com") {
-                  setMostrarSended(prevList => [...prevList, json])
-                }
-              })
           }
         });
       }
@@ -1314,7 +1449,23 @@ const MySwal = withReactContent(Swal)
       }, [selectedProduct, product]);
       
 
-    const selectCart = () => {
+    const selectCart = async () => {
+      const reserva = await verificarReserva(código)
+      let existenciaActual = existencia
+      console.log("reserva:", reserva)
+      console.log("existencia:", existenciaActual)
+      if (reserva[0]) {
+        let cantidadReservada = reserva.reduce((acc, curr) => {
+        console.log("ids:", curr._id, reservasActuales);
+          if (!reservasActuales.includes(curr._id)) {
+            console.log("sumas" ,acc, curr.cantidad)
+          return acc + curr.cantidad
+        }
+      return acc + 0 }, 0);
+      console.log("cantidad reservada:", cantidadReservada)
+        existenciaActual = existencia - cantidadReservada;
+        console.log("existencia actual:", existenciaActual)
+      }
       if (!sP) {
         Swal.fire({
           icon: 'error',
@@ -1324,12 +1475,13 @@ const MySwal = withReactContent(Swal)
         Swal.fire({
           icon: 'info',
           title: '¿Qué cantidad desea añadir?',
+          html: `Existencia: ${existenciaActual}`,
           input: 'number',
           showCancelButton: true,
         }).then((result) => {
           let value = Swal.getInput().value
           value = parseInt(value)
-          if (result.isConfirmed && value && value <= existencia && value > 0) {
+          if (result.isConfirmed && value && value <= existenciaActual && value > 0) {
             let repetido = false;
             let index = 0;
             let c_actual = 0;
@@ -1349,28 +1501,35 @@ const MySwal = withReactContent(Swal)
                 if(r.isConfirmed){
                   addCart(value)
                   handleChangeInput(index, c_actual+parseInt(value))
+                  crearReserva(sP.Código, value)
+                  setReservasActuales([])
                 }
               })
             } else {
               addCart(value)
+              crearReserva(sP.Código, value)
+              setReservasActuales([])
+
             }
           } else if (!value){
             Swal.fire({
               icon: 'error',
               title: 'Por favor, inserte la cantidad del producto!',
             })
-          } else if(value > existencia) {
+          } else if(value > existenciaActual) {
             console.log('entre aqui')
             Swal.fire({
               icon: 'error',
               title: 'No hay esa cantidad en stock!',
-              html: `Cantida Máxima: ${existencia} <input type="number" max="${existencia}" min="0" id='inputSwNew'>`,
+              html: `Cantida Máxima: ${existenciaActual} <input type="number" max="${existenciaActual}" min="0" id='inputSwNew'>`,
               showCancelButton: true,
             }).then((result) => {
               let value = document.getElementById('inputSwNew').value
               console.log(result, value)
               if (result.isConfirmed && value) {
                 addCart(value)
+                crearReserva(sP.Código, value)
+                setReservasActuales([])
               }
             })
           }
