@@ -275,7 +275,7 @@ console.log(separados)
     const newUpdateProducts = async (data, nombre) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
-      let update = await fetch(`http://18.117.246.233/products`, {
+      let update = await fetch(`http://backend.toyoxpress.com/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length, nombre}),
         headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
