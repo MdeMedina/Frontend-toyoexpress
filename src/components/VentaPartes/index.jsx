@@ -258,10 +258,24 @@ const ve = JSON.parse(localStorage.getItem("permissions")).verExcel
 
 
     } 
+
+    function esCorreoValido(correos) {
+  const expresionRegular = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  console.log(correos)
+  // Elimina espacios iniciales/finales y separa por espacio, coma o punto y coma
+  const separados = correos.trim().split(/[\s;,]+/).filter(Boolean);
+console.log(separados)
+  return separados.every(correo => expresionRegular.test(correo.trim()));
+}
+
+
+
+
     const newUpdateProducts = async (data, nombre) => {
       console.log("Entre en newProducts")
       console.log("Datos: ", data)
-      let update = await fetch(`http://backend.toyoxpress.com/products`, {
+      let update = await fetch(`http://18.117.246.233/products`, {
         method: 'POST',
         body: JSON.stringify({data, length: data.length, nombre}),
         headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
@@ -1435,7 +1449,7 @@ const selectEmail = (numero) => {
     preConfirm: () => {
       const nota = document.getElementById('correoNota').value;
       const correoPrincipal = sC["Correo Electronico"];
-      const tieneCorreos = (correoPrincipal && correoPrincipal.trim() !== "") || (atd && atd.length > 0);
+      const tieneCorreos = (esCorreoValido(correoPrincipal)) || (atd && atd.length > 0);
 
       if (!tieneCorreos) {
         MySwal.showValidationMessage('⚠️ Por favor, ingresa al menos un correo destinatario.');
@@ -1447,7 +1461,7 @@ const selectEmail = (numero) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       const msn = result.value.nota;
-      if (sC["Correo Electronico"]) att.push(sC["Correo Electronico"]);
+      if (esCorreoValido(sC["Correo Electronico"])) att.push(sC["Correo Electronico"]);
       att.push(...atd);
       att.push("pedidostoyoxpress@gmail.com");
       att.push("toyoxpressca@gmail.com");
