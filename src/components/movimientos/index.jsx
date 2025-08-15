@@ -20,7 +20,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content'
 import { backendUrl, frontUrl } from '../../lib/data/server';
 import EModal from '../sub-components/modal/E-modal'
-import { cuentas } from '../../lib/data/SelectOptions'
+import { cuentas, gettingAccounts } from '../../lib/data/SelectOptions'
 
 function Moves({socket}) {
   const media = window.innerWidth
@@ -35,6 +35,7 @@ function Moves({socket}) {
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const navDiv = document.querySelector(".navDiv");
+    gettingAccounts()
     console.log(navDiv);
     console.log(sidebar.classList.contains("close"));
 
@@ -122,6 +123,7 @@ const getMoves = async ( condition, pagina, cantidad, fechas, sort) => {
     body: JSON.stringify({condition, pagina, cantidad, fechas, sort, vm, nm}),
   })
   if (response.status === 401) {
+    console.log("saliendo por la derecha en get moves", response);
     window.location.href = `${frontUrl()}/login`
     return false
   }
