@@ -1505,7 +1505,7 @@ const selectEmail = (numero) => {
         Swal.fire({
           icon: 'info',
           title: '¿Qué cantidad desea añadir?',
-          html: `Existencia: ${existenciaActual}`,
+          html: `Existencia: ${existenciaActual}<br>Cantidad Reservada: ${reserva[0] ? reserva.reduce((acc, curr) => acc + curr.cantidad, 0) : 0}`,
           input: 'number',
           showCancelButton: true,
         }).then((result) => {
