@@ -621,11 +621,11 @@ return (
   </label>
 </div>
     <div class="form-check">
-  <input class="form-check-input" type="checkbox" value="" id={`actMovesVistaOt-${i}`} defaultChecked={u.permissions.verMovimientos}  onChange={() => {
+  <input class="form-check-input" type="checkbox" value="" id={`actMovesVistaOt-${i}`} defaultChecked={u.permissions.verOtrosMovimientos}  onChange={() => {
             const value = document.getElementById(`actMovesVistaOt-${i}`).checked
             setVerMovesOt(value)
   }} />
-  <label class="form-check-label" for={`actMovesVista-${i}`}>
+  <label class="form-check-label" for={`actMovesVistaOt-${i}`}>
     Ver los movimientos de otros usuarios
   </label>
 </div>
