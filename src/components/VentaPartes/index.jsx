@@ -690,8 +690,8 @@ console.log(separados)
         return false
       }
       let data = await response.json()
-      
       data = data.excel
+      console.log(data)
      setDataProducts(data)
     }
 

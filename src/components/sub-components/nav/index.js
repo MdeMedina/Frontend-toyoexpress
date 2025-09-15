@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -15,16 +14,164 @@ import "boxicons";
 import "../../../css/nav.css";
 import { backendUrl, frontUrl } from "../../../lib/data/server";
 import { PassModal } from "../modal/passModal";
-import { faL } from "@fortawesome/free-solid-svg-icons";
+
+// ====== Config ======
+const MIN_REFRESH_MS = 30 * 60 * 1000; // 30 min
+// helper arriba del componente
+const asBool = (v) => v === true || v === "true" || v === 1 || v === "1";
+
+// dentro de Navg:
+const token = localStorage.getItem("token");
+let obH = false;
+let am = false;
+if (token) {
+  const perms = JSON.parse(localStorage.getItem("permissions") || "{}");
+  obH = asBool(perms?.obviarIngreso);
+  am  = asBool(perms?.aprobarMovimientos);
+}
+
+// helpers junto a MIN_REFRESH_MS
+const parseHHMM = (hhmm) => {
+  if (!hhmm) return { h: 0, m: 0 };
+  const [h, m] = String(hhmm).split(":").map(Number);
+  return { h: h || 0, m: m || 0 };
+};
+const buildLocal = (y, mon, d, h, m) => new Date(y, mon, d, h, m, 0, 0);
+
+
+// ====== Hook: usar fechas del servidor + timers locales ======
+function useServerDates({ token, obH, setApertura, setCierre, navigate }) {
+  const skewRef = useRef(0);                // serverNow - clientNow
+  const warnTimeoutRef = useRef(null);      // aviso -5 min
+  const closeTimeoutRef = useRef(null);     // logout al cierre
+
+  const clearTimers = () => {
+    if (warnTimeoutRef.current) clearTimeout(warnTimeoutRef.current);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    warnTimeoutRef.current = null;
+    closeTimeoutRef.current = null;
+  };
+
+
+  const scheduleClose = useCallback((cierre, apertura) => {
+    clearTimers();
+
+    const nowLocal = new Date();
+    const y = nowLocal.getFullYear();
+    const mon = nowLocal.getMonth();
+    const d = nowLocal.getDate();
+
+    const { h: ch, m: cm } = parseHHMM(cierre);
+    const { h: ah, m: amn } = parseHHMM(apertura);
+
+    // si cierre < apertura => el cierre es al día siguiente
+    const cierreIsTomorrow = (ch * 60 + cm) < (ah * 60 + amn);
+    const cierreDate = cierreIsTomorrow
+      ? buildLocal(y, mon, d + 1, ch, cm)
+      : buildLocal(y, mon, d,     ch, cm);
+
+    const warnDate = new Date(cierreDate.getTime() - 5 * 60 * 1000);
+
+    const serverNow = Date.now() + skewRef.current;
+    const warnDelay  = Math.max(warnDate.getTime()  - serverNow, 0);
+    const closeDelay = Math.max(cierreDate.getTime() - serverNow, 0);
+
+      console.log({
+    nowLocal,
+    skewMs: skewRef.current,
+    warnAtLocal: warnDate,
+    closeAtLocal: cierreDate,
+    warnDelayMs: warnDelay,
+    closeDelayMs: closeDelay,
+    obH,
+  });
+    warnTimeoutRef.current = setTimeout(() => {
+      const visto = localStorage.getItem("visto") === "true";
+      if (!obH && !visto) {
+        Swal.fire({
+          icon: "warning",
+          title: "¡La aplicación cierra en menos de 5 minutos!",
+          showConfirmButton: true,
+        });
+        localStorage.setItem("visto", "true");
+      }
+    }, warnDelay);
+
+    closeTimeoutRef.current = setTimeout(() => {
+      if (!obH) navigate("/logout");
+    }, closeDelay);
+  }, [navigate, obH]);
+
+  const fetchDates = useCallback(async () => {
+    const r = await fetch(`${backendUrl()}/dates/`, {
+      headers: new Headers({
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }),
+    });
+    if (r.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+      return;
+    }
+    const json = await r.json();
+
+    // Esperamos { apertura, cierre, serverNow }
+    setApertura(json.apertura);
+    setCierre(json.cierre);
+
+    // Calcular skew (si no viene, usar 0)
+skewRef.current =
+  typeof json.serverNow === "number" ? json.serverNow - Date.now() : 0;
+
+      // en useServerDates, dentro de fetchDates antes de scheduleClose:
+    const todayKey = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+    const vistoKey = localStorage.getItem("vistoKey");
+    if (vistoKey !== todayKey) {
+      localStorage.removeItem("visto");
+      localStorage.setItem("vistoKey", todayKey);
+    }
+
+    // Programar timers locales
+    scheduleClose(json.cierre, json.apertura);
+  }, [token, setApertura, setCierre, scheduleClose]);
+
+  useEffect(() => {
+    // Carga inicial
+    fetchDates();
+
+    // Refresh espaciado
+    const refreshId = setInterval(fetchDates, MIN_REFRESH_MS);
+
+    // Refresh al volver visibilidad/foco
+    const onVis = () => {
+      if (document.visibilityState === "visible") fetchDates();
+    };
+    const onFocus = () => fetchDates();
+
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      clearInterval(refreshId);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onFocus);
+      clearTimers();
+    };
+
+
+  }, [fetchDates]);
+}
 
 function Navg({ socket }) {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem("token");
   let obH = false;
   let am = false;
   if (token) {
-    obH = JSON.parse(localStorage.getItem("permissions")).obviarIngreso;
-    am = JSON.parse(localStorage.getItem("permissions")).aprobarMovimientos;
+    const perms = JSON.parse(localStorage.getItem("permissions") || "{}");
+    obH = !!perms.obviarIngreso;
+    am = !!perms.aprobarMovimientos;
   }
+
   const navigate = useNavigate();
   const [apertura, setApertura] = useState();
   const [moves, setMoves] = useState([]);
@@ -36,12 +183,12 @@ function Navg({ socket }) {
   const [password, setPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const user = localStorage.getItem("name");
-  let hourD = localStorage.getItem("HourAlert");
-  const [alertDado, setAlertDado] = useState(hourD);
   const [aproveN, setAproveN] = useState([]);
   const [notification, setNotification] = useState([]);
-
   const media = window.innerWidth;
+
+  // ==== Sincroniza fechas del servidor y programa timers (aviso/logout)
+  useServerDates({ token, obH, setApertura, setCierre, navigate });
 
   const settingPassword = (password, newPassword) => {
     setPassword(password);
@@ -51,7 +198,7 @@ function Navg({ socket }) {
 
   const nuevaPass = async () => {
     if (actPassword === true) {
-      let updateData = {
+      const updateData = {
         email: localStorage.getItem("email"),
         ActualPassword: password,
         password: newPassword,
@@ -59,19 +206,24 @@ function Navg({ socket }) {
       await fetch(`${backendUrl()}/users/actpass`, {
         method: "POST",
         body: JSON.stringify(updateData),
-        headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
-      }).then(res => {
-        if(res.status === 401) {
-          window.location.href =`${frontUrl()}/logout`
-          return false
-        }
-        return res.json()
-      }).then(
-        Swal.fire({
-          icon: "success",
-          title: "Contraseña modificada con exito",
+        headers: new Headers({
+          "Content-type": "application/json",
+          Authorization: `Bearer ${token}`,
+        }),
+      })
+        .then((res) => {
+          if (res.status === 401) {
+            window.location.href = `${frontUrl()}/logout`;
+            return false;
+          }
+          return res.json();
         })
-      );
+        .then(
+          Swal.fire({
+            icon: "success",
+            title: "Contraseña modificada con éxito",
+          })
+        );
     }
   };
 
@@ -81,103 +233,48 @@ function Navg({ socket }) {
 
   const toggleFunc = () => {
     const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("close");
+    if (sidebar) sidebar.classList.toggle("close");
     const navDiv = document.querySelector(".navDiv");
-    navDiv.classList.toggle("close");
-  };
-  /*const ap = ( time < 12) ? "<span>AM</span>":"<span>PM</span>";*/
-
-  const hourAlerta = async (cierre, apertura) => {
-    let hoy_cierre;
-    if (cierre < apertura) {
-      hoy_cierre = `${formatDateMananaEn(new Date())}T${cierre}`; // 2022-10-26T20:00
-    } else {
-      hoy_cierre = `${formatDateHoyEn(new Date())}T${cierre}`; // 2022-10-25T20:00
-    }
-    const promResult = await fetch(`${backendUrl()}/users/hour`, {
-      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
-    });
-    if (promResult.status === 401) {
-      window.location.href = `${frontUrl()}/logout`;
-    }
-    const jsq = await promResult.json();
-    let horaActual = await jsq.horaActual;
-    horaActual = horaActual.split("-");
-    horaActual = `${horaActual[0]}-${horaActual[1]}-${horaActual[2]}`;
-    let hoy_real = new Date(hoy_cierre);
-    let hoyMenosCinco = new Date(hoy_real.getTime() - 5 * 60 * 1000);
-    let visto = localStorage.getItem("visto");
-    if (visto == "true") {
-      visto = true;
-    }
-    if (visto == "false") {
-      visto = false;
-    }
-
-    console.log(visto);
-    console.log(new Date(horaActual) >= hoyMenosCinco, !obH, !visto);
-    console.log(new Date(horaActual), hoyMenosCinco);
-
-    if (new Date(horaActual) >= hoyMenosCinco && !obH && !visto) {
-      Swal.fire({
-        icon: "warning",
-        title: "La aplicacion cierra en menos de 5 minutos!",
-        showConfirmButton: true,
-      });
-      localStorage.setItem("visto", true);
-    }
-    if (new Date(horaActual) >= hoy_real && !obH) {
-      navigate("/logout");
-    }
+    if (navDiv) navDiv.classList.toggle("close");
   };
 
-
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Aquí puedes poner la función que quieras ejecutar cada 1 minuto
-      getTime();
-    }, 30000); // El número es el intervalo en milisegundos, por lo que 60000ms = 1 minuto
-
-    return () => clearInterval(interval);
-  }, []);
-
-
-
+  // ===== Notificaciones / Moves =====
   const getNote = async () => {
-    await fetch(`${backendUrl()}/users/`, {
-      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
-    })
-      .then((res) => res.json())
-      .then((res) => res.users)
-      .then((res) =>
-        res.filter((dato) => {
-          return dato.email.includes(localStorage.getItem("email"));
-        })
-      ).then(res => {
-        if(res.status === 401) {
-          window.location.href =`${frontUrl()}/logout`
-          return false
-        }
-        return res.json()
-      })
-      .then((res) => res[0].notificaciones)
-      .then((res) => setNote(res));
+    const res = await fetch(`${backendUrl()}/users/`, {
+      headers: new Headers({
+        "Content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }),
+    });
+    if (res.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+      return;
+    }
+    const data = await res.json();
+    const users = data.users || [];
+    const mine = users.filter((u) =>
+      (u.email || "").includes(localStorage.getItem("email"))
+    );
+    const notis = (mine[0] && mine[0].notificaciones) || [];
+    setNote(notis);
   };
 
   const actNote = async (n) => {
-    let updateData = { email: n.email, notificaciones: [n.message] };
-    await fetch(`${backendUrl()}/users/actNotificaciones`, {
+    const updateData = { email: n.email, notificaciones: [n.message] };
+    const res = await fetch(`${backendUrl()}/users/actNotificaciones`, {
       method: "PUT",
       body: JSON.stringify(updateData),
-      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
-    }).then(res => {
-      if(res.status === 401) {
-        window.location.href =`${frontUrl()}/logout`
-        return false
-      }
-      return res.json()
-    }).then(getNote());
+      headers: new Headers({
+        "Content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }),
+    });
+    if (res.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+      return;
+    }
+    await res.json();
+    getNote();
   };
 
   useEffect(() => {
@@ -190,6 +287,8 @@ function Navg({ socket }) {
       getNote();
       actNote(data);
     });
+    // cleanup sockets opcional
+    // return () => { socket.off("move"); socket.off("receive_aprove"); }
   });
 
   useEffect(() => {
@@ -199,68 +298,58 @@ function Navg({ socket }) {
       })
     );
   }, [moves]);
+
   const getMoves = async () => {
     const response = await fetch(`${backendUrl()}/moves`, {
-      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
+      headers: new Headers({
+        "Content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }),
     });
-    let data = await response.json();
-    await setMoves(data);
+    if (response.status === 401) {
+      window.location.href = `${frontUrl()}/logout`;
+      return;
+    }
+    const data = await response.json();
+    setMoves(data);
   };
 
+  // Carga inicial de otros datos (sin getTime: ya lo maneja useServerDates)
   useEffect(() => {
-    getTime();
     getMoves();
     getNote();
   }, []);
 
-  const getTime = async () => {
-    let promResult = await fetch(`${backendUrl()}/dates/`, {
-      headers: new Headers({ 'Content-type': 'application/json', "Authorization": `Bearer ${token}`}),
-    });
-    if (promResult.status === 401) {
-      window.location.href = `${frontUrl()}/logout`;
-      return false;
-    }
-    let json = await promResult.json();
-    setApertura(json.apertura);
-    setCierre(json.cierre);
-    hourAlerta(json.cierre, json.apertura);
-  };
+  const displayNotificationMove = () => {
+    if (!am) return null;
 
-  const displayNotificationMove = (n) => {
-    if (am) {
-      if (filterMove.length > 0 && filterMove.length > 1) {
-        return (
-          <div onClick={() => navigate("/moves")} className="af" key={1}>
-            {`Hay ${filterMove.length} movimientos por aprobar`}
-          </div>
-        );
-      } else if (filterMove.length === 1) {
-        return (
-          <div onClick={() => navigate("/moves")} className="af" key={1}>
-            {`Hay 1 movimiento por aprobar`}
-          </div>
-        );
-      } else {
-        return <div>No hay movimientos por aprobar</div>;
-      }
+    if (filterMove.length > 1) {
+      return (
+        <div onClick={() => navigate("/moves")} className="af" key={1}>
+          {`Hay ${filterMove.length} movimientos por aprobar`}
+        </div>
+      );
+    } else if (filterMove.length === 1) {
+      return (
+        <div onClick={() => navigate("/moves")} className="af" key={1}>
+          {`Hay 1 movimiento por aprobar`}
+        </div>
+      );
+    } else {
+      return <div>No hay movimientos por aprobar</div>;
     }
   };
 
   const displayNotes = () => {
     if (!note[0]) {
-      if (am) {
-        return false;
-      } else {
-        return <div>No hay notificaciones nuevas</div>;
-      }
-    } else {
-      return (
-        <div onClick={() => navigate("/moves")} className="af" key={1}>
-          {`Tienes movimientos ya aprobados`}
-        </div>
-      );
+      if (am) return false;
+      return <div>No hay notificaciones nuevas</div>;
     }
+    return (
+      <div onClick={() => navigate("/moves")} className="af" key={1}>
+        {`Tienes movimientos ya aprobados`}
+      </div>
+    );
   };
 
   return (
@@ -268,10 +357,8 @@ function Navg({ socket }) {
       <Navbar bg="light" expand="lg" className="topbar">
         <Container className="d-flex justify-content-center">
           <Row className="row-edit">
-            {console.log(media > 414, media)}
             {media > 414 ? (
               <>
-                {" "}
                 <Col
                   xs={5}
                   md={3}
@@ -308,10 +395,7 @@ function Navg({ socket }) {
                   md={3}
                   className="d-flex align-items-center justify-content-end"
                 >
-                  <Navbar.Brand
-                    href="/"
-                    className="d-flex justify-content-center"
-                  >
+                  <Navbar.Brand href="/" className="d-flex justify-content-center">
                     <img
                       src={require("../../img/logo.png")}
                       className="logo"
@@ -338,33 +422,25 @@ function Navg({ socket }) {
                     false
                   )}
                   {!note[0] ? false : <div className="bola " id="bola"></div>}
-                  <div class="dropstart col-7 d-flex justify-content-center ">
+                  <div className="dropstart col-7 d-flex justify-content-center ">
                     <div
                       className="nav-link dropdown-toggle"
                       role="button"
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
-                      {" "}
-                      <box-icon
-                        name="bell"
-                        className="campana"
-                        size="24px"
-                      ></box-icon>
+                      <box-icon name="bell" className="campana" size="24px"></box-icon>
                     </div>
 
-                    <ul
-                      class="dropdown-menu dropdown-menu-lg-start
-                    mdw"
-                    >
+                    <ul className="dropdown-menu dropdown-menu-lg-start mdw">
                       <li className="row">
-                        {displayNotificationMove(notification)}
+                        {displayNotificationMove()}
                         {displayNotes()}
                       </li>
                     </ul>
                   </div>
                 </div>
-                <div class="dropstart col-6 d-flex justify-content-end">
+                <div className="dropstart col-6 d-flex justify-content-end">
                   <a
                     className="nav-link dropdown-toggle"
                     role="button"
@@ -373,7 +449,7 @@ function Navg({ socket }) {
                   >
                     {user}
                   </a>
-                  <ul class="dropdown-menu dropdown-menu-lg-start">
+                  <ul className="dropdown-menu dropdown-menu-lg-start">
                     <li className="row">
                       <div className="col-11 d-flex justify-content-center">
                         Hora de ingreso:
