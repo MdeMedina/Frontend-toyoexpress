@@ -154,7 +154,7 @@ const handlePrint = useReactToPrint({
 useEffect(() => {
   let inicio = new Date(startDate)
   let final = new Date(endDate)
-  final = final.setDate(final.getDate())
+  final = final.setDate(final.getDate()-1)
   final= new Date(final)
   setFechas({from: inicio, to: final});
 }, [startDate, endDate]);
@@ -262,10 +262,12 @@ const actmoveCantidad = async () => {
 }
 
 useEffect(() => {
+  if (moves.length > 0) {
   if (!sortId._id){
     getMoves(condicionBusqueda, pagina, vPage, fechas, sortFecha);
   } else {
     getMoves(condicionBusqueda, pagina, vPage, fechas, sortId);
+  }
   }
 }, [sortId, sortFecha]);
 
@@ -585,6 +587,7 @@ const gettingUsers = async() => {
 }
 
 useEffect(() => {
+  if(moves[0]) {
   if (!sortId._id && !sortFecha.fecha) {  
     getMoves(condicionBusqueda, 1, vPage, fechas);
   } else if (!sortId._id) {
@@ -593,6 +596,7 @@ useEffect(() => {
     getMoves(condicionBusqueda, 1, vPage, fechas, sortId);
   }
   setPagina(1);
+    }
 }, [condicionBusqueda, vPage, fechas]);
 
 
