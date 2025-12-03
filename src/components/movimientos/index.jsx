@@ -154,7 +154,7 @@ const handlePrint = useReactToPrint({
 useEffect(() => {
   let inicio = new Date(startDate)
   let final = new Date(endDate)
-  final = final.setDate(final.getDate()-1)
+  final = final.setDate(final.getDate())
   final= new Date(final)
   setFechas({from: inicio, to: final});
 }, [startDate, endDate]);
