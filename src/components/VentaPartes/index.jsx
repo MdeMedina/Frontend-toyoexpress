@@ -1686,7 +1686,7 @@ const selectEmail = (numero) => {
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{código}</div></td>
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{nombreCorto}</div></td>
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{precioMenor}</div></td>
-    <td class="tg-0pky"><div className='d-flex justify-content-center'>{precioOferta}</div></td>
+    <td class="tg-0pky"><div className='d-flex justify-content-center'>{precioMayor}</div></td>
     <td class="tg-0pky"><div className='d-flex justify-content-center'>{marca}</div></td>
     { existencia == 0 ? 
     <td class="tg-0pky" style={{color: 'red'}}><div className='d-flex justify-content-center'>{existencia}</div></td> :
