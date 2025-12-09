@@ -154,7 +154,12 @@ const handlePrint = useReactToPrint({
 useEffect(() => {
   let inicio = new Date(startDate)
   let final = new Date(endDate)
-  final = final.setDate(final.getDate()-1)
+  console.log('cambio de fechas:', inicio, final)
+  if (moves.length > 0) {
+   final = final.setDate(final.getDate())
+  } else {
+  final = final.setDate(final.getDate())
+  }
   final= new Date(final)
   setFechas({from: inicio, to: final});
 }, [startDate, endDate]);
@@ -262,12 +267,11 @@ const actmoveCantidad = async () => {
 }
 
 useEffect(() => {
-  if (moves.length > 0) {
+  console.log('Sali de sortId', fechas);
   if (!sortId._id){
     getMoves(condicionBusqueda, pagina, vPage, fechas, sortFecha);
   } else {
     getMoves(condicionBusqueda, pagina, vPage, fechas, sortId);
-  }
   }
 }, [sortId, sortFecha]);
 
@@ -314,6 +318,7 @@ const paginacion = (ciclo, total) => {
 const paginar = (page, ignorar) => {
   if (ignorar) return false;
   setPagina(page);
+  console.log("Sali de paginar", fechas);
   if (!sortId._id && !sortFecha.fecha) {  
     getMoves(condicionBusqueda, page, vPage, fechas);
   } else if (!sortId._id) {
@@ -586,8 +591,11 @@ const gettingUsers = async() => {
 }) 
 }
 
-useEffect(() => {
-  if(moves[0]) {
+useEffect(() => {  
+  console.log('Sali de la combi');
+  console.log('condicionBusqueda:', condicionBusqueda);
+  console.log('vPage:', vPage);
+  console.log('fechas:',fechas)
   if (!sortId._id && !sortFecha.fecha) {  
     getMoves(condicionBusqueda, 1, vPage, fechas);
   } else if (!sortId._id) {
@@ -596,7 +604,6 @@ useEffect(() => {
     getMoves(condicionBusqueda, 1, vPage, fechas, sortId);
   }
   setPagina(1);
-    }
 }, [condicionBusqueda, vPage, fechas]);
 
 
@@ -887,6 +894,7 @@ await fetch(`${backendUrl()}/moves/updateStatus`, {
     }
   }).then(socket.emit('move', `Hay ${moves.length} movimientos por aprobar!`)).then(socket.emit("join_room", move.messageId)).then(socket.emit("send_aprove", { email, message, messageId }))
  let sort
+   console.log('Sali de emit move', fechas);
   if (!sortId._id && !sortFecha.fecha){
     getMoves(condicionBusqueda, 1, vPage, fechas)
   } else if (!sortId._id) {
@@ -904,6 +912,7 @@ setPagina(1);
 
 
 useEffect(()=> {
+  console.log('Sali de useeffect move', fechas);
   if (!sortId._id && !sortFecha.fecha){
     getMoves(condicionBusqueda, 1, vPage, fechas)
   } else if (!sortId._id) {
@@ -969,6 +978,7 @@ const endDateSetter = (date) => {
   setCurrentPage(0)
   setEstaba(1)
   setMeEncuentro(1)
+  console.log("esta es la fecha cambiada", date)
   setEndDate(date)
 }
 
