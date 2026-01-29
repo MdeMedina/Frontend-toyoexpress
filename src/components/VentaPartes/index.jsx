@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Form, Dropdown } from 'react-bootstrap';
 import { read, utils, writeFile } from 'xlsx';
 import 'boxicons'
@@ -26,7 +26,9 @@ export const VentaProductos = () => {
   const vendName = localStorage.getItem("name")
   const inputRef = React.useRef([]);
   const productSearchTimeout = React.useRef(null);
+  const clientSearchTimeout = React.useRef(null);
   const productSearchController = React.useRef(null);
+  const clientSearchController = React.useRef(null);
   const token = localStorage.getItem('token')
   const key = localStorage.getItem("token");
 
@@ -121,6 +123,13 @@ export const VentaProductos = () => {
     return () => {
         socket.off("update_correlativo");
         socket.disconnect();
+        // Limpiar timeout y cancelar requests pendientes
+        if (searchTimeoutRef.current) {
+          clearTimeout(searchTimeoutRef.current);
+        }
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
     };
 }, []);
 
@@ -207,6 +216,11 @@ export const VentaProductos = () => {
     const [mostrarSended, setMostrarSended] = useState([])
     const [cantidadCor, setCantidadCor] = useState(-1);
     const [values, setValues] = useState([]); // Estado inicial con un valor mínimo de 1
+    const searchTimeoutRef = useRef(null);
+    const abortControllerRef = useRef(null);
+    const [isSearchingProducts, setIsSearchingProducts] = useState(false);
+    const isProcessingProductRef = useRef(false);
+    const lastProcessedProductRef = useRef(null);
 
     const handleChangeInput = (index, newValue) => {
       if (newValue === '' || parseInt(newValue) >= 1) {
@@ -677,15 +691,18 @@ console.log(separados)
     }
 
     const getSimpleProducts = async (search, pagina) => {
-      if (!search) {
-        return;
+      // Cancelar request anterior si existe
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
-      if (productSearchController.current) {
-        productSearchController.current.abort();
-      }
-      const controller = new AbortController();
-      productSearchController.current = controller;
+      
+      // Crear nuevo AbortController
+      abortControllerRef.current = new AbortController();
+      
+      setIsSearchingProducts(true);
+      
       try {
+        console.log('🔍 Buscando productos:', search)
         const response = await fetch(`${backendUrl()}/excel/products`, {
           method:'POST',
           headers: {
@@ -694,6 +711,45 @@ console.log(separados)
             "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({Código: search, pagina}),
+          signal: abortControllerRef.current.signal
+        })
+        
+        if (response.status === 401) {
+          window.location.href = `${frontUrl()}/logout`;
+          return false
+        }
+        
+        let data = await response.json()
+        data = data.excel
+        console.log('✅ Productos encontrados:', data.length)
+        setDataProducts(data)
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('❌ Error buscando productos:', error)
+        }
+      } finally {
+        setIsSearchingProducts(false);
+      }
+    }
+
+    const getSimpleClients = async (search, pagina) => {
+      if (!search) {
+        return;
+      }
+      if (clientSearchController.current) {
+        clientSearchController.current.abort();
+      }
+      const controller = new AbortController();
+      clientSearchController.current = controller;
+      try {
+        const response = await fetch(`${backendUrl()}/excel/clients`, {
+          method:'POST',
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({Nombre: search, pagina}),
           signal: controller.signal,
         })
         if (response.status === 401) {
@@ -702,44 +758,25 @@ console.log(separados)
         }
         let data = await response.json()
         data = data.excel
-       setDataProducts(data)
+        if (vc) {
+          setDataClient(data)
+        } else if (cv) {
+          let num;
+          if (cv > 0 && cv <= 9) {
+            num = `0${cv}`
+          } else {
+            num = `${cv}`
+          }
+         data = data.filter((cliente) => {
+          return num == cliente['Vendedores Código']
+          })
+          console.log(data)
+          setDataClient(data)
+        }
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error(error);
         }
-      }
-    }
-
-    const getSimpleClients = async (search, pagina) => {
-      const response = await fetch(`${backendUrl()}/excel/clients`, {
-        method:'POST',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({Nombre: search, pagina})
-      })
-      if (response.status === 401) {
-        window.location.href = `${frontUrl()}/logout`;
-        return false
-      }
-      let data = await response.json()
-      data = data.excel
-      if (vc) {
-        setDataClient(data)
-      } else if (cv) {
-        let num;
-        if (cv > 0 && cv <= 9) {
-          num = `0${cv}`
-        } else {
-          num = `${cv}`
-        }
-       data = data.filter((cliente) => {
-        return num == cliente['Vendedores Código']
-        })
-        console.log(data)
-        setDataClient(data)
       }
     }
 
@@ -953,30 +990,60 @@ console.log(separados)
    }
 
    const searchProduct = async () => {
-    dataProducts.map(async (c) => {
-     if (c.Código === product) {
-      const reserva = await verificarReserva(c.Código)
-      console.log(reserva)
-      let cantidadReservada = 0
-      if (reserva[0]) {
-        cantidadReservada = reserva.reduce((acc, curr) => acc + curr.cantidad, 0);
-        let reservas = reserva.map((r) => {
-          return r._id
-        })
-        setReservasActuales(reservas)
+    if (!product) return;
+    
+    // Solo evitar si está exactamente el mismo producto siendo procesado ahora mismo
+    if (isProcessingProductRef.current && lastProcessedProductRef.current === product) {
+      console.log('⚠️ Producto ya en proceso:', product);
+      return;
+    }
+    
+    // Marcar como procesando
+    isProcessingProductRef.current = true;
+    lastProcessedProductRef.current = product;
+    
+    try {
+      // Buscar el producto en dataProducts
+      const productoEncontrado = dataProducts.find((c) => c.Código === product);
+      
+      if (productoEncontrado) {
+        console.log('✅ Producto encontrado en dataProducts:', product)
+        const reserva = await verificarReserva(productoEncontrado.Código)
+        let cantidadReservada = 0
+        if (reserva && reserva[0]) {
+          cantidadReservada = reserva.reduce((acc, curr) => acc + curr.cantidad, 0);
+          let reservas = reserva.map((r) => {
+            return r._id
+          })
+          setReservasActuales(reservas)
+        }
+        
+        // Actualizar todos los estados del producto
+        setSP(productoEncontrado)
+        setPrecioMayor(productoEncontrado["Precio Mayor"])
+        setPrecioMenor(productoEncontrado["Precio Minimo"])
+        setPrecioOferta(productoEncontrado["Precio Oferta"])
+        setexistencia(productoEncontrado["Existencia Actual"] - cantidadReservada)
+        setCódigo(productoEncontrado.Código)
+        setReferencia(productoEncontrado.Referencia)
+        setNombreCorto(productoEncontrado["Nombre Corto"])
+        setMarca(productoEncontrado.Modelo)
+        
+        console.log('✅ Estados actualizados para:', productoEncontrado.Código)
+      } else {
+        // Si no está en dataProducts, buscar
+        console.log('🔍 Producto no encontrado en dataProducts, buscando...', product);
+        await getSimpleProducts({Código: product}, 1);
+        // El useEffect de dataProducts se encargará de procesarlo cuando lleguen los datos
       }
-      console.log('entre en codigo de sp')
-      setSP(c)
-      setPrecioMayor(c["Precio Mayor"])
-      setPrecioMenor(c["Precio Minimo"])
-      setPrecioOferta(c["Precio Oferta"])
-      setexistencia(c["Existencia Actual"] - cantidadReservada)
-      setCódigo(c.Código)
-      setReferencia(c.Referencia)
-      setNombreCorto(c["Nombre Corto"])
-      setMarca(c.Modelo)
-     }
-    })
+    } catch (error) {
+      console.error('❌ Error en searchProduct:', error);
+    } finally {
+      // Resetear el flag después de un delay
+      setTimeout(() => {
+        isProcessingProductRef.current = false;
+      }, 500);
+    }
    }
 
     useEffect(() => {
@@ -994,8 +1061,39 @@ console.log(separados)
   }, [dataProducts]);
 
   useEffect(() => {
-    searchProduct()
-  }, [product]);
+    // Ejecutar searchProduct cuando cambia product
+    // Solo si el producto NO está ya procesado (para evitar duplicados)
+    if (product && lastProcessedProductRef.current !== product) {
+      // Verificar si ya está en dataProducts para evitar búsquedas innecesarias
+      const productoEncontrado = dataProducts.find((c) => c.Código === product);
+      
+      if (productoEncontrado) {
+        // Si ya está en dataProducts, usar searchProduct normal
+        searchProduct();
+      } else {
+        // Si no está, buscar con getSimpleProducts
+        getSimpleProducts({Código: product}, 1);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product]); // Solo dependemos de product para evitar loops
+  
+  // Efecto adicional para cuando dataProducts se actualiza y hay un producto seleccionado
+  useEffect(() => {
+    // Si hay un producto seleccionado y se actualizan dataProducts, intentar buscar el producto
+    if (product && dataProducts.length > 0 && lastProcessedProductRef.current !== product) {
+      const productoEncontrado = dataProducts.find((c) => c.Código === product);
+      if (productoEncontrado && !isProcessingProductRef.current) {
+        // Pequeño delay para evitar condiciones de carrera
+        const timeoutId = setTimeout(() => {
+          searchProduct()
+        }, 100);
+        
+        return () => clearTimeout(timeoutId);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataProducts]); // Solo cuando dataProducts cambia
 
   function preHandleFile() {
     handleFile(cargaClientes, cargaProductos)
@@ -1258,15 +1356,18 @@ console.log(separados)
               };
             });
             const newArrUp = jsonData.map(obj => {
+              console.log("obj: ",obj)
               return {
                 "Código": obj["Codigo"],
                 "Nombre Corto": obj["Nombre"] + " " + obj["Codigo"],
+                Referencia: obj.Referencia,
                 Marca: obj.Marca,
+                Modelo: obj.Modelo,
                 "Existencia Actual": obj["Existencia Actual"],
                 "Precio Oferta": obj["Precio Oferta"],
                 "Precio Mayor": obj["Precio Mayor"],
                 "Precio Minimo": obj["Precio Minimo"],
-                precio2: obj["Precio Oferta"]
+                precio2: obj["Precio Oferta"], 
               };
             });
             console.log("newarrup: ",newArrUp)
@@ -1380,7 +1481,20 @@ console.log(separados)
             if (preShoppingCart[i].Código == json.Código){
               console.log("Carrito pre: ", carrito)
               carrito[i].cantidad =  parseInt(json.cantidad)
-              carrito[i].total =  parseFloat(json.total).toFixed(2)
+              // Recalcular el precio según el tipo de precio del cliente al actualizar cantidad
+              let precioActualizado = carrito[i]['Precio Minimo']; // Por defecto
+              if (sC && sC["Tipo de Precio"]) {
+                const tipoPrecio = sC["Tipo de Precio"].trimEnd();
+                if (tipoPrecio === 'Precio Por Defecto' || tipoPrecio === 'Precio Minimo') {
+                  precioActualizado = carrito[i]['Precio Minimo'];
+                } else if (tipoPrecio === 'Precio Mayor') {
+                  precioActualizado = carrito[i]['Precio Mayor'];
+                } else if (tipoPrecio === 'Precio Oferta') {
+                  precioActualizado = carrito[i]['Precio Oferta'];
+                }
+              }
+              carrito[i].precio = parseFloat(precioActualizado).toFixed(2);
+              carrito[i].total =  (parseInt(json.cantidad) * parseFloat(precioActualizado)).toFixed(2)
               resuelto = true;
             } 
             console.log("Carrito post: ", carrito)
@@ -1653,8 +1767,13 @@ const selectEmail = (numero) => {
         setCliente(e.value)
        }
 }} placeholder='Introduce el nombre del cliente' onInputChange={(e) => {
+          if (clientSearchTimeout.current) {
+            clearTimeout(clientSearchTimeout.current);
+          }
           if (e.length >= 4) {
-          getSimpleClients({Nombre: e}, 1)
+            clientSearchTimeout.current = setTimeout(() => {
+              getSimpleClients(e, 1)
+            }, 300);
           } else {
             setClientes([])
           }
@@ -1666,24 +1785,100 @@ const selectEmail = (numero) => {
         <hr className='mt-2'/>
         <div className="col-12 row mb-3 mx-0 d-flex justify-content-center">
         <div className="col-sm-2 d-flex align-items-center justify-content-center">Nro de Parte:</div>
-        <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={partes} components={components} menuIsOpen={menu1} isClearable={true} value={selectedProduct} onChange={(e) => {
+        <div className="col-sm-9 d-flex align-items-center justify-content-center"> <Select options={partes} components={components} menuIsOpen={menu1} isClearable={true} value={selectedProduct} onChange={async (e) => {
           if (e === null) {
             console.log("entre a e=null")
+            // Resetear refs al limpiar
+            lastProcessedProductRef.current = null;
+            isProcessingProductRef.current = false;
             setSelectedProduct(null)
-          } else {
-          console.log(e)
-         setSelectedProduct(e)
-          }
-        setProduct(e.value) }} placeholder='Introduce el número de parte' onInputChange={(e) => {
-          if (productSearchTimeout.current) {
-            clearTimeout(productSearchTimeout.current);
-          }
-          if (e.length >= 5) {
-            productSearchTimeout.current = setTimeout(() => {
-              getSimpleProducts(e, 1)
-            }, 300);
-          } else {
+            setProduct('')
             setPartes([])
+            setDataProducts([])
+            // Limpiar datos del producto
+            setSP('')
+            setPrecioMayor('')
+            setPrecioMenor('')
+            setPrecioOferta('')
+            setexistencia(0)
+            setCódigo('')
+            setReferencia('')
+            setNombreCorto('')
+            setMarca('')
+          } else {
+          const productValue = e.value || e.label || '';
+          console.log('✅ Producto seleccionado del dropdown:', productValue)
+          
+          // Cerrar el menú inmediatamente
+          setMenu1(false);
+          
+          // Resetear refs para permitir procesar el nuevo producto
+          lastProcessedProductRef.current = null;
+          isProcessingProductRef.current = false;
+          
+          setSelectedProduct(e)
+          
+          // Si el producto está ya en dataProducts, procesarlo INMEDIATAMENTE
+          const productoEncontrado = dataProducts.find(p => p.Código === productValue);
+          if (productoEncontrado) {
+            // Actualizar product primero
+            setProduct(productValue);
+            
+            // Procesar inmediatamente sin esperar useEffect
+            // Resetear refs temporalmente para permitir la ejecución
+            lastProcessedProductRef.current = null;
+            isProcessingProductRef.current = false;
+            
+            // Llamar directamente a la lógica de procesamiento
+            (async () => {
+              try {
+                const reserva = await verificarReserva(productoEncontrado.Código);
+                let cantidadReservada = 0;
+                if (reserva && reserva[0]) {
+                  cantidadReservada = reserva.reduce((acc, curr) => acc + curr.cantidad, 0);
+                  let reservas = reserva.map((r) => r._id);
+                  setReservasActuales(reservas);
+                }
+                
+                // Actualizar todos los estados del producto inmediatamente
+                setSP(productoEncontrado);
+                setPrecioMayor(productoEncontrado["Precio Mayor"]);
+                setPrecioMenor(productoEncontrado["Precio Minimo"]);
+                setPrecioOferta(productoEncontrado["Precio Oferta"]);
+                setexistencia(productoEncontrado["Existencia Actual"] - cantidadReservada);
+                setCódigo(productoEncontrado.Código);
+                setReferencia(productoEncontrado.Referencia);
+                setNombreCorto(productoEncontrado["Nombre Corto"]);
+                setMarca(productoEncontrado.Modelo);
+                
+                console.log('✅ Producto procesado inmediatamente:', productValue);
+              } catch (error) {
+                console.error('Error procesando producto:', error);
+              }
+            })();
+          } else {
+            // Si no está en dataProducts, actualizar product para que el useEffect lo busque
+            setProduct(productValue);
+          }
+          }
+        }} placeholder='Introduce el número de parte' onInputChange={(e) => {
+          // Limpiar timeout anterior
+          if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+          }
+          
+          if (e.length >= 5) {
+            // Debounce: esperar 400ms antes de buscar
+            searchTimeoutRef.current = setTimeout(() => {
+              getSimpleProducts({Código: e}, 1);
+            }, 400);
+          } else {
+            // Cancelar búsqueda si hay menos de 5 caracteres
+            if (abortControllerRef.current) {
+              abortControllerRef.current.abort();
+            }
+            setPartes([])
+            setDataProducts([])
           }
         }} className="selectpd px-2"/>
         </div>

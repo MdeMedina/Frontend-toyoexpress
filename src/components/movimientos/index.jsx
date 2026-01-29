@@ -591,6 +591,7 @@ const gettingUsers = async() => {
 }) 
 }
 
+
 useEffect(() => {  
   console.log('Sali de la combi');
   console.log('condicionBusqueda:', condicionBusqueda);
