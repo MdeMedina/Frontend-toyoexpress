@@ -25,6 +25,10 @@ const components = {
 export const VentaProductos = () => {
   const vendName = localStorage.getItem("name")
   const inputRef = React.useRef([]);
+  const productSearchTimeout = React.useRef(null);
+  const clientSearchTimeout = React.useRef(null);
+  const productSearchController = React.useRef(null);
+  const clientSearchController = React.useRef(null);
   const token = localStorage.getItem('token')
   const key = localStorage.getItem("token");
 
@@ -729,35 +733,50 @@ console.log(separados)
     }
 
     const getSimpleClients = async (search, pagina) => {
-      const response = await fetch(`${backendUrl()}/excel/clients`, {
-        method:'POST',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({Nombre: search, pagina})
-      })
-      if (response.status === 401) {
-        window.location.href = `${frontUrl()}/logout`;
-        return false
+      if (!search) {
+        return;
       }
-      let data = await response.json()
-      data = data.excel
-      if (vc) {
-        setDataClient(data)
-      } else if (cv) {
-        let num;
-        if (cv > 0 && cv <= 9) {
-          num = `0${cv}`
-        } else {
-          num = `${cv}`
-        }
-       data = data.filter((cliente) => {
-        return num == cliente['Vendedores Código']
+      if (clientSearchController.current) {
+        clientSearchController.current.abort();
+      }
+      const controller = new AbortController();
+      clientSearchController.current = controller;
+      try {
+        const response = await fetch(`${backendUrl()}/excel/clients`, {
+          method:'POST',
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({Nombre: search, pagina}),
+          signal: controller.signal,
         })
-        console.log(data)
-        setDataClient(data)
+        if (response.status === 401) {
+          window.location.href = `${frontUrl()}/logout`;
+          return false
+        }
+        let data = await response.json()
+        data = data.excel
+        if (vc) {
+          setDataClient(data)
+        } else if (cv) {
+          let num;
+          if (cv > 0 && cv <= 9) {
+            num = `0${cv}`
+          } else {
+            num = `${cv}`
+          }
+         data = data.filter((cliente) => {
+          return num == cliente['Vendedores Código']
+          })
+          console.log(data)
+          setDataClient(data)
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error(error);
+        }
       }
     }
 
@@ -1748,8 +1767,13 @@ const selectEmail = (numero) => {
         setCliente(e.value)
        }
 }} placeholder='Introduce el nombre del cliente' onInputChange={(e) => {
+          if (clientSearchTimeout.current) {
+            clearTimeout(clientSearchTimeout.current);
+          }
           if (e.length >= 4) {
-          getSimpleClients({Nombre: e}, 1)
+            clientSearchTimeout.current = setTimeout(() => {
+              getSimpleClients(e, 1)
+            }, 300);
           } else {
             setClientes([])
           }
