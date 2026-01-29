@@ -587,7 +587,6 @@ const gettingUsers = async() => {
 }
 
 useEffect(() => {
-  if(moves[0]) {
   if (!sortId._id && !sortFecha.fecha) {  
     getMoves(condicionBusqueda, 1, vPage, fechas);
   } else if (!sortId._id) {
@@ -596,7 +595,6 @@ useEffect(() => {
     getMoves(condicionBusqueda, 1, vPage, fechas, sortId);
   }
   setPagina(1);
-    }
 }, [condicionBusqueda, vPage, fechas]);
 
 
