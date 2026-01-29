@@ -25,6 +25,8 @@ const components = {
 export const VentaProductos = () => {
   const vendName = localStorage.getItem("name")
   const inputRef = React.useRef([]);
+  const productSearchTimeout = React.useRef(null);
+  const productSearchController = React.useRef(null);
   const token = localStorage.getItem('token')
   const key = localStorage.getItem("token");
 
@@ -675,24 +677,37 @@ console.log(separados)
     }
 
     const getSimpleProducts = async (search, pagina) => {
-      console.log(search)
-      const response = await fetch(`${backendUrl()}/excel/products`, {
-        method:'POST',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({Código: search, pagina})
-      })
-      if (response.status === 401) {
-        window.location.href = `${frontUrl()}/logout`;
-        return false
+      if (!search) {
+        return;
       }
-      let data = await response.json()
-      data = data.excel
-      console.log(data)
-     setDataProducts(data)
+      if (productSearchController.current) {
+        productSearchController.current.abort();
+      }
+      const controller = new AbortController();
+      productSearchController.current = controller;
+      try {
+        const response = await fetch(`${backendUrl()}/excel/products`, {
+          method:'POST',
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({Código: search, pagina}),
+          signal: controller.signal,
+        })
+        if (response.status === 401) {
+          window.location.href = `${frontUrl()}/logout`;
+          return false
+        }
+        let data = await response.json()
+        data = data.excel
+       setDataProducts(data)
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error(error);
+        }
+      }
     }
 
     const getSimpleClients = async (search, pagina) => {
@@ -1660,8 +1675,13 @@ const selectEmail = (numero) => {
          setSelectedProduct(e)
           }
         setProduct(e.value) }} placeholder='Introduce el número de parte' onInputChange={(e) => {
+          if (productSearchTimeout.current) {
+            clearTimeout(productSearchTimeout.current);
+          }
           if (e.length >= 5) {
-          getSimpleProducts({Código: e}, 1)
+            productSearchTimeout.current = setTimeout(() => {
+              getSimpleProducts(e, 1)
+            }, 300);
           } else {
             setPartes([])
           }
