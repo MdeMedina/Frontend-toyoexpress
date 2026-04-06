@@ -1,71 +1,89 @@
-# Getting Started with Create React App
+# ToyoXpress v1 - Sistema de Gestión y Facturación (Legacy)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### **Mi Transición hacia el Desarrollo Moderno (React & SPA)**
 
-## Available Scripts
+Este repositorio contiene la primera versión del ecosistema **ToyoXpress**, un sistema integral para la gestión de inventario, usuarios y facturación en sucursales físicas. Construido con **React (Create React App)**, este proyecto marca un hito importante en mi carrera: mi evolución desde la manipulación directa del DOM (Vanilla JS/jQuery) hacia la arquitectura de componentes y el manejo de estados complejos.
 
-In the project directory, you can run:
+*(Nota: Este proyecto es la base arquitectónica que posteriormente evolucionó hacia la versión actual y escalable en Next.js y AWS).*
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🚀 Retos de Ingeniería y Soluciones Aplicadas
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+El salto hacia Single Page Applications (SPA) trajo consigo nuevos desafíos de ingeniería, enfocados principalmente en la experiencia de usuario y la persistencia de datos en el cliente:
 
-### `npm test`
+* **Arquitectura Orientada a Componentes:** Migración de vistas monolíticas HTML a componentes modulares y reutilizables en React (`<VentaPartes />`, `<ExcelReader />`, `<ActModal />`), facilitando el mantenimiento y la escalabilidad del código.
+* **Procesamiento de Archivos en el Cliente (Heavy Lifting):** Implementación del componente `ExcelReader` para procesar y parsear hojas de cálculo voluminosas directamente en el navegador de forma síncrona. Esto evitó la sobrecarga del servidor en las operaciones de ingesta masiva de inventario.
+* **Generación Dinámica de Documentos:** Desarrollo de un motor interno de renderizado de comprobantes de pago (`Pedido.pdf`, `cotizacion.pdf`) integrando tipografías nativas (Roboto) para emitir documentos corporativos listos para impresión en punto de venta.
+* **Gestión de Estados Complejos:** Manejo de carritos de compra y sesiones de usuario asíncronas, lidiando con problemas de inmutabilidad de datos y sincronización de vistas.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🛠️ Stack Tecnológico (v1)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+* **Framework Core:** React 18 (Create React App).
+* **Enrutamiento:** React Router DOM para navegación fluida sin recargas.
+* **Estilos:** CSS Modules y hojas de estilo globales estructuradas por dominio (`home.css`, `moves.css`, `nav.css`).
+* **Lógica de Datos y APIs:**
+  * Uso extensivo de la API Fetch (`server.js`) para la comunicación REST.
+  * Biblioteca `xlsx` para la lectura de documentos tabulares.
+  * Autenticación local y control de rutas protegidas (`<Login />`, `<Logout />`).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📦 Módulos Principales (Funcionalidad)
 
-### `npm run eject`
+* **Punto de Venta (POS):** Interfaz para la búsqueda de SKU, cálculo de impuestos, y generación de ventas físicas (`/VentaPartes`).
+* **Dashboard de Inventario:** Listado maestro de productos con capacidades CRUD (Crear, Leer, Actualizar, Borrar) y carga masiva mediante archivos Excel (`/Products`).
+* **Gestión de Empleados y Horarios:** Sistema integrado para el registro de personal y control de horas de asistencia operativas (`/User`, `/Hour`).
+* **Auditoría de Cuentas y Pedidos:** Visualización tabular del historial de movimientos y configuraciones de negocio (`/AccountConfig`, `/Pedidos`).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## ⚙️ Configuración y Desarrollo Local
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Requisitos Previos
+* Node.js (versión 14+)
+* npm o yarn
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Instalación
 
-## Learn More
+1. Clonar el repositorio:
+```bash
+git clone [https://github.com/mdemedina/frontend-toyoexpress.git](https://github.com/mdemedina/frontend-toyoexpress.git)
+cd frontend-toyoexpress
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+2. Instalar las dependencias:
+```bash
+npm install
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+3. Variables de Entorno:
+Crea un archivo `.env` en la raíz del proyecto y configura la URL de la API:
+```env
+REACT_APP_API_URL=http://localhost:3000/api
+```
 
-### Code Splitting
+4. Ejecutar el entorno de desarrollo:
+```bash
+npm start
+```
+El panel estará disponible en `http://localhost:3000`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+## 🏗️ Topología del Proyecto
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-hola mundo esta es una prueba
+```text
+src/
+├── components/           # Vistas principales y Módulos de Negocio
+│   ├── Home/             # Dashboard Principal
+│   ├── Products/         # Gestión de Inventario
+│   ├── VentaPartes/      # Punto de Venta (POS) y Documentos PDF
+│   └── User/             # Módulo de Recursos Humanos
+├── css/                  # Hojas de estilo organizadas por componente
+├── lib/                  # Utilidades globales
+│   └── data/server.js    # Cliente HTTP para las peticiones a la API
+└── img/                  # Assets gráficos estáticos y plantillas PDF
+```
